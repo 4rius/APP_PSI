@@ -1,4 +1,4 @@
-package com.example.app_psi
+package com.example.app_psi.activities
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
