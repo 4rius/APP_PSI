@@ -50,6 +50,11 @@
     <string name="disconnect_string">Disconnect from the network</string>
     <string name="network_string">Not connected to the network\n</string>
     <string name="details_string">Details</string>
-    <string name="hide_device_string">Hide device</string>
+    <string name="hide_device_string">Hide</string>
     <string name="device_specific_actions_string">Device specific actions</string>
+    <string name="network_status_connecting_string">Network status: connecting...</string>
+    <string name="ip_port_string"><b><i>Network ID: Couldn\'t fetch your ID</i></b></string>
+    <string name="port_string">Network port: -</string>
+    <string name="ping_string">Ping</string>
+    <string name="no_devices_string">No devices were found</string>
 </resources>

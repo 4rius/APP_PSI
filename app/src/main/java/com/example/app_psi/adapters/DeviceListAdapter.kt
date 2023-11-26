@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.app_psi.R
 import com.example.app_psi.services.NetworkService
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.snackbar.Snackbar
 
 class DeviceListAdapter(private val context: Context, private val devices: List<String>, private val parentView: View): RecyclerView.Adapter<DeviceListAdapter.ViewHolder>() {
 
@@ -22,7 +23,7 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
         val deviceDetails: TextView = view.findViewById(R.id.textViewContent)
         val buttonHide: Button = view.findViewById(R.id.buttonHide)
         val buttonActions: Button = view.findViewById(R.id.buttonActions)
-        val buttonDetails: Button = view.findViewById(R.id.buttonDetails)
+        val buttonPing: Button = view.findViewById(R.id.buttonPing)
         val imageViewTypeNew: View = view.findViewById(R.id.imageViewTypeNew)
     }
 
@@ -44,15 +45,23 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
         if (deletePositions.contains(position)) {
             holder.buttonHide.visibility = View.VISIBLE
             holder.buttonActions.visibility = View.VISIBLE
-            holder.buttonDetails.visibility = View.VISIBLE
+            holder.buttonPing.visibility = View.VISIBLE
         } else {
             holder.buttonHide.visibility = View.GONE
             holder.buttonActions.visibility = View.GONE
-            holder.buttonDetails.visibility = View.GONE
+            holder.buttonPing.visibility = View.GONE
         }
 
         holder.deviceName.text = devices[position]
         holder.deviceDetails.text = "Last seen: " + NetworkService.getLastSeen(devices[position])
+
+        holder.itemView.setOnClickListener {
+            if (deletePositions.contains(position)) {
+                hideButtons(position)
+            } else {
+                showButtons(position)
+            }
+        }
 
         holder.buttonHide.setOnClickListener {
             deletePositions.remove(position)
@@ -63,8 +72,8 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
             showBottomSheet(position)
         }
 
-        holder.buttonDetails.setOnClickListener {
-            // TODO or remove showDetails(position)
+        holder.buttonPing.setOnClickListener {
+            // TODO
         }
 
         holder.imageViewTypeNew.visibility = View.GONE // TODO: This and device type
@@ -79,12 +88,28 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
         val height = context.resources.displayMetrics.heightPixels * 0.5
         bottomSheetDialog.behavior.peekHeight = height.toInt()
         bottomSheetDialog.behavior.isDraggable = true
-        bottomSheetDialog.findViewById<TextView>(R.id.textViewTitleOptions)?.text = "Action for device " + devices[position]
+        bottomSheetDialog.findViewById<TextView>(R.id.textViewTitleOptions)?.text = "Actions for device " + devices[position]
         bottomSheetDialog.findViewById<Button>(R.id.buttonSendLargeMsg)?.setOnClickListener {
             NetworkService.sendLargeMessage(devices[position])
+            bottomSheetDialog.dismiss()
+            Snackbar.make(parentView, "Large message sent to ${devices[position]}", Snackbar.LENGTH_SHORT).show()
         }
         bottomSheetDialog.findViewById<Button>(R.id.buttonSendSmallMsg)?.setOnClickListener {
             NetworkService.sendSmallMessage(devices[position])
+            bottomSheetDialog.dismiss()
+            Snackbar.make(parentView, "Small message sent to ${devices[position]}", Snackbar.LENGTH_SHORT).show()
         }
+
+        bottomSheetDialog.show()
+    }
+
+    private fun showButtons(position: Int) {
+        deletePositions.add(position)
+        notifyItemChanged(position)
+    }
+
+    private fun hideButtons(position: Int) {
+        deletePositions.remove(position)
+        notifyItemChanged(position)
     }
 }

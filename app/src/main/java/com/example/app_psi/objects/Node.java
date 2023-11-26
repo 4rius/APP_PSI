@@ -1,5 +1,7 @@
 package com.example.app_psi.objects;
 
+import android.os.StrictMode;
+
 import org.jetbrains.annotations.NotNull;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
@@ -45,8 +47,16 @@ public class Node {
             if (!devices.containsKey(peer)) {
                 dealerSocket.send("Hello from Node " + id);
             }
-            String peerId = peer.split(":")[0];
+            String peerId = extractId(peer);
             devices.put(peerId, new Device(dealerSocket, null));
+        }
+    }
+
+    private String extractId(String peer) {
+        if (peer.startsWith("[")) {  // Si es una dirección IPv6
+            return peer.substring(peer.indexOf("[") + 1, peer.indexOf("]"));
+        } else {  // Si es una dirección IPv4
+            return peer.split(":")[0];
         }
     }
 
@@ -158,10 +168,25 @@ public class Node {
     }
 
     public String getId() {
+        if (id.startsWith("[")) {  // Si es una dirección IPv6
+            return id.substring(id.indexOf("[") + 1, id.indexOf("]"));
+        }
+        return id;
+    }
+
+    public String getFullId() {
         return id;
     }
 
     public List<String> getPeers() {
         return peers;
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+
+    public int getPort() {
+        return port;
     }
 }

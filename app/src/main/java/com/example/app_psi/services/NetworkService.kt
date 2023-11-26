@@ -9,6 +9,7 @@ import java.net.NetworkInterface
 import java.net.SocketException
 import java.util.Enumeration
 
+
 class NetworkService: Service() {
 
     lateinit var node: Node
@@ -18,9 +19,12 @@ class NetworkService: Service() {
         super.onCreate()
         instance = this
         id = getLocalIp()!!
-        val peers = listOf("192.168.1.65:5001, 192.168.1.2:5001, 192.168.1.3:5001")
+        val peers = listOf("192.168.1.118:5001", "192.168.1.2:5001", "192.168.1.3:5001")
         node = Node(id, 5001, peers)
         node.start()
+        // Mandar un broadcast para que la MainActivity sepa que el servicio se ha creado
+        val intent = Intent(ACTION_SERVICE_CREATED)
+        sendBroadcast(intent)
     }
 
     private fun getLocalIp(): String? {
@@ -32,6 +36,10 @@ class NetworkService: Service() {
                 while (addresses.hasMoreElements()) {
                     val addr: InetAddress = addresses.nextElement()
                     if (!addr.isLoopbackAddress && !addr.isLinkLocalAddress && addr.isSiteLocalAddress) {
+                        // Si es ipv6, lo tenemos que devolver con corchetes
+                        if (addr.hostAddress?.contains(":") == true) {
+                            return "[${addr.hostAddress}]"
+                        }
                         return addr.hostAddress
                     }
                 }
@@ -62,6 +70,8 @@ class NetworkService: Service() {
     companion object {
 
         private var instance: NetworkService? = null
+        const val ACTION_SERVICE_CREATED = "com.example.app_psi.receivers.ACTION_SERVICE_CREATED"
+        const val ACTION_STATUS_UPDATED = "com.example.app_psi.receivers.ACTION_STATUS_UPDATED"
 
         fun getNode(): Node? {
             return instance?.node
@@ -80,8 +90,25 @@ class NetworkService: Service() {
         }
 
         fun getStatus(): String {
-            if (instance == null) return "Stopped"
-            return "Running"
+            return if (instance == null) "Inactive"
+            else if (instance?.node?.isRunning == true) "Connected"
+            else "Connecting"
+        }
+
+        fun sendLargeMessageToAll() {
+            TODO("Not yet implemented")
+        }
+
+        fun sendSmallMessageToAll() {
+            TODO("Not yet implemented")
+        }
+
+        fun findNetwork() {
+            TODO("Not yet implemented")
+        }
+
+        fun disconnect() {
+            TODO("Not yet implemented")
         }
 
     }

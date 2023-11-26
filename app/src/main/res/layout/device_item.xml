@@ -71,11 +71,11 @@
                 tools:ignore="ButtonStyle" />
 
             <Button
-                android:id="@+id/buttonDetails"
+                android:id="@+id/buttonPing"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/white"
-                android:text="@string/details_string"
+                android:text="@string/ping_string"
                 android:layout_marginStart="6dp"
                 tools:ignore="ButtonStyle" />
 
