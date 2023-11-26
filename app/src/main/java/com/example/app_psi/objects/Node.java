@@ -1,5 +1,6 @@
 package com.example.app_psi.objects;
 
+import org.jetbrains.annotations.NotNull;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class Node {
     private boolean running = true;
@@ -108,17 +110,42 @@ public class Node {
         }
     }
 
+    public boolean pingDevice(@NotNull String device) {
+        if (devices.containsKey(device)) {
+            Device device1 = devices.get(device);
+            if (device1 != null) {
+                int attempts = 0;
+                int maxAttempts = 3;
+                while (attempts < maxAttempts) {
+                    device1.socket.send(id + " is pinging you!");
+                    String response = device1.socket.recvStr(ZMQ.DONTWAIT);
+                    if (response.endsWith("is up and running!")) {
+                        // Update last seen
+                        device1.lastSeen = System.currentTimeMillis();
+                        return true;
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    attempts++;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void pingAllDevices() {
+        for (Device device : devices.values()) {
+            device.socket.send(id + " is pinging you!");
+        }
+        // TODO: Que se actualice toda la lista con los nuevos timestamps
+    }
+
     public List<String> getDevices() {
         return new ArrayList<>(devices.keySet());
     }
-
-    /**
-     * We will only be able to ping by relying on a
-     * web service running on the network.
-     * We will be able to use the API of any web service running on the network.
-     * The first web service that replies will be our "warden" and will answer
-     * all our questions. If it goes down, we will have to find another one.
-     */
 
     private static class Device {
         ZMQ.Socket socket;
@@ -128,5 +155,13 @@ public class Node {
             this.socket = socket;
             this.lastSeen = lastSeen;
         }
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public List<String> getPeers() {
+        return peers;
     }
 }

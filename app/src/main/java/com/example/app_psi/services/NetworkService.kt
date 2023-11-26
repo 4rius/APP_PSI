@@ -11,23 +11,16 @@ import java.util.Enumeration
 
 class NetworkService: Service() {
 
-    private lateinit var node: Node
-    private lateinit var id: String
-    private lateinit var warden: String
+    lateinit var node: Node
+    lateinit var id: String
 
     override fun onCreate() {
         super.onCreate()
+        instance = this
         id = getLocalIp()!!
-        // Peers list of 192.168.1.49:5001, 192.168.1.2:5001, 192.168.1.3:5001
-        val peers = listOf("192.168.1.49:5001, 192.168.1.2:5001, 192.168.1.3:5001")
+        val peers = listOf("192.168.1.65:5001, 192.168.1.2:5001, 192.168.1.3:5001")
         node = Node(id, 5001, peers)
         node.start()
-        if (node.findWarden() != null) {
-            warden = node.findWarden()!!
-        }
-        else {
-            warden = id
-        }
     }
 
     private fun getLocalIp(): String? {
@@ -53,14 +46,8 @@ class NetworkService: Service() {
         return node.devices
     }
 
-    fun getWarden(): String {
-        return warden
-    }
-
     fun pingDevice(device: String): Boolean {
-        val apiUrl = "http://$warden:5001/api/ping/$device"
-        // response is a json where the reply is on the "status" field should be a POST request
-        return node.pingDevice(apiUrl)
+        return node.pingDevice(device)
     }
 
     override fun onDestroy() {
@@ -70,5 +57,32 @@ class NetworkService: Service() {
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
+    }
+
+    companion object {
+
+        private var instance: NetworkService? = null
+
+        fun getNode(): Node? {
+            return instance?.node
+        }
+        fun getLastSeen(device: String): String {
+            // TODO: Usando getNode() obtener lo que haya guardado en el nodo
+            return "1 minute ago"
+        }
+
+        fun sendLargeMessage(device: String) {
+            // TODO
+        }
+
+        fun sendSmallMessage(device: String) {
+            TODO("Not yet implemented")
+        }
+
+        fun getStatus(): String {
+            if (instance == null) return "Stopped"
+            return "Running"
+        }
+
     }
 }
