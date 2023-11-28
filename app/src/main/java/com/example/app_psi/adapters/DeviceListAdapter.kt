@@ -73,8 +73,26 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
         }
 
         holder.buttonPing.setOnClickListener {
-            // TODO
+            holder.buttonPing.isClickable = false
+            holder.buttonPing.isEnabled = false
+            holder.buttonPing.text = "Pinging..."
+
+            Thread {
+                val pingSuccessful = NetworkService.pingDevice(devices[position])
+                holder.buttonPing.post {
+                    if (pingSuccessful) {
+                        Snackbar.make(parentView, "${devices[position]} - Ping OK", Snackbar.LENGTH_SHORT).show()
+                    } else {
+                        Snackbar.make(parentView, "${devices[position]} - Ping FAIL - Device likely disconnected", Snackbar.LENGTH_SHORT).show()
+                    }
+                    holder.buttonPing.isClickable = true
+                    holder.buttonPing.isEnabled = true
+                    holder.buttonPing.text = "Ping"
+                }
+            }.start()
         }
+
+
 
         holder.imageViewTypeNew.visibility = View.GONE // TODO: This and device type
 

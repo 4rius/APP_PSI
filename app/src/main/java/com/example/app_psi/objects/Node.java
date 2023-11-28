@@ -1,17 +1,17 @@
 package com.example.app_psi.objects;
 
-import android.os.StrictMode;
-
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class Node {
     private boolean running = true;
@@ -48,7 +48,7 @@ public class Node {
                 dealerSocket.send("Hello from Node " + id);
             }
             String peerId = extractId(peer);
-            devices.put(peerId, new Device(dealerSocket, null));
+            devices.put(peerId, new Device(dealerSocket, "Not seen yet"));
         }
     }
 
@@ -65,7 +65,7 @@ public class Node {
             String sender = routerSocket.recvStr();
             String message = routerSocket.recvStr();
             System.out.println("Node " + id + " (You) received: " + message);
-            long dayTime = System.currentTimeMillis();
+            String dayTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
             if (message.startsWith("Hello from Node")) {
                 String peer = message.split(" ")[3];
                 if (!devices.containsKey(peer)) {
@@ -122,6 +122,7 @@ public class Node {
 
     public boolean pingDevice(@NotNull String device) {
         if (devices.containsKey(device)) {
+            System.out.println("Pinging " + device);
             Device device1 = devices.get(device);
             if (device1 != null) {
                 int attempts = 0;
@@ -129,9 +130,11 @@ public class Node {
                 while (attempts < maxAttempts) {
                     device1.socket.send(id + " is pinging you!");
                     String response = device1.socket.recvStr(ZMQ.DONTWAIT);
-                    if (response.endsWith("is up and running!")) {
+                    if (response == null) {
+                        System.out.println(device + " - Ping failed, retrying...");
+                    } else if (response.endsWith("is up and running!")) {
                         // Update last seen
-                        device1.lastSeen = System.currentTimeMillis();
+                        device1.lastSeen = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
                         return true;
                     }
                     try {
@@ -157,11 +160,22 @@ public class Node {
         return new ArrayList<>(devices.keySet());
     }
 
+    @Nullable
+    public String getLastSeen(@NotNull String device) {
+        if (devices.containsKey(device)) {
+            Device device1 = devices.get(device);
+            if (device1 != null) {
+                return device1.lastSeen;
+            }
+        }
+        return null;
+    }
+
     private static class Device {
         ZMQ.Socket socket;
-        Long lastSeen;
+        String lastSeen;
 
-        Device(ZMQ.Socket socket, Long lastSeen) {
+        Device(ZMQ.Socket socket, String lastSeen) {
             this.socket = socket;
             this.lastSeen = lastSeen;
         }

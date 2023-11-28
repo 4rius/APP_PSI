@@ -54,10 +54,6 @@ class NetworkService: Service() {
         return node.devices
     }
 
-    fun pingDevice(device: String): Boolean {
-        return node.pingDevice(device)
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         node.join()
@@ -77,8 +73,11 @@ class NetworkService: Service() {
             return instance?.node
         }
         fun getLastSeen(device: String): String {
-            // TODO: Usando getNode() obtener lo que haya guardado en el nodo
-            return "1 minute ago"
+            return instance?.node?.getLastSeen(device) ?: "Unknown"
+        }
+
+        fun pingDevice(device: String): Boolean {
+            return instance?.node?.pingDevice(device) ?: false
         }
 
         fun sendLargeMessage(device: String) {
