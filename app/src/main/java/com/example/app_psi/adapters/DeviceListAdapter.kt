@@ -52,8 +52,10 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
             holder.buttonPing.visibility = View.GONE
         }
 
+
         holder.deviceName.text = devices[position]
         holder.deviceDetails.text = "Last seen: " + NetworkService.getLastSeen(devices[position])
+
 
         holder.itemView.setOnClickListener {
             if (deletePositions.contains(position)) {
@@ -82,6 +84,7 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
                 holder.buttonPing.post {
                     if (pingSuccessful) {
                         Snackbar.make(parentView, "${devices[position]} - Ping OK", Snackbar.LENGTH_SHORT).show()
+                        holder.deviceDetails.text = "Last seen: " + NetworkService.getLastSeen(devices[position])
                     } else {
                         Snackbar.make(parentView, "${devices[position]} - Ping FAIL - Device likely disconnected", Snackbar.LENGTH_SHORT).show()
                     }

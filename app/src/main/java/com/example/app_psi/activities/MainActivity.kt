@@ -124,6 +124,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
+        binding.swiperefresh.setOnRefreshListener {
+            setupRecyclerView()
+            binding.swiperefresh.isRefreshing = false
+        }
         val deviceList: MutableList<String> = (NetworkService.getNode()?.peers ?: listOf()).toMutableList()
         if (deviceList.isEmpty()) {
             binding.textViewNoDevices.visibility = View.VISIBLE

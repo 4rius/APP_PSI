@@ -1,79 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     tools:context=".activities.MainActivity">
 
-    <!-- Contenedor principal -->
-    <LinearLayout
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swiperefresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
-        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+        android:layout_height="match_parent">
 
-        <!-- Contenido principal, incluyendo el RecyclerView -->
+        <!-- Contenedor principal -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+
+            <!-- Contenido principal, incluyendo el RecyclerView -->
+            <TextView
+                android:id="@+id/textViewNetworkStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/network_string"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"
+                android:importantForAccessibility="no" />
+
+            <!-- Subtítulo con el id y el puerto -->
+            <TextView
+                android:id="@+id/textViewNetworkId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:importantForAccessibility="no"
+                android:text="@string/ip_port_string"
+                android:textAlignment="center"
+                android:textSize="18sp"
+                android:textStyle="italic"/>
+
+            <!-- Subtítulo con el puerto -->
+            <TextView
+                android:id="@+id/textViewNetworkPort"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:importantForAccessibility="no"
+                android:text="@string/port_string"
+                android:textAlignment="center"
+                android:textSize="18sp"
+                android:textStyle="italic"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
+                android:scrollbars="vertical"
+                android:scrollbarStyle="outsideOverlay"
+                android:importantForAccessibility="no" />
+        </LinearLayout>
+
         <TextView
-            android:id="@+id/textViewNetworkStatus"
+            android:id="@+id/textViewNoDevices"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/network_string"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:text="@string/no_devices_string"
             android:textSize="26sp"
             android:textStyle="bold"
-            android:layout_marginTop="16dp"
             android:importantForAccessibility="no" />
 
-        <!-- Subtítulo con el id y el puerto -->
-        <TextView
-            android:id="@+id/textViewNetworkId"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:importantForAccessibility="no"
-            android:text="@string/ip_port_string"
-            android:textAlignment="center"
-            android:textSize="18sp"
-            android:textStyle="italic"/>
 
-        <!-- Subtítulo con el puerto -->
-        <TextView
-            android:id="@+id/textViewNetworkPort"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:importantForAccessibility="no"
-            android:text="@string/port_string"
-            android:textAlignment="center"
-            android:textSize="18sp"
-            android:textStyle="italic"/>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:scrollbars="vertical"
-            android:scrollbarStyle="outsideOverlay"
-            android:importantForAccessibility="no" />
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/textViewNoDevices"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone"
-        android:text="@string/no_devices_string"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        android:importantForAccessibility="no" />
-
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_button"
         android:layout_width="wrap_content"
@@ -82,5 +88,4 @@
         android:layout_margin="16dp"
         android:contentDescription="@string/action_settings"
         app:srcCompat="@android:drawable/ic_input_add" />
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

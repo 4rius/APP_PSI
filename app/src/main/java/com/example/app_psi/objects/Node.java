@@ -84,7 +84,7 @@ public class Node {
                 Device device = devices.get(peer);
                 if (device != null) {
                     device.lastSeen = dayTime;
-                    routerSocket.send(sender, ZMQ.SNDMORE);
+                    routerSocket.sendMore(sender);
                     routerSocket.send(id + " is up and running!");
                 }
             } else if (message.startsWith("Added ")) {
@@ -135,6 +135,7 @@ public class Node {
                     } else if (response.endsWith("is up and running!")) {
                         // Update last seen
                         device1.lastSeen = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+                        System.out.println(device + " - Ping OK");
                         return true;
                     }
                     try {
