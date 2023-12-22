@@ -19,7 +19,7 @@ class NetworkService: Service() {
         super.onCreate()
         instance = this
         id = getLocalIp()!!
-        val peers = listOf("192.168.1.71:5001", "192.168.1.2:5001", "192.168.1.3:5001")
+        val peers = listOf("192.168.1.112:5001", "192.168.1.2:5001", "192.168.1.3:5001")
         node = Node(id, 5001, peers)
         node.start()
         // Mandar un broadcast para que la MainActivity sepa que el servicio se ha creado

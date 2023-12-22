@@ -43,7 +43,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
-            android:text="@string/large_msg_string" />
+            android:text="@string/intersect_everyone_paillier" />
 
     </LinearLayout>
 
@@ -65,7 +65,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
-            android:text="@string/small_msg_string" />
+            android:text="@string/intersect_everyone_ElGamal" />
 
     </LinearLayout>
 

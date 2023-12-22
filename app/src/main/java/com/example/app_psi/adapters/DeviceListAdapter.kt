@@ -113,12 +113,12 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
         bottomSheetDialog.findViewById<Button>(R.id.buttonSendLargeMsg)?.setOnClickListener {
             NetworkService.sendLargeMessage(devices[position])
             bottomSheetDialog.dismiss()
-            Snackbar.make(parentView, "Large message sent to ${devices[position]}", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(parentView, "Finding intersection with ${devices[position]} using Paillier", Snackbar.LENGTH_SHORT).show()
         }
         bottomSheetDialog.findViewById<Button>(R.id.buttonSendSmallMsg)?.setOnClickListener {
             NetworkService.sendSmallMessage(devices[position])
             bottomSheetDialog.dismiss()
-            Snackbar.make(parentView, "Small message sent to ${devices[position]}", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(parentView, "Finding intersection with ${devices[position]} using ElGamal", Snackbar.LENGTH_SHORT).show()
         }
 
         bottomSheetDialog.show()

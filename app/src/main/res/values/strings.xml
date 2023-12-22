@@ -57,4 +57,8 @@
     <string name="port_string">Network port: -</string>
     <string name="ping_string">Ping</string>
     <string name="no_devices_string">No devices were found</string>
+    <string name="find_intersection">Find intersection - Paillier</string>
+    <string name="find_intersection_ElGamal">Find intersection - ElGamal</string>
+    <string name="intersect_everyone_paillier">Find every intersection - Paillier</string>
+    <string name="intersect_everyone_ElGamal">Find every intersection - ElGamal</string>
 </resources>

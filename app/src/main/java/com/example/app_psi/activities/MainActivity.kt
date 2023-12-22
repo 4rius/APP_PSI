@@ -20,7 +20,6 @@ import com.example.app_psi.adapters.DeviceListAdapter
 import com.example.app_psi.databinding.ActivityMainBinding
 import com.example.app_psi.services.NetworkService
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity() {
@@ -73,8 +72,8 @@ class MainActivity : AppCompatActivity() {
 
             // Interfaz de la bottom sheet
             val textViewDetails = bottomSheetView.findViewById<TextView>(R.id.textViewDetails)
-            val buttonSendLargeMsg = bottomSheetView.findViewById<Button>(R.id.buttonSendLargeMsg)
-            val buttonSendSmallMsg = bottomSheetView.findViewById<Button>(R.id.buttonSendSmallMsg)
+            val intersectEveryonePaillier = bottomSheetView.findViewById<Button>(R.id.buttonSendLargeMsg)
+            val intersectEveryoneElGamal = bottomSheetView.findViewById<Button>(R.id.buttonSendSmallMsg)
             val buttonConnect = bottomSheetView.findViewById<Button>(R.id.buttonConnect)
             val buttonDisconnect = bottomSheetView.findViewById<Button>(R.id.buttonDisconnect)
 
@@ -89,16 +88,16 @@ class MainActivity : AppCompatActivity() {
             }
 
             // Configuración de los botones
-            buttonSendLargeMsg.setOnClickListener {
+            intersectEveryonePaillier.setOnClickListener {
                 NetworkService.sendLargeMessageToAll()
                 bottomSheetDialog.dismiss()
-                Snackbar.make(binding.root, "Large message sent to the peers", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, "Finding every intersection using Paillier encryption...", Snackbar.LENGTH_SHORT).show()
             }
 
-            buttonSendSmallMsg.setOnClickListener {
+            intersectEveryoneElGamal.setOnClickListener {
                 NetworkService.sendSmallMessageToAll()
                 bottomSheetDialog.dismiss()
-                Snackbar.make(binding.root, "Small message sent to the peers", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, "Finding every intersection using ElGamal encryption...", Snackbar.LENGTH_SHORT).show()
             }
 
             buttonConnect.setOnClickListener {

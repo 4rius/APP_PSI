@@ -1,17 +1,23 @@
 package com.example.app_psi.objects;
 
+import com.example.app_psi.implementations.Paillier;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 public class Node {
     private boolean running = true;
@@ -21,8 +27,18 @@ public class Node {
     private final ZContext context;
     private final ZMQ.Socket routerSocket;
     private final Map<String, Device> devices = new HashMap<>();
+    private final Paillier paillier = new Paillier(1024, 64); // Objeto Paillier con los métodos de claves, cifrado e intersecciones
+    private Set<Integer> myData; // Conjunto de datos del nodo (set de 10 números aleatorios)
+    private final int domain = 40;  // Dominio de los números aleatorios sobre los que se trabaja
+    private HashMap<String, Object> results;  // Resultados de las intersecciones
 
     public Node(String id, int port, List<String> peers) {
+        this.myData = new HashSet<>();
+        Random random = new Random();
+        for (int i = 0; i < 10; i++) {
+            myData.add(random.nextInt(domain));
+        }
+        this.results = new HashMap<>();
         this.id = id;
         this.port = port;
         this.peers = peers;
@@ -87,6 +103,8 @@ public class Node {
                     routerSocket.sendMore(sender);
                     routerSocket.send(id + " is up and running!");
                 }
+            } else if (message.startsWith("{")) {
+                handleMessage(message);
             } else if (message.startsWith("Added ")) {
                 String peer = message.split(" ")[8];
                 Device device = devices.get(peer);
@@ -148,6 +166,10 @@ public class Node {
             }
         }
         return false;
+    }
+
+    public void handleMessage(String message) {
+        // TODO: Implementar las intersecciones
     }
 
     public void pingAllDevices() {
