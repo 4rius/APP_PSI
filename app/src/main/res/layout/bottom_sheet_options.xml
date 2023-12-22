@@ -75,6 +75,72 @@
         android:orientation="horizontal">
 
         <ImageView
+            android:id="@+id/logo6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_cloud_queue_48"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no" />
+
+        <Button
+            android:id="@+id/buttonMyKeys"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:text="@string/my_keys" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/logo7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_cloud_queue_48"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no" />
+
+        <Button
+            android:id="@+id/buttonResults"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:text="@string/results" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/logo8"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_cloud_queue_48"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no" />
+
+        <Button
+            android:id="@+id/buttonDataSet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:text="@string/my_dataset" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
             android:id="@+id/logo3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

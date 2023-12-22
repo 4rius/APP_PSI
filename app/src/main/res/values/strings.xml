@@ -61,4 +61,7 @@
     <string name="find_intersection_ElGamal">Find intersection - ElGamal</string>
     <string name="intersect_everyone_paillier">Find every intersection - Paillier</string>
     <string name="intersect_everyone_ElGamal">Find every intersection - ElGamal</string>
+    <string name="my_keys">My keys</string>
+    <string name="results">Results</string>
+    <string name="my_dataset">My dataset</string>
 </resources>
