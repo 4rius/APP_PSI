@@ -52,5 +52,4 @@ dependencies {
     implementation ("org.zeromq:jeromq:0.5.2")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01")
     implementation("com.google.code.gson:gson:2.10")
-    implementation("com.n1analytics:javallier:0.6.0")
 }
