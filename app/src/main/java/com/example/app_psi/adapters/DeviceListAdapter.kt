@@ -111,7 +111,7 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
         bottomSheetDialog.behavior.isDraggable = true
         bottomSheetDialog.findViewById<TextView>(R.id.textViewTitleOptions)?.text = "Actions for device " + devices[position]
         bottomSheetDialog.findViewById<Button>(R.id.buttonSendLargeMsg)?.setOnClickListener {
-            NetworkService.sendLargeMessage(devices[position])
+            NetworkService.findIntersection(devices[position])
             bottomSheetDialog.dismiss()
             Snackbar.make(parentView, "Finding intersection with ${devices[position]} using Paillier", Snackbar.LENGTH_SHORT).show()
         }

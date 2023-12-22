@@ -1,6 +1,9 @@
 package com.example.app_psi.objects;
 
 import com.example.app_psi.implementations.Paillier;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -8,6 +11,7 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
+import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -16,6 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
@@ -27,10 +32,10 @@ public class Node {
     private final ZContext context;
     private final ZMQ.Socket routerSocket;
     private final Map<String, Device> devices = new HashMap<>();
-    private final Paillier paillier = new Paillier(1024, 64); // Objeto Paillier con los métodos de claves, cifrado e intersecciones
-    private Set<Integer> myData; // Conjunto de datos del nodo (set de 10 números aleatorios)
+    public final Paillier paillier = new Paillier(1024, 64); // Objeto Paillier con los métodos de claves, cifrado e intersecciones
+    public Set<Integer> myData; // Conjunto de datos del nodo (set de 10 números aleatorios)
     private final int domain = 40;  // Dominio de los números aleatorios sobre los que se trabaja
-    private HashMap<String, Object> results;  // Resultados de las intersecciones
+    public HashMap<String, Object> results;  // Resultados de las intersecciones
 
     public Node(String id, int port, List<String> peers) {
         this.myData = new HashSet<>();
@@ -169,8 +174,102 @@ public class Node {
     }
 
     public void handleMessage(String message) {
-        // TODO: Implementar las intersecciones
+        // Convertir el JSON en un HashMap
+        Gson gson = new Gson();
+        Type type = new TypeToken<HashMap<String, Object>>(){}.getType();
+        HashMap<String, Object> peerData = gson.fromJson(message, type);
+
+        if (peerData.containsKey("implementation") && peerData.containsKey("peer")) {
+            try {
+                String peer = (String) peerData.remove("peer");
+                String implementation = (String) peerData.remove("implementation");
+                HashMap<String, String> peerPubKey = (HashMap<String, String>) peerData.remove("pubkey");
+                HashMap<String, BigInteger> encryptedSet = paillier.getEncryptedSet((HashMap<String, BigInteger>) peerData.remove("data"));
+                System.out.println("Node " + id + " (You) - Calculating intersection with " + peer + " - " + implementation);
+                if (implementation.equals("Paillier")) {
+                    HashMap<String, BigInteger> multipliedSet = paillier.getMultipliedSet(encryptedSet, myData);
+                    // Serializamos y mandamos de vuelta el resultado
+                    HashMap<String, String> serializedMultipliedSet = new HashMap<>();
+                    for (Map.Entry<String, BigInteger> entry : multipliedSet.entrySet()) {
+                        serializedMultipliedSet.put(entry.getKey(), entry.getValue().toString());
+                    }
+                    System.out.println("Node " + id + " (You) - Intersection with " + peer + " - Multiplied set: " + multipliedSet);
+                    HashMap<String, Object> messageToSend = new HashMap<>();
+                    messageToSend.put("data", serializedMultipliedSet);
+                    messageToSend.put("peer", id);
+                    messageToSend.put("cryptpscheme", implementation);
+                    Objects.requireNonNull(devices.get(peer)).socket.send(gson.toJson(messageToSend));
+                }
+            } catch (JsonSyntaxException e) {
+                System.out.println("Received message is not a valid JSON.");
+            }
+        } else if (message.startsWith("{")) {
+            try {
+                String cryptoScheme = (String) peerData.remove("cryptpscheme");
+                assert cryptoScheme != null;
+                if (cryptoScheme.equals("Paillier")) {
+                    paillierIntersectionFinalStep(String.valueOf(peerData));
+                }
+            } catch (JsonSyntaxException e) {
+                System.out.println("Received message is not a valid JSON.");
+            }
+        }
     }
+
+
+    public String paillierIntersection(String device) {
+        // Ciframos el conjunto de datos del nodo
+        if (devices.containsKey(device)) {
+            Device device1 = devices.get(device);
+            System.out.println("Node " + id + " (You) - Intersection with " + device + " - Paillier");
+            // Cifrar los datos del nodo
+            HashMap<String, BigInteger> myEncryptedSet = paillier.encryptMyData(myData, domain);
+            // Serializamos la clave pública
+            HashMap<String, String> publicKeyDict = paillier.serializePublicKey();
+            // Creamos con Gson un objeto que contenga el conjunto cifrado, la clave pública y la implementacion
+            Gson gson = new Gson();
+            HashMap<String, Object> message = new HashMap<>();
+            message.put("data", myEncryptedSet);
+            message.put("pubkey", publicKeyDict);
+            message.put("implementation", "Paillier");
+            message.put("peer", id);
+            String jsonMessage = gson.toJson(message);
+            // Enviamos el mensaje
+            assert device1 != null;
+            device1.socket.send(jsonMessage);
+            return "Intersection with " + device + " - Paillier - Waiting for response...";
+        }
+        return "Intersection with " + device + " - Paillier - Device not found";
+    }
+
+    public void paillierIntersectionFinalStep(String jsonPeerData) {
+        // Convertir el JSON en un HashMap
+        Gson gson = new Gson();
+        Type type = new TypeToken<HashMap<String, Object>>(){}.getType();
+        HashMap<String, Object> peerData = gson.fromJson(jsonPeerData, type);
+
+        HashMap<String, BigInteger> multipliedSet = (HashMap<String, BigInteger>) peerData.remove("data");
+        multipliedSet = paillier.recvMultipliedSet(multipliedSet);
+        String device = (String) peerData.remove("peer");
+        // Desciframos los datos del peer
+        for (Map.Entry<String, BigInteger> entry : multipliedSet.entrySet()) {
+            BigInteger decryptedValue = paillier.Decryption(entry.getValue());
+            entry.setValue(decryptedValue);
+        }
+        // Guardamos el resultado
+        results.put(device, multipliedSet);
+        // Cogemos solo los valores que sean 1, que representan la intersección
+        HashMap<String, BigInteger> intersection = new HashMap<>();
+        for (Map.Entry<String, BigInteger> entry : multipliedSet.entrySet()) {
+            if (entry.getValue().equals(BigInteger.ONE)) {
+                intersection.put(entry.getKey(), entry.getValue());
+            }
+        }
+        System.out.println("Node " + id + " (You) - Intersection with " + device + " - Result: " + intersection);
+    }
+
+
+
 
     public void pingAllDevices() {
         for (Device device : devices.values()) {

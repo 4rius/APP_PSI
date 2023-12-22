@@ -8,8 +8,7 @@ import java.security.SecureRandom;
 import java.util.Set;
 
 public class Paillier {
-
-    private BigInteger p, q, lambda; // Variables para almacenar los números primos y lambda
+    public BigInteger p, q, lambda; // Variables para almacenar los números primos y lambda
     public BigInteger n; // Clave pública
     public BigInteger nsquare; // n al cuadrado, se usa en el cifrado y descifrado
     private BigInteger g; // Número que se usa en el cifrado y descifrado
@@ -41,9 +40,13 @@ public class Paillier {
     }
 
     // Cifrado de un número
-    public BigInteger Encryption(BigInteger m, BigInteger r) {
-        return g.modPow(m, nsquare).multiply(r.modPow(n, nsquare)).mod(nsquare);
+    // Cifrado de un número
+    public BigInteger Encryption(BigInteger m) {
+        SecureRandom r = new SecureRandom();
+        BigInteger randNum = new BigInteger(bitLength, r);
+        return g.modPow(m, nsquare).multiply(randNum.modPow(n, nsquare)).mod(nsquare);
     }
+
 
     // Cifrado de un número con otra clave pública
     public BigInteger Encryption(BigInteger m, BigInteger r, BigInteger n) {
@@ -81,9 +84,9 @@ public class Paillier {
         HashMap<String, BigInteger> result = new HashMap<>();
         for (int element = 0; element < domain; element++) {
             if (!mySet.contains(element)) {
-                result.put(Integer.toString(element), Encryption(BigInteger.ZERO, BigInteger.ONE));
+                result.put(Integer.toString(element), Encryption(BigInteger.ZERO));
             } else {
-                result.put(Integer.toString(element), Encryption(BigInteger.ONE, BigInteger.ONE));
+                result.put(Integer.toString(element), Encryption(BigInteger.ONE));
             }
         }
         return result;

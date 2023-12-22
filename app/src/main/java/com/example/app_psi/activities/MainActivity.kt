@@ -76,6 +76,10 @@ class MainActivity : AppCompatActivity() {
             val intersectEveryoneElGamal = bottomSheetView.findViewById<Button>(R.id.buttonSendSmallMsg)
             val buttonConnect = bottomSheetView.findViewById<Button>(R.id.buttonConnect)
             val buttonDisconnect = bottomSheetView.findViewById<Button>(R.id.buttonDisconnect)
+            val buttonMyKeys = bottomSheetView.findViewById<Button>(R.id.buttonMyKeys)
+            val buttonMyData = bottomSheetView.findViewById<Button>(R.id.buttonDataSet)
+            val buttonResults = bottomSheetView.findViewById<Button>(R.id.buttonResults)
+
 
             // Configuración de los detalles
             textViewDetails.text = buildString {
@@ -110,6 +114,32 @@ class MainActivity : AppCompatActivity() {
                 NetworkService.disconnect()
                 bottomSheetDialog.dismiss()
                 Snackbar.make(binding.root, "Disconnecting from the peers", Snackbar.LENGTH_SHORT).show()
+            }
+
+            buttonMyKeys.setOnClickListener {
+                val intent = Intent(this, KeysActivity::class.java)
+                val publicKey = NetworkService.getNode()?.paillier?.n.toString()
+                val privateKey = NetworkService.getNode()?.paillier?.lambda.toString()
+                intent.putExtra("publicKey", publicKey)
+                intent.putExtra("privateKey", privateKey)
+                startActivity(intent)
+                bottomSheetDialog.dismiss()
+            }
+
+            buttonMyData.setOnClickListener {
+                val intent = Intent(this, KeysActivity::class.java)
+                val dataset = NetworkService.getNode()?.myData?.toString()
+                intent.putExtra("dataset", dataset)
+                startActivity(intent)
+                bottomSheetDialog.dismiss()
+            }
+
+            buttonResults.setOnClickListener {
+                val intent = Intent(this, KeysActivity::class.java)
+                val results = NetworkService.getNode()?.results?.toString()
+                intent.putExtra("results", results)
+                startActivity(intent)
+                bottomSheetDialog.dismiss()
             }
 
             bottomSheetDialog.show()

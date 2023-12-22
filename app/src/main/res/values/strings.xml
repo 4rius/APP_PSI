@@ -64,4 +64,6 @@
     <string name="my_keys">My keys</string>
     <string name="results">Results</string>
     <string name="my_dataset">My dataset</string>
+    <string name="keys">Numeric value of the keys</string>
+    <string name="go_back">Return</string>
 </resources>

@@ -80,10 +80,6 @@ class NetworkService: Service() {
             return instance?.node?.pingDevice(device) ?: false
         }
 
-        fun sendLargeMessage(device: String) {
-            // TODO
-        }
-
         fun sendSmallMessage(device: String) {
             TODO("Not yet implemented")
         }
@@ -108,6 +104,10 @@ class NetworkService: Service() {
 
         fun disconnect() {
             TODO("Not yet implemented")
+        }
+
+        fun findIntersection(device: String): String {
+            return instance?.node?.paillierIntersection(device) ?: "Error"
         }
 
     }
