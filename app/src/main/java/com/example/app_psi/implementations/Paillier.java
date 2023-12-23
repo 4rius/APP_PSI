@@ -26,9 +26,14 @@ public class Paillier {
         SecureRandom r = new SecureRandom();
         p = new BigInteger(bitLength / 2, certainty, r); // Genera un número primo p
         q = new BigInteger(bitLength / 2, certainty, r); // Genera un número primo q
+        // Asegurar que p y q son diferentes, sino, n sería primo y se rompería la seguridad del esquema
+        while (q.compareTo(p) == 0) {
+            q = new BigInteger(bitLength / 2, certainty, r);
+        }
         n = p.multiply(q); // Calcula n = p * q, que se usa como la clave pública
         nsquare = n.multiply(n); // Calcula n al cuadrado
-        g = new BigInteger("2"); // Establece g como 2 por simplicidad y eficiencia
+        // Cogemos g como n + 1 para asegurar que g es un número aleatorio en [1, n^2] y para optimizar el cálculo del cifrado y descifrado
+        g = n.add(BigInteger.ONE);
         lambda = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE)).divide(
                 p.subtract(BigInteger.ONE).gcd(q.subtract(BigInteger.ONE))); // Calcula lambda
         // Comprueba si g es válido, si no lo es, termina el programa
