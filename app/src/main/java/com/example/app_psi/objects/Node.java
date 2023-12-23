@@ -184,10 +184,12 @@ public class Node {
                 String peer = (String) peerData.remove("peer");
                 String implementation = (String) peerData.remove("implementation");
                 HashMap<String, String> peerPubKey = (HashMap<String, String>) peerData.remove("pubkey");
+                assert peerPubKey != null;
+                BigInteger peerPubKeyReconstructed = paillier.reconstructPublicKey(peerPubKey);
                 HashMap<String, BigInteger> encryptedSet = paillier.getEncryptedSet((HashMap<String, BigInteger>) peerData.remove("data"));
                 System.out.println("Node " + id + " (You) - Calculating intersection with " + peer + " - " + implementation);
                 if (implementation.equals("Paillier")) {
-                    HashMap<String, BigInteger> multipliedSet = paillier.getMultipliedSet(encryptedSet, myData);
+                    HashMap<String, BigInteger> multipliedSet = paillier.getMultipliedSet(encryptedSet, myData, peerPubKeyReconstructed);
                     // Serializamos y mandamos de vuelta el resultado
                     HashMap<String, String> serializedMultipliedSet = new HashMap<>();
                     for (Map.Entry<String, BigInteger> entry : multipliedSet.entrySet()) {

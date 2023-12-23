@@ -19,6 +19,13 @@ public class Paillier {
         KeyGeneration(bitLengthVal, certainty);
     }
 
+    // Constructor para cifrar lo que mande un nodo
+    public Paillier(BigInteger n) {
+        this.n = n;
+        this.nsquare = n.multiply(n);
+        this.g = n.add(BigInteger.ONE);  // g puede ser n+1
+    }
+
     // Método para generar las claves, certeza es el grado de certeza con el que queremos que los números generados sean primos
     // A más certeza, más tiempo de computación en generar las claves
     public void KeyGeneration(int bitLengthVal, int certainty) {
@@ -72,9 +79,10 @@ public class Paillier {
     }
 
     // Reconstruir clave pública
-    public void reconstructPublicKey(HashMap<String, String> publicKeyDict) {
+    public BigInteger reconstructPublicKey(HashMap<String, String> publicKeyDict) {
         n = new BigInteger(Objects.requireNonNull(publicKeyDict.get("n")));
         nsquare = n.multiply(n);
+        return n;
     }
 
     public HashMap<String, BigInteger> getEncryptedSet(HashMap<String, BigInteger> serializedEncryptedSet) {
@@ -101,16 +109,22 @@ public class Paillier {
         return getEncryptedSet(serializedMultipliedSet);
     }
 
+    public BigInteger encryptNumberSender(BigInteger number, BigInteger n) {
+        Paillier paillier = new Paillier(n);
+        return paillier.Encryption(number);
+    }
+
     // Sacar el conjunto multiplicado
-    public HashMap<String, BigInteger> getMultipliedSet(HashMap<String, BigInteger> encSet, Set<Integer> nodeSet) {
+    public HashMap<String, BigInteger> getMultipliedSet(HashMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n) {
         HashMap<String, BigInteger> result = new HashMap<>();
+        BigInteger encZero = encryptNumberSender(BigInteger.ZERO, n);
+        BigInteger encOne = encryptNumberSender(BigInteger.ONE, n);
         for (Map.Entry<String, BigInteger> entry : encSet.entrySet()) {
             int element = Integer.parseInt(entry.getKey());
             if (!nodeSet.contains(element)) {
-                // Multiplicamos por el 0 siguiendo la propiedad de homomorfismo de Paillier
-                result.put(entry.getKey(), entry.getValue().modPow(BigInteger.ZERO, nsquare));
+                result.put(entry.getKey(), entry.getValue().multiply(encZero).mod(n.multiply(n)));
             } else {
-                result.put(entry.getKey(), entry.getValue().modPow(BigInteger.ONE, nsquare));
+                result.put(entry.getKey(), entry.getValue().multiply(encOne).mod(n.multiply(n)));
             }
         }
         return result;
