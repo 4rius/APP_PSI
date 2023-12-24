@@ -213,7 +213,7 @@ public class Node {
                 String cryptoScheme = (String) peerData.remove("cryptpscheme");
                 assert cryptoScheme != null;
                 if (cryptoScheme.equals("Paillier")) {
-                    paillierIntersectionFinalStep(String.valueOf(peerData));
+                    paillierIntersectionFinalStep(peerData);
                 }
             } catch (JsonSyntaxException e) {
                 System.out.println("Received message is not a valid JSON.");
@@ -247,12 +247,7 @@ public class Node {
         return "Intersection with " + device + " - Paillier - Device not found";
     }
 
-    public void paillierIntersectionFinalStep(String jsonPeerData) {
-        // Convertir el JSON en un LinkedTreeMap
-        Gson gson = new Gson();
-        Type type = new TypeToken<LinkedTreeMap<String, Object>>(){}.getType();
-        LinkedTreeMap<String, Object> peerData = gson.fromJson(jsonPeerData, type);
-
+    public void paillierIntersectionFinalStep(LinkedTreeMap<String, Object> peerData) {
         LinkedTreeMap<String, String> multipliedSet = (LinkedTreeMap<String, String>) peerData.remove("data");
         LinkedTreeMap<String, BigInteger> encMultipliedSet = paillier.recvMultipliedSet(multipliedSet);
         String device = (String) peerData.remove("peer");
