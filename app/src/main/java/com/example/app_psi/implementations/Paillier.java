@@ -3,7 +3,6 @@ package com.example.app_psi.implementations;
 import com.google.gson.internal.LinkedTreeMap;
 
 import java.math.BigInteger;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.security.SecureRandom;
@@ -61,12 +60,6 @@ public class Paillier {
         return g.modPow(m, nsquare).multiply(randNum.modPow(n, nsquare)).mod(nsquare);
     }
 
-
-    // Cifrado de un número con otra clave pública
-    public BigInteger Encryption(BigInteger m, BigInteger r, BigInteger n) {
-        return g.modPow(m, n.multiply(n)).multiply(r.modPow(n, n.multiply(n))).mod(n.multiply(n));
-    }
-
     // Descifrado de un número
     public BigInteger Decryption(BigInteger c) {
         BigInteger u = g.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).modInverse(n);
@@ -87,13 +80,15 @@ public class Paillier {
         return n;
     }
 
-    public LinkedTreeMap<String, BigInteger> getEncryptedSet(LinkedTreeMap<String, BigInteger> serializedEncryptedSet) {
+    public LinkedTreeMap<String, BigInteger> getEncryptedSet(LinkedTreeMap<String, String> serializedEncryptedSet) {
         LinkedTreeMap<String, BigInteger> encryptedSet = new LinkedTreeMap<>();
-        for (Map.Entry<String, BigInteger> entry : serializedEncryptedSet.entrySet()) {
-            encryptedSet.put(entry.getKey(), new BigInteger(entry.getValue().toString()));
+        for (Map.Entry<String, String> entry : serializedEncryptedSet.entrySet()) {
+            encryptedSet.put(entry.getKey(), new BigInteger(entry.getValue()));
         }
         return encryptedSet;
     }
+
+
 
     public LinkedTreeMap<String, BigInteger> encryptMyData(Set<Integer> mySet, int domain) {
         LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();
@@ -107,10 +102,11 @@ public class Paillier {
         return result;
     }
 
-    public LinkedTreeMap<String, BigInteger> recvMultipliedSet(LinkedTreeMap<String, BigInteger> serializedMultipliedSet) {
+    public LinkedTreeMap<String, BigInteger> recvMultipliedSet(LinkedTreeMap<String, String> serializedMultipliedSet) {
         return getEncryptedSet(serializedMultipliedSet);
     }
 
+    // Cifrar con otra clave pública que no sea la propia
     public BigInteger encryptNumberSender(BigInteger number, BigInteger n) {
         Paillier paillier = new Paillier(n);
         return paillier.Encryption(number);
@@ -119,14 +115,12 @@ public class Paillier {
     // Sacar el conjunto multiplicado
     public LinkedTreeMap<String, BigInteger> getMultipliedSet(LinkedTreeMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n) {
         LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();
-        BigInteger encZero = encryptNumberSender(BigInteger.ZERO, n);
-        BigInteger encOne = encryptNumberSender(BigInteger.ONE, n);
         for (Map.Entry<String, BigInteger> entry : encSet.entrySet()) {
             int element = Integer.parseInt(entry.getKey());
             if (!nodeSet.contains(element)) {
-                result.put(entry.getKey(), entry.getValue().multiply(encZero).mod(n.multiply(n)));
+                result.put(entry.getKey(), entry.getValue().modPow(BigInteger.ZERO, n.multiply(n)));
             } else {
-                result.put(entry.getKey(), entry.getValue().multiply(encOne).mod(n.multiply(n)));
+                result.put(entry.getKey(), entry.getValue());
             }
         }
         return result;

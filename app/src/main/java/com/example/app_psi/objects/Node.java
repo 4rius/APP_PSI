@@ -2,6 +2,8 @@ package com.example.app_psi.objects;
 
 import com.example.app_psi.implementations.Paillier;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
@@ -106,7 +108,7 @@ public class Node {
                 Device device = devices.get(peer);
                 if (device != null) {
                     device.lastSeen = dayTime;
-                    routerSocket.sendMore(sender);
+                    routerSocket.send(sender, ZMQ.SNDMORE);
                     routerSocket.send(id + " is up and running!");
                 }
             } else if (message.startsWith("{")) {
@@ -175,10 +177,18 @@ public class Node {
     }
 
     public void handleMessage(String message) {
-        // Convertir el JSON en un HashMap
+        // Convertir el JSON en un JsonObject
         Gson gson = new Gson();
-        Type type = new TypeToken<HashMap<String, Object>>(){}.getType();
-        HashMap<String, Object> peerData = gson.fromJson(message, type);
+        LinkedTreeMap<String, Object> peerData = gson.fromJson(message, LinkedTreeMap.class);
+        JsonObject jsonObject = gson.toJsonTree(peerData).getAsJsonObject();
+
+        // Convertir JsonObject de nuevo a LinkedTreeMap
+        /*  Evitar el error java.lang.ClassCastException que estás experimentando.
+            Al convertir el LinkedTreeMap a un JsonObject y luego de nuevo a un LinkedTreeMap,
+            Gson controla bien la deserialización del objeto JSON.
+         */
+        Type type = new TypeToken<LinkedTreeMap<String, Object>>(){}.getType();
+        peerData = gson.fromJson(jsonObject, type);
 
         if (peerData.containsKey("implementation") && peerData.containsKey("peer")) {
             try {
@@ -187,7 +197,7 @@ public class Node {
                 LinkedTreeMap<String, String> peerPubKey = (LinkedTreeMap<String, String>) peerData.remove("pubkey");
                 assert peerPubKey != null;
                 BigInteger peerPubKeyReconstructed = paillier.reconstructPublicKey(peerPubKey);
-                LinkedTreeMap<String, BigInteger> encryptedSet = paillier.getEncryptedSet((LinkedTreeMap<String, BigInteger>) peerData.remove("data"));
+                LinkedTreeMap<String, BigInteger> encryptedSet = paillier.getEncryptedSet((LinkedTreeMap<String, String>) peerData.remove("data"));
                 System.out.println("Node " + id + " (You) - Calculating intersection with " + peer + " - " + implementation);
                 if (implementation.equals("Paillier")) {
                     LinkedTreeMap<String, BigInteger> multipliedSet = paillier.getMultipliedSet(encryptedSet, myData, peerPubKeyReconstructed);
@@ -252,11 +262,11 @@ public class Node {
         Type type = new TypeToken<LinkedTreeMap<String, Object>>(){}.getType();
         LinkedTreeMap<String, Object> peerData = gson.fromJson(jsonPeerData, type);
 
-        LinkedTreeMap<String, BigInteger> multipliedSet = (LinkedTreeMap<String, BigInteger>) peerData.remove("data");
-        multipliedSet = paillier.recvMultipliedSet(multipliedSet);
+        LinkedTreeMap<String, String> multipliedSet = (LinkedTreeMap<String, String>) peerData.remove("data");
+        LinkedTreeMap<String, BigInteger> encMultipliedSet = paillier.recvMultipliedSet(multipliedSet);
         String device = (String) peerData.remove("peer");
         // Desciframos los datos del peer
-        for (Map.Entry<String, BigInteger> entry : multipliedSet.entrySet()) {
+        for (Map.Entry<String, BigInteger> entry : encMultipliedSet.entrySet()) {
             BigInteger decryptedValue = paillier.Decryption(entry.getValue());
             entry.setValue(decryptedValue);
         }
@@ -264,7 +274,7 @@ public class Node {
         results.put(device, multipliedSet);
         // Cogemos solo los valores que sean 1, que representan la intersección
         LinkedTreeMap<String, BigInteger> intersection = new LinkedTreeMap<>();
-        for (Map.Entry<String, BigInteger> entry : multipliedSet.entrySet()) {
+        for (Map.Entry<String, BigInteger> entry : encMultipliedSet.entrySet()) {
             if (entry.getValue().equals(BigInteger.ONE)) {
                 intersection.put(entry.getKey(), entry.getValue());
             }
