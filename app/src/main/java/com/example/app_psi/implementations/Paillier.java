@@ -1,5 +1,7 @@
 package com.example.app_psi.implementations;
 
+import com.google.gson.internal.LinkedTreeMap;
+
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
@@ -72,29 +74,29 @@ public class Paillier {
     }
 
     // Serializar clave pública
-    public HashMap<String, String> serializePublicKey() {
-        HashMap<String, String> publicKeyDict = new HashMap<>();
+    public LinkedTreeMap<String, String> serializePublicKey() {
+        LinkedTreeMap<String, String> publicKeyDict = new LinkedTreeMap<>();
         publicKeyDict.put("n", n.toString());
         return publicKeyDict;
     }
 
     // Reconstruir clave pública
-    public BigInteger reconstructPublicKey(HashMap<String, String> publicKeyDict) {
+    public BigInteger reconstructPublicKey(LinkedTreeMap<String, String> publicKeyDict) {
         n = new BigInteger(Objects.requireNonNull(publicKeyDict.get("n")));
         nsquare = n.multiply(n);
         return n;
     }
 
-    public HashMap<String, BigInteger> getEncryptedSet(HashMap<String, BigInteger> serializedEncryptedSet) {
-        HashMap<String, BigInteger> encryptedSet = new HashMap<>();
+    public LinkedTreeMap<String, BigInteger> getEncryptedSet(LinkedTreeMap<String, BigInteger> serializedEncryptedSet) {
+        LinkedTreeMap<String, BigInteger> encryptedSet = new LinkedTreeMap<>();
         for (Map.Entry<String, BigInteger> entry : serializedEncryptedSet.entrySet()) {
             encryptedSet.put(entry.getKey(), new BigInteger(entry.getValue().toString()));
         }
         return encryptedSet;
     }
 
-    public HashMap<String, BigInteger> encryptMyData(Set<Integer> mySet, int domain) {
-        HashMap<String, BigInteger> result = new HashMap<>();
+    public LinkedTreeMap<String, BigInteger> encryptMyData(Set<Integer> mySet, int domain) {
+        LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();
         for (int element = 0; element < domain; element++) {
             if (!mySet.contains(element)) {
                 result.put(Integer.toString(element), Encryption(BigInteger.ZERO));
@@ -105,7 +107,7 @@ public class Paillier {
         return result;
     }
 
-    public HashMap<String, BigInteger> recvMultipliedSet(HashMap<String, BigInteger> serializedMultipliedSet) {
+    public LinkedTreeMap<String, BigInteger> recvMultipliedSet(LinkedTreeMap<String, BigInteger> serializedMultipliedSet) {
         return getEncryptedSet(serializedMultipliedSet);
     }
 
@@ -115,8 +117,8 @@ public class Paillier {
     }
 
     // Sacar el conjunto multiplicado
-    public HashMap<String, BigInteger> getMultipliedSet(HashMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n) {
-        HashMap<String, BigInteger> result = new HashMap<>();
+    public LinkedTreeMap<String, BigInteger> getMultipliedSet(LinkedTreeMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n) {
+        LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();
         BigInteger encZero = encryptNumberSender(BigInteger.ZERO, n);
         BigInteger encOne = encryptNumberSender(BigInteger.ONE, n);
         for (Map.Entry<String, BigInteger> entry : encSet.entrySet()) {
@@ -128,11 +130,11 @@ public class Paillier {
             }
         }
         return result;
-    }
     /*En el sistema criptográfico de Paillier, la multiplicación de un número cifrado por un número
     sin cifrar se realiza mediante la exponenciación, no mediante la multiplicación ordinaria.
     Esto es lo que permite que el sistema mantenga su propiedad de homomorfismo. Esto lo tengo que probar
     porque en la phe venía directamente sobrecargado, aquí hay que lidiar con ello.*/
+    }
 }
 
 

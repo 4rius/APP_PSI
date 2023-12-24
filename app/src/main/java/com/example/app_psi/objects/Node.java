@@ -3,6 +3,7 @@ package com.example.app_psi.objects;
 import com.example.app_psi.implementations.Paillier;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 
 import org.jetbrains.annotations.NotNull;
@@ -183,29 +184,30 @@ public class Node {
             try {
                 String peer = (String) peerData.remove("peer");
                 String implementation = (String) peerData.remove("implementation");
-                HashMap<String, String> peerPubKey = (HashMap<String, String>) peerData.remove("pubkey");
+                LinkedTreeMap<String, String> peerPubKey = (LinkedTreeMap<String, String>) peerData.remove("pubkey");
                 assert peerPubKey != null;
                 BigInteger peerPubKeyReconstructed = paillier.reconstructPublicKey(peerPubKey);
-                HashMap<String, BigInteger> encryptedSet = paillier.getEncryptedSet((HashMap<String, BigInteger>) peerData.remove("data"));
+                LinkedTreeMap<String, BigInteger> encryptedSet = paillier.getEncryptedSet((LinkedTreeMap<String, BigInteger>) peerData.remove("data"));
                 System.out.println("Node " + id + " (You) - Calculating intersection with " + peer + " - " + implementation);
                 if (implementation.equals("Paillier")) {
-                    HashMap<String, BigInteger> multipliedSet = paillier.getMultipliedSet(encryptedSet, myData, peerPubKeyReconstructed);
+                    LinkedTreeMap<String, BigInteger> multipliedSet = paillier.getMultipliedSet(encryptedSet, myData, peerPubKeyReconstructed);
                     // Serializamos y mandamos de vuelta el resultado
-                    HashMap<String, String> serializedMultipliedSet = new HashMap<>();
+                    LinkedTreeMap<String, String> serializedMultipliedSet = new LinkedTreeMap<>();
                     for (Map.Entry<String, BigInteger> entry : multipliedSet.entrySet()) {
                         serializedMultipliedSet.put(entry.getKey(), entry.getValue().toString());
                     }
                     System.out.println("Node " + id + " (You) - Intersection with " + peer + " - Multiplied set: " + multipliedSet);
-                    HashMap<String, Object> messageToSend = new HashMap<>();
+                    LinkedTreeMap<String, Object> messageToSend = new LinkedTreeMap<>();
                     messageToSend.put("data", serializedMultipliedSet);
                     messageToSend.put("peer", id);
                     messageToSend.put("cryptpscheme", implementation);
                     Objects.requireNonNull(devices.get(peer)).socket.send(gson.toJson(messageToSend));
                 }
-            } catch (JsonSyntaxException e) {
-                System.out.println("Received message is not a valid JSON.");
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } else if (message.startsWith("{")) {
+        }
+        else if (message.startsWith("{")) {
             try {
                 String cryptoScheme = (String) peerData.remove("cryptpscheme");
                 assert cryptoScheme != null;
@@ -225,9 +227,9 @@ public class Node {
             Device device1 = devices.get(device);
             System.out.println("Node " + id + " (You) - Intersection with " + device + " - Paillier");
             // Cifrar los datos del nodo
-            HashMap<String, BigInteger> myEncryptedSet = paillier.encryptMyData(myData, domain);
+            LinkedTreeMap<String, BigInteger> myEncryptedSet = paillier.encryptMyData(myData, domain);
             // Serializamos la clave pública
-            HashMap<String, String> publicKeyDict = paillier.serializePublicKey();
+            LinkedTreeMap<String, String> publicKeyDict = paillier.serializePublicKey();
             // Creamos con Gson un objeto que contenga el conjunto cifrado, la clave pública y la implementacion
             Gson gson = new Gson();
             HashMap<String, Object> message = new HashMap<>();
@@ -245,12 +247,12 @@ public class Node {
     }
 
     public void paillierIntersectionFinalStep(String jsonPeerData) {
-        // Convertir el JSON en un HashMap
+        // Convertir el JSON en un LinkedTreeMap
         Gson gson = new Gson();
-        Type type = new TypeToken<HashMap<String, Object>>(){}.getType();
-        HashMap<String, Object> peerData = gson.fromJson(jsonPeerData, type);
+        Type type = new TypeToken<LinkedTreeMap<String, Object>>(){}.getType();
+        LinkedTreeMap<String, Object> peerData = gson.fromJson(jsonPeerData, type);
 
-        HashMap<String, BigInteger> multipliedSet = (HashMap<String, BigInteger>) peerData.remove("data");
+        LinkedTreeMap<String, BigInteger> multipliedSet = (LinkedTreeMap<String, BigInteger>) peerData.remove("data");
         multipliedSet = paillier.recvMultipliedSet(multipliedSet);
         String device = (String) peerData.remove("peer");
         // Desciframos los datos del peer
@@ -261,7 +263,7 @@ public class Node {
         // Guardamos el resultado
         results.put(device, multipliedSet);
         // Cogemos solo los valores que sean 1, que representan la intersección
-        HashMap<String, BigInteger> intersection = new HashMap<>();
+        LinkedTreeMap<String, BigInteger> intersection = new LinkedTreeMap<>();
         for (Map.Entry<String, BigInteger> entry : multipliedSet.entrySet()) {
             if (entry.getValue().equals(BigInteger.ONE)) {
                 intersection.put(entry.getKey(), entry.getValue());
@@ -269,6 +271,7 @@ public class Node {
         }
         System.out.println("Node " + id + " (You) - Intersection with " + device + " - Result: " + intersection);
     }
+
 
 
 
