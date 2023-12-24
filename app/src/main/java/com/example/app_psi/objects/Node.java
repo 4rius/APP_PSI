@@ -177,18 +177,9 @@ public class Node {
     }
 
     public void handleMessage(String message) {
-        // Convertir el JSON en un JsonObject
         Gson gson = new Gson();
+        // Convertir el JSON en un LinkedTreeMap para realizar las operaciones sobre él
         LinkedTreeMap<String, Object> peerData = gson.fromJson(message, LinkedTreeMap.class);
-        JsonObject jsonObject = gson.toJsonTree(peerData).getAsJsonObject();
-
-        // Convertir JsonObject de nuevo a LinkedTreeMap
-        /*  Evitar el error java.lang.ClassCastException que estás experimentando.
-            Al convertir el LinkedTreeMap a un JsonObject y luego de nuevo a un LinkedTreeMap,
-            Gson controla bien la deserialización del objeto JSON.
-         */
-        Type type = new TypeToken<LinkedTreeMap<String, Object>>(){}.getType();
-        peerData = gson.fromJson(jsonObject, type);
 
         if (peerData.containsKey("implementation") && peerData.containsKey("peer")) {
             try {
