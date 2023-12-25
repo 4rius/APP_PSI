@@ -53,17 +53,25 @@ public class Paillier {
     }
 
     // Cifrado de un número
-    // Cifrado de un número
     public BigInteger Encryption(BigInteger m) {
         SecureRandom r = new SecureRandom();
-        BigInteger randNum = new BigInteger(bitLength, r);
+        BigInteger randNum;
+        // Asegurar que randNum es coprimo con n y menor que n
+        do {
+            randNum = new BigInteger(n.bitLength(), r);
+        } while (randNum.compareTo(n) >= 0 || !randNum.gcd(n).equals(BigInteger.ONE));
         return g.modPow(m, nsquare).multiply(randNum.modPow(n, nsquare)).mod(nsquare);
     }
 
     // Descifrado de un número
     public BigInteger Decryption(BigInteger c) {
-        BigInteger u = g.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).modInverse(n);
-        return c.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).multiply(u).mod(n);
+        BigInteger a = g.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n);
+        if (!a.gcd(n).equals(BigInteger.ONE)) {
+            throw new ArithmeticException("BigInteger not invertible. COMPROBAR n y lambda!!");
+        } else {
+            BigInteger u = a.modInverse(n);
+            return c.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).multiply(u).mod(n);
+        }
     }
 
     // Serializar clave pública
@@ -75,9 +83,7 @@ public class Paillier {
 
     // Reconstruir clave pública
     public BigInteger reconstructPublicKey(LinkedTreeMap<String, String> publicKeyDict) {
-        n = new BigInteger(Objects.requireNonNull(publicKeyDict.get("n")));
-        nsquare = n.multiply(n);
-        return n;
+        return new BigInteger(Objects.requireNonNull(publicKeyDict.get("n")));
     }
 
     public LinkedTreeMap<String, BigInteger> getEncryptedSet(LinkedTreeMap<String, String> serializedEncryptedSet) {
@@ -87,8 +93,6 @@ public class Paillier {
         }
         return encryptedSet;
     }
-
-
 
     public LinkedTreeMap<String, BigInteger> encryptMyData(Set<Integer> mySet, int domain) {
         LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();
@@ -106,19 +110,15 @@ public class Paillier {
         return getEncryptedSet(serializedMultipliedSet);
     }
 
-    // Cifrar con otra clave pública que no sea la propia
-    public BigInteger encryptNumberSender(BigInteger number, BigInteger n) {
-        Paillier paillier = new Paillier(n);
-        return paillier.Encryption(number);
-    }
-
     // Sacar el conjunto multiplicado
     public LinkedTreeMap<String, BigInteger> getMultipliedSet(LinkedTreeMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n) {
         LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();
+        Paillier paillierSender = new Paillier(n);
         for (Map.Entry<String, BigInteger> entry : encSet.entrySet()) {
             int element = Integer.parseInt(entry.getKey());
             if (!nodeSet.contains(element)) {
-                result.put(entry.getKey(), entry.getValue().modPow(BigInteger.ZERO, n.multiply(n)));
+                BigInteger encryptedZero = paillierSender.Encryption(BigInteger.ZERO);
+                result.put(entry.getKey(), encryptedZero);
             } else {
                 result.put(entry.getKey(), entry.getValue());
             }

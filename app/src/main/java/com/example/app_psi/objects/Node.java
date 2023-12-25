@@ -256,15 +256,15 @@ public class Node {
             BigInteger decryptedValue = paillier.Decryption(entry.getValue());
             entry.setValue(decryptedValue);
         }
-        // Guardamos el resultado
-        results.put(device, multipliedSet);
         // Cogemos solo los valores que sean 1, que representan la intersección
-        LinkedTreeMap<String, BigInteger> intersection = new LinkedTreeMap<>();
+        List<Integer> intersection = new ArrayList<>();
         for (Map.Entry<String, BigInteger> entry : encMultipliedSet.entrySet()) {
             if (entry.getValue().equals(BigInteger.ONE)) {
-                intersection.put(entry.getKey(), entry.getValue());
+                intersection.add(Integer.parseInt(entry.getKey()));
             }
         }
+        // Guardamos el resultado
+        results.put(device, intersection);
         System.out.println("Node " + id + " (You) - Intersection with " + device + " - Result: " + intersection);
     }
 
