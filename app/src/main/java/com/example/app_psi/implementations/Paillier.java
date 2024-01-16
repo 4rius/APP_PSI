@@ -74,6 +74,11 @@ public class Paillier {
         }
     }
 
+    public BigInteger homomorphicMultiply(BigInteger cipherText, BigInteger multiplier, BigInteger nSquared) {
+        return cipherText.modPow(multiplier, nSquared);
+    }
+
+
     // Serializar clave pública
     public LinkedTreeMap<String, String> serializePublicKey() {
         LinkedTreeMap<String, String> publicKeyDict = new LinkedTreeMap<>();
@@ -119,8 +124,9 @@ public class Paillier {
             if (!nodeSet.contains(element)) {
                 BigInteger encryptedZero = paillierSender.Encryption(BigInteger.ZERO);
                 result.put(entry.getKey(), encryptedZero);
+                // Sale 1... result.put(entry.getKey(), paillierSender.homomorphicMultiply(entry.getValue(), BigInteger.ZERO, paillierSender.nsquare));
             } else {
-                result.put(entry.getKey(), entry.getValue());
+                result.put(entry.getKey(), paillierSender.homomorphicMultiply(entry.getValue(), BigInteger.ONE, paillierSender.nsquare));
             }
         }
         return result;
