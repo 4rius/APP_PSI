@@ -31,7 +31,7 @@ public class Node {
     private boolean running = true;
     private final String id;
     private final int port;
-    private final List<String> peers;
+    private final ArrayList<String> peers;
     private final ZContext context;
     private final ZMQ.Socket routerSocket;
     private final Map<String, Device> devices = new HashMap<>();
@@ -40,7 +40,7 @@ public class Node {
     private final int domain = 40;  // Dominio de los números aleatorios sobre los que se trabaja
     public HashMap<String, Object> results;  // Resultados de las intersecciones
 
-    public Node(String id, int port, List<String> peers) {
+    public Node(String id, int port, ArrayList<String> peers) {
         this.myData = new HashSet<>();
         Random random = new Random();
         for (int i = 0; i < 10; i++) {
@@ -97,6 +97,7 @@ public class Node {
                     ZMQ.Socket dealerSocket = context.createSocket(SocketType.DEALER);
                     dealerSocket.connect("tcp://" + peer + ":" + port);
                     devices.put(peer, new Device(dealerSocket, dayTime));
+                    peers.add(peer);
                 }
                 Device device = devices.get(peer);
                 if (device != null) {
@@ -292,6 +293,18 @@ public class Node {
             }
         }
         return null;
+    }
+
+    public void addPeer(@NotNull String peer) {
+        if (!devices.containsKey(peer)) {
+            System.out.println("Node " + id + " (You) connecting to Node " + peer);
+            ZMQ.Socket dealerSocket = context.createSocket(SocketType.DEALER);
+            dealerSocket.connect("tcp://" + peer);
+            dealerSocket.send("Hello from Node " + id);
+            String peerId = extractId(peer);
+            devices.put(peerId, new Device(dealerSocket, "Not seen yet"));
+            peers.add(peer);
+        }
     }
 
     private static class Device {

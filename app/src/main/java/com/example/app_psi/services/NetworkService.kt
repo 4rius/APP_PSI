@@ -11,6 +11,7 @@ import com.example.app_psi.objects.Node
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.SocketException
+import java.util.ArrayList
 import java.util.Enumeration
 
 
@@ -25,7 +26,9 @@ class NetworkService: Service() {
         super.onCreate()
         instance = this
         id = getLocalIp()!!
-        val peers = listOf("192.168.1.128:5001", "192.168.1.43:5001", "192.168.1.3:5001")
+        val peers = ArrayList<String>()
+        peers.add("192.168.1.3:5001")
+        peers.add("192.168.1.2:5001")
         node = Node(id, 5001, peers)
         node.start()
         generalLog()

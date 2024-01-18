@@ -155,14 +155,18 @@ class MainActivity : AppCompatActivity() {
 
                 builder.setTitle("Add a specific peer")
 
-                builder.setPositiveButton("Add") { _, _ ->
-                    val peer = editText.text.toString()
-                    // NetworkService.getNode()?.addPeer(peer)
+                builder.setPositiveButton("Add") { dialog, _ ->
+                    var peer = editText.text.toString()
+                    peer += ":${NetworkService.getNode()?.port}"
+                    NetworkService.getNode()?.addPeer(peer)
+                    setupRecyclerView()
+                    bottomSheetDialog.dismiss()
                     Snackbar.make(binding.root, "Added peer $peer", Snackbar.LENGTH_SHORT).show()
                 }
 
                 builder.setNegativeButton("Cancel") { dialog, _ ->
                     dialog.cancel()
+                    bottomSheetDialog.dismiss()
                 }
 
                 builder.show()
