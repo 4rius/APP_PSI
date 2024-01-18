@@ -66,4 +66,5 @@
     <string name="my_dataset">My dataset</string>
     <string name="keys">Numeric value of the keys</string>
     <string name="go_back">Return</string>
+    <string name="connect_specific_peer">Connect to a peer</string>
 </resources>

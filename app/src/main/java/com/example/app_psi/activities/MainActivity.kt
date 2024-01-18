@@ -8,10 +8,13 @@ import android.content.IntentFilter
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.text.InputType
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -79,6 +82,7 @@ class MainActivity : AppCompatActivity() {
             val buttonMyKeys = bottomSheetView.findViewById<Button>(R.id.buttonMyKeys)
             val buttonMyData = bottomSheetView.findViewById<Button>(R.id.buttonDataSet)
             val buttonResults = bottomSheetView.findViewById<Button>(R.id.buttonResults)
+            val buttonAddPeer = bottomSheetView.findViewById<Button>(R.id.buttonAddPeer)
 
 
             // Configuración de los detalles
@@ -140,6 +144,28 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra("results", results)
                 startActivity(intent)
                 bottomSheetDialog.dismiss()
+            }
+
+            buttonAddPeer.setOnClickListener {
+                // Show a modal alert to input the peer's IP
+                val builder = AlertDialog.Builder(this)
+                val editText = EditText(this)
+                editText.inputType = InputType.TYPE_CLASS_TEXT
+                builder.setView(editText)
+
+                builder.setTitle("Add a specific peer")
+
+                builder.setPositiveButton("Add") { _, _ ->
+                    val peer = editText.text.toString()
+                    // NetworkService.getNode()?.addPeer(peer)
+                    Snackbar.make(binding.root, "Added peer $peer", Snackbar.LENGTH_SHORT).show()
+                }
+
+                builder.setNegativeButton("Cancel") { dialog, _ ->
+                    dialog.cancel()
+                }
+
+                builder.show()
             }
 
             bottomSheetDialog.show()
