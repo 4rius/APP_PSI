@@ -142,5 +142,9 @@ class NetworkService: Service() {
             return instance?.node?.paillierIntersection(device) ?: "Error"
         }
 
+        fun discoverPeers() {
+            instance?.node?.discoverPeers()
+        }
+
     }
 }

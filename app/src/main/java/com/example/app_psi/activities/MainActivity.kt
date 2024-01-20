@@ -83,6 +83,7 @@ class MainActivity : AppCompatActivity() {
             val buttonMyData = bottomSheetView.findViewById<Button>(R.id.buttonDataSet)
             val buttonResults = bottomSheetView.findViewById<Button>(R.id.buttonResults)
             val buttonAddPeer = bottomSheetView.findViewById<Button>(R.id.buttonAddPeer)
+            val buttonDiscoverPeers = bottomSheetView.findViewById<Button>(R.id.buttonDiscoverPeers)
 
 
             // Configuración de los detalles
@@ -170,6 +171,13 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 builder.show()
+            }
+
+            buttonDiscoverPeers.setOnClickListener {
+                NetworkService.discoverPeers()
+                bottomSheetDialog.dismiss()
+                Snackbar.make(binding.root, "Discovering peers", Snackbar.LENGTH_SHORT).show()
+                setupRecyclerView()
             }
 
             bottomSheetDialog.show()

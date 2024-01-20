@@ -92,13 +92,7 @@ public class Node {
             String dayTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
             if (message.startsWith("Hello from Node")) {
                 String peer = message.split(" ")[3];
-                if (!devices.containsKey(peer)) {
-                    System.out.println("Added " + peer + " to my network");
-                    ZMQ.Socket dealerSocket = context.createSocket(SocketType.DEALER);
-                    dealerSocket.connect("tcp://" + peer + ":" + port);
-                    devices.put(peer, new Device(dealerSocket, dayTime));
-                    peers.add(peer);
-                }
+                if (!devices.containsKey(peer)) addNewDevice(peer, dayTime);
                 Device device = devices.get(peer);
                 if (device != null) {
                     device.lastSeen = dayTime;
@@ -109,9 +103,19 @@ public class Node {
                 Device device = devices.get(peer);
                 if (device != null) {
                     device.lastSeen = dayTime;
-                    routerSocket.send(sender, ZMQ.SNDMORE);
-                    routerSocket.send(id + " is up and running!");
+                    String msg = id + " is up and running!";
+                    routerSocket.sendMore(peer);
+                    routerSocket.send(msg);
                 }
+            } else if (message.startsWith("DISCOVER:")) {
+                String peer = message.split(" ")[2];
+                if (!devices.containsKey(peer)) addNewDevice(peer, dayTime);
+                Device device = devices.get(peer);
+                assert device != null;
+                device.socket.send("DISCOVER_ACK: Node " + id + " acknowledges node " + peer);
+            } else if (message.startsWith("DISCOVER_ACK:")) {
+                String peer = message.split(" ")[2];
+                if (!devices.containsKey(peer)) addNewDevice(peer, dayTime);
             } else if (message.startsWith("{")) {
                 handleMessage(message);
             } else if (message.startsWith("Added ")) {
@@ -131,6 +135,14 @@ public class Node {
         }
         routerSocket.close();
         context.close();
+    }
+
+    private void addNewDevice(String peer, String dayTime) {
+        System.out.println("Added " + peer + " to my network");
+        ZMQ.Socket dealerSocket = context.createSocket(SocketType.DEALER);
+        dealerSocket.connect("tcp://" + peer + ":" + port);
+        devices.put(peer, new Device(dealerSocket, dayTime));
+        peers.add(peer);
     }
 
     public void join() {
@@ -304,6 +316,20 @@ public class Node {
             String peerId = extractId(peer);
             devices.put(peerId, new Device(dealerSocket, "Not seen yet"));
             peers.add(peer);
+        }
+    }
+
+    public void discoverPeers() {
+        System.out.println("Node " + id + " (You) discovering peers on port " + port);
+        for (int i = 1; i < 255; i++) {
+            String ip = "192.168.1." + i;
+            if (!ip.equals(id) && !peers.contains(ip)) {
+                System.out.println("Node " + id + " (You) Trying to connect to " + ip);
+                ZMQ.Socket dealerSocket = context.createSocket(SocketType.DEALER);
+                dealerSocket.connect("tcp://" + ip + ":" + port);
+                dealerSocket.send("DISCOVER: Node " + id + " is looking for peers");
+                dealerSocket.close();
+            }
         }
     }
 
