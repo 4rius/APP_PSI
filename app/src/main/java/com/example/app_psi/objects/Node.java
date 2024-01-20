@@ -69,7 +69,7 @@ public class Node {
             ZMQ.Socket dealerSocket = context.createSocket(SocketType.DEALER);
             dealerSocket.connect("tcp://" + peer);
             if (!devices.containsKey(peer)) {
-                dealerSocket.send("Hello from Node " + id);
+                dealerSocket.send("DISCOVER: Node " + id + " is looking for peers");
             }
             String peerId = extractId(peer);
             devices.put(peerId, new Device(dealerSocket, "Not seen yet"));
@@ -90,15 +90,7 @@ public class Node {
             String message = routerSocket.recvStr();
             System.out.println("Node " + id + " (You) received: " + message);
             String dayTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-            if (message.startsWith("Hello from Node")) {
-                String peer = message.split(" ")[3];
-                if (!devices.containsKey(peer)) addNewDevice(peer, dayTime);
-                Device device = devices.get(peer);
-                if (device != null) {
-                    device.lastSeen = dayTime;
-                    device.socket.send("Added " + peer + " to my network - From Node " + id);
-                }
-            } else if (message.endsWith("is pinging you!")) {
+            if (message.endsWith("is pinging you!")) {
                 String peer = message.split(" ")[0];
                 Device device = devices.get(peer);
                 if (device != null) {
@@ -312,15 +304,16 @@ public class Node {
             System.out.println("Node " + id + " (You) connecting to Node " + peer);
             ZMQ.Socket dealerSocket = context.createSocket(SocketType.DEALER);
             dealerSocket.connect("tcp://" + peer);
-            dealerSocket.send("Hello from Node " + id);
+            dealerSocket.send("DISCOVER: Node " + id + " is looking for peers");
             String peerId = extractId(peer);
             devices.put(peerId, new Device(dealerSocket, "Not seen yet"));
             peers.add(peer);
         }
     }
 
-    public void discoverPeers() {
+    public void discoverPeers() throws InterruptedException {
         System.out.println("Node " + id + " (You) discovering peers on port " + port);
+        ArrayList<ZMQ.Socket> sockets = new ArrayList<>();
         for (int i = 1; i < 255; i++) {
             String ip = "192.168.1." + i;
             if (!ip.equals(id) && !peers.contains(ip)) {
@@ -328,9 +321,12 @@ public class Node {
                 ZMQ.Socket dealerSocket = context.createSocket(SocketType.DEALER);
                 dealerSocket.connect("tcp://" + ip + ":" + port);
                 dealerSocket.send("DISCOVER: Node " + id + " is looking for peers");
-                dealerSocket.close();
+                sockets.add(dealerSocket);
             }
         }
+        // Close all sockets
+        Thread.sleep(1000);
+        for (ZMQ.Socket socket : sockets) context.destroySocket(socket);
     }
 
     private static class Device {

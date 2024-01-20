@@ -1,6 +1,7 @@
 package com.example.app_psi.activities
 
 import android.annotation.SuppressLint
+import android.app.ProgressDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -174,11 +175,25 @@ class MainActivity : AppCompatActivity() {
             }
 
             buttonDiscoverPeers.setOnClickListener {
-                NetworkService.discoverPeers()
                 bottomSheetDialog.dismiss()
-                Snackbar.make(binding.root, "Discovering peers", Snackbar.LENGTH_SHORT).show()
-                setupRecyclerView()
+
+                val progressDialog = ProgressDialog(this)
+                progressDialog.setMessage("Discovering peers...")
+                progressDialog.setCancelable(false)
+                progressDialog.show()
+
+                // Don't block the UI thread
+                Thread {
+                    NetworkService.discoverPeers()
+
+                    runOnUiThread {
+                        progressDialog.dismiss()
+                        setupRecyclerView()
+                        Snackbar.make(binding.root, "Peer list updated", Snackbar.LENGTH_SHORT).show()
+                    }
+                }.start()
             }
+
 
             bottomSheetDialog.show()
         }
