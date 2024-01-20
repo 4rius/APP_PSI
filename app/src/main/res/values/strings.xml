@@ -67,4 +67,6 @@
     <string name="keys">Numeric value of the keys</string>
     <string name="go_back">Return</string>
     <string name="connect_specific_peer">Connect to a peer</string>
+    <string name="no_peers_string">No peers were found on this network</string>
+    <string name="discover_peers">Discover peers</string>
 </resources>
