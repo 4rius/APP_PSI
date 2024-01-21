@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1065071593162",
+    "firebase_url": "https://tfg-en-psi-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "tfg-en-psi",
+    "storage_bucket": "tfg-en-psi.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1065071593162:android:a0ed76ad7bbc18ffb01633",
+        "android_client_info": {
+          "package_name": "uk.arias.app_psi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOkcYrz4dKGMuH3VeTzXdFzAI5FraP8CE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

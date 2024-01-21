@@ -22,9 +22,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.app_psi.R
 import com.example.app_psi.adapters.DeviceListAdapter
 import com.example.app_psi.databinding.ActivityMainBinding
+import com.example.app_psi.services.LogService
 import com.example.app_psi.services.NetworkService
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.FirebaseApp
 
 class MainActivity : AppCompatActivity() {
 
@@ -35,6 +37,8 @@ class MainActivity : AppCompatActivity() {
             if (intent.action == NetworkService.ACTION_SERVICE_CREATED) {
                 if (NetworkService.getStatus() == "Connected") {
                     connected()
+                    // Encendemos el LogService
+                    startService(Intent(this@MainActivity, LogService::class.java))
                 } else {
                     notConnected()
                 }
@@ -54,6 +58,8 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        FirebaseApp.initializeApp(this)
 
         registerReceiver(receiver, IntentFilter(NetworkService.ACTION_SERVICE_CREATED), RECEIVER_EXPORTED)
         registerReceiver(receiver, IntentFilter(NetworkService.ACTION_STATUS_UPDATED), RECEIVER_EXPORTED)

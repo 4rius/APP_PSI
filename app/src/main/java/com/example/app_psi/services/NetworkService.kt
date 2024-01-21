@@ -1,17 +1,12 @@
 package com.example.app_psi.services
 
-import android.annotation.SuppressLint
 import android.app.Service
-import android.content.ContentValues.TAG
 import android.content.Intent
-import android.os.Handler
 import android.os.IBinder
-import android.util.Log
 import com.example.app_psi.objects.Node
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.SocketException
-import java.util.ArrayList
 import java.util.Enumeration
 
 
@@ -19,8 +14,6 @@ class NetworkService: Service() {
 
     lateinit var node: Node
     lateinit var id: String
-    private var handler: Handler? = null
-    private val LOG_INTERVAL = 10000L
 
     override fun onCreate() {
         super.onCreate()
@@ -31,32 +24,9 @@ class NetworkService: Service() {
         peers.add("192.168.1.2:5001")
         node = Node(id, 5001, peers)
         node.start()
-        generalLog()
         // Mandar un broadcast para que la MainActivity sepa que el servicio se ha creado
         val intent = Intent(ACTION_SERVICE_CREATED)
         sendBroadcast(intent)
-    }
-
-    private fun generalLog() {
-        handler = Handler()
-        val logRunnable = object : Runnable {
-            @SuppressLint("SimpleDateFormat")
-            override fun run() {
-                val dateFormatted = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(java.util.Date())
-                val devices = getNode()?.devices
-                val port = getNode()?.port
-                val fullId = getNode()?.fullId
-                var isRunning = getNode()?.isRunning.toString()
-                isRunning = if (isRunning == "true") "Running"
-                else "Stopped"
-                val message = "[$dateFormatted] - ID: $fullId - Port: $port - Devices: $devices - Status: $isRunning"
-                Log.d(TAG, message)
-
-                handler?.postDelayed(this, LOG_INTERVAL)
-            }
-        }
-
-        handler?.postDelayed(logRunnable, LOG_INTERVAL)
     }
 
     private fun getLocalIp(): String? {
