@@ -1,5 +1,7 @@
 package com.example.app_psi.objects;
 
+import android.util.Log;
+
 import com.example.app_psi.implementations.Paillier;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -328,6 +330,18 @@ public class Node {
         Thread.sleep(1000);
         for (ZMQ.Socket socket : sockets) context.destroySocket(socket);
     }
+
+    public double generatePaillierKeys() {
+        long startTime = System.currentTimeMillis();
+
+        paillier.keyGeneration(1024, 64);
+
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+        Log.d("Paillier", "Key generation time: " + duration / 1000.0 + " seconds");
+        return duration / 1000.0;
+    }
+
 
     private static class Device {
         ZMQ.Socket socket;

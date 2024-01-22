@@ -19,16 +19,15 @@ class LogService: Service() {
     lateinit var node: Node
     lateinit var id: String
     lateinit var realtimeDatabase: FirebaseDatabase
-    private var handler: Handler? = null
     private val LOG_INTERVAL = 10000L
     private val FB_RES_INTERVAL = 20000L
 
     override fun onCreate() {
         super.onCreate()
         instance = this
+        realtimeDatabase = FirebaseDatabase.getInstance()
         node = NetworkService.getNode()!!
         id = node.id
-        realtimeDatabase = FirebaseDatabase.getInstance()
         generalLog()
         resLog()
     }
@@ -96,7 +95,7 @@ class LogService: Service() {
         val availableMem = memInfo.availMem / 0x100000L  // 0x100000L == 1048576L == 1024 * 1024 == 1MB
         val totalMem = memInfo.totalMem / 0x100000L
         val memUse = totalMem - availableMem
-        return "$memUse MB / $totalMem MB"
+        return "$memUse MB / $totalMem MB - ${memUse * 100 / totalMem}%"
     }
     //private fun getCPUUsage(): String {} - De momento no se va a implementar por no poder leer el /proc/stat que era como se hacía pero se ha bloqueado por temas de seguridad.
 
@@ -106,6 +105,22 @@ class LogService: Service() {
     }
 
     companion object {
-            var instance: LogService? = null
+        fun logActivity(acitvityCode: String, time: Any, version: String) {
+            val formattedId = NetworkService.getNode()?.id?.replace(".", "-")
+            val timestamp = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date())
+            val ref = instance?.realtimeDatabase?.getReference("logs/$formattedId/activities")
+            val log = hashMapOf(
+                "id" to instance?.id,
+                "timestamp" to timestamp,
+                "version" to version,
+                "type" to "Android " + android.os.Build.VERSION.RELEASE,
+                "activity_code" to acitvityCode,
+                "time" to time
+            )
+            ref?.push()?.setValue(log)
+            Log.d(ContentValues.TAG, "Activity log sent to Firebase")
+        }
+
+        var instance: LogService? = null
         }
 }

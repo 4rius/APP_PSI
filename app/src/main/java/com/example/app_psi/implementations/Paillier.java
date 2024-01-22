@@ -17,7 +17,7 @@ public class Paillier {
 
     // Constructor que genera las claves
     public Paillier(int bitLengthVal, int certainty) {
-        KeyGeneration(bitLengthVal, certainty);
+        keyGeneration(bitLengthVal, certainty);
     }
 
     // Constructor para cifrar lo que mande un nodo
@@ -29,7 +29,7 @@ public class Paillier {
 
     // Método para generar las claves, certeza es el grado de certeza con el que queremos que los números generados sean primos
     // A más certeza, más tiempo de computación en generar las claves
-    public void KeyGeneration(int bitLengthVal, int certainty) {
+    public void keyGeneration(int bitLengthVal, int certainty) {
         bitLength = bitLengthVal;
         SecureRandom r = new SecureRandom();
         p = new BigInteger(bitLength / 2, certainty, r); // Genera un número primo p

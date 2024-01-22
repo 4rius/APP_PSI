@@ -69,4 +69,5 @@
     <string name="connect_specific_peer">Connect to a peer</string>
     <string name="no_peers_string">No peers were found on this network</string>
     <string name="discover_peers">Discover peers</string>
+    <string name="gen_keys">Generate new keys</string>
 </resources>

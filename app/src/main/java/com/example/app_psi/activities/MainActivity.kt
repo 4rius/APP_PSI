@@ -36,9 +36,9 @@ class MainActivity : AppCompatActivity() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == NetworkService.ACTION_SERVICE_CREATED) {
                 if (NetworkService.getStatus() == "Connected") {
-                    connected()
                     // Encendemos el LogService
                     startService(Intent(this@MainActivity, LogService::class.java))
+                    connected()
                 } else {
                     notConnected()
                 }
@@ -91,6 +91,7 @@ class MainActivity : AppCompatActivity() {
             val buttonResults = bottomSheetView.findViewById<Button>(R.id.buttonResults)
             val buttonAddPeer = bottomSheetView.findViewById<Button>(R.id.buttonAddPeer)
             val buttonDiscoverPeers = bottomSheetView.findViewById<Button>(R.id.buttonDiscoverPeers)
+            val buttonGenerateKeys = bottomSheetView.findViewById<Button>(R.id.buttonGenerateKeys)
 
 
             // Configuración de los detalles
@@ -200,6 +201,34 @@ class MainActivity : AppCompatActivity() {
                 }.start()
             }
 
+            buttonGenerateKeys.setOnClickListener {
+                // Alert box asking if Paillier or ElGamal
+                val builder = AlertDialog.Builder(this)
+                builder.setTitle("Choose encryption scheme")
+                builder.setMessage("Choose the encryption scheme you need new keys for")
+                builder.setPositiveButton("Paillier") { dialog, _ ->
+                    // Don't block the UI thread
+                    Thread {
+                        val time = NetworkService.getNode()?.generatePaillierKeys()
+                        if (time != null) {
+                            LogService.logActivity("GENKEYS_PAILLIER", time, packageManager.getPackageInfo(packageName, 0).versionName)
+                        }
+                    }.start()
+                    bottomSheetDialog.dismiss()
+                    Snackbar.make(binding.root, "New Paillier keys generated", Snackbar.LENGTH_SHORT).show()
+                }
+                builder.setNegativeButton("ElGamal") { dialog, _ ->
+                    // TODO: NetworkService.getNode()?.generateElGamalKeys()
+                    bottomSheetDialog.dismiss()
+                    Snackbar.make(binding.root, "New ElGamal keys generated", Snackbar.LENGTH_SHORT).show()
+                }
+                builder.setNeutralButton("Cancel") { dialog, _ ->
+                    dialog.cancel()
+                    bottomSheetDialog.dismiss()
+                }
+                builder.show()
+            }
+
 
             bottomSheetDialog.show()
         }
@@ -246,7 +275,7 @@ class MainActivity : AppCompatActivity() {
             binding.textViewNetworkStatus.setTextColor(Color.GREEN)
             binding.textViewNetworkStatus.animate().alpha(1f).setDuration(500).start()
         }
-        Snackbar.make(binding.root, "Found a network and connected to the peers", Snackbar.LENGTH_SHORT).show()
+        Snackbar.make(binding.root, "Node started", Snackbar.LENGTH_SHORT).show()
         setupRecyclerView()
     }
 
