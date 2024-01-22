@@ -78,7 +78,7 @@
             android:id="@+id/logo6"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/baseline_cloud_queue_48"
+            android:src="@drawable/baseline_fingerprint_48"
             android:layout_gravity="center"
             android:importantForAccessibility="no" />
 
@@ -144,7 +144,7 @@
             android:id="@+id/logo12"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/baseline_fingerprint_48"
+            android:src="@drawable/baseline_awesome_48"
             android:layout_gravity="center"
             android:importantForAccessibility="no" />
 
