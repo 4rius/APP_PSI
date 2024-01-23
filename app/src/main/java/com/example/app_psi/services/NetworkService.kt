@@ -109,7 +109,7 @@ class NetworkService: Service() {
         }
 
         fun findIntersection(device: String): String {
-            return instance?.node?.paillierIntersection(device) ?: "Error"
+            return instance?.node?.paillierIntersectionFirstStep(device) ?: "Error"
         }
 
         fun discoverPeers() {

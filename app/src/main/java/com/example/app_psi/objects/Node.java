@@ -3,12 +3,10 @@ package com.example.app_psi.objects;
 import android.util.Log;
 
 import com.example.app_psi.implementations.Paillier;
+import com.example.app_psi.services.LogService;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
-import com.google.gson.reflect.TypeToken;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,7 +14,6 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
-import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -185,6 +182,7 @@ public class Node {
 
     public void handleMessage(String message) {
         Gson gson = new Gson();
+        Long start_time = System.currentTimeMillis();
         // Convertir el JSON en un LinkedTreeMap para realizar las operaciones sobre él
         LinkedTreeMap<String, Object> peerData = gson.fromJson(message, LinkedTreeMap.class);
 
@@ -210,6 +208,8 @@ public class Node {
                     messageToSend.put("peer", id);
                     messageToSend.put("cryptpscheme", implementation);
                     Objects.requireNonNull(devices.get(peer)).socket.send(gson.toJson(messageToSend));
+                    Long end_time = System.currentTimeMillis();
+                    LogService.Companion.logActivity("INTERSECTION_PAILLIER_2", (end_time - start_time) / 1000.0, "1.0 - DEV", peer);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -229,9 +229,10 @@ public class Node {
     }
 
 
-    public String paillierIntersection(String device) {
+    public String paillierIntersectionFirstStep(String device) {
         // Ciframos el conjunto de datos del nodo
         if (devices.containsKey(device)) {
+            Long start_time = System.currentTimeMillis();
             Device device1 = devices.get(device);
             System.out.println("Node " + id + " (You) - Intersection with " + device + " - Paillier");
             // Cifrar los datos del nodo
@@ -249,12 +250,15 @@ public class Node {
             // Enviamos el mensaje
             assert device1 != null;
             device1.socket.send(jsonMessage);
+            Long end_time = System.currentTimeMillis();
+            LogService.Companion.logActivity("INTERSECTION_PAILLIER_1", (end_time - start_time) / 1000.0, "1.0 - DEV", device);
             return "Intersection with " + device + " - Paillier - Waiting for response...";
         }
         return "Intersection with " + device + " - Paillier - Device not found";
     }
 
     public void paillierIntersectionFinalStep(LinkedTreeMap<String, Object> peerData) {
+        Long start_time = System.currentTimeMillis();
         LinkedTreeMap<String, String> multipliedSet = (LinkedTreeMap<String, String>) peerData.remove("data");
         LinkedTreeMap<String, BigInteger> encMultipliedSet = paillier.recvMultipliedSet(multipliedSet);
         String device = (String) peerData.remove("peer");
@@ -272,6 +276,8 @@ public class Node {
         }
         // Guardamos el resultado
         results.put(device, intersection);
+        Long end_time = System.currentTimeMillis();
+        LogService.Companion.logActivity("INTERSECTION_PAILLIER_F", (end_time - start_time) / 1000.0, "1.0 - DEV", device);
         System.out.println("Node " + id + " (You) - Intersection with " + device + " - Result: " + intersection);
     }
 

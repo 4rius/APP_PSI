@@ -57,10 +57,25 @@ class LogService: Service() {
     }
 
     companion object {
-        fun logActivity(acitvityCode: String, time: Any, version: String) {
+        fun logActivity(acitvityCode: String, time: Any, version: String, peer: String?= null) {
             val formattedId = NetworkService.getNode()?.id?.replace(".", "-")
             val timestamp = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date())
             val ref = instance?.realtimeDatabase?.getReference("logs/$formattedId/activities")
+            if (peer != null) {
+                val log = hashMapOf(
+                    "id" to instance?.id,
+                    "timestamp" to timestamp,
+                    "version" to version,
+                    "type" to "Android " + android.os.Build.VERSION.RELEASE,
+                    "activity_code" to acitvityCode,
+                    "peer" to peer,
+                    "time" to time,
+                    "RAM" to getRamUsage()
+                )
+                ref?.push()?.setValue(log)
+                Log.d(ContentValues.TAG, "Activity log sent to Firebase")
+                return
+            }
             val log = hashMapOf(
                 "id" to instance?.id,
                 "timestamp" to timestamp,
