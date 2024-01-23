@@ -17,7 +17,6 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.ui.AppBarConfiguration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.app_psi.R
 import com.example.app_psi.adapters.DeviceListAdapter
@@ -30,7 +29,6 @@ import com.google.firebase.FirebaseApp
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -164,7 +162,7 @@ class MainActivity : AppCompatActivity() {
 
                 builder.setTitle("Add a specific peer")
 
-                builder.setPositiveButton("Add") { dialog, _ ->
+                builder.setPositiveButton("Add") { _, _ ->
                     var peer = editText.text.toString()
                     peer += ":${NetworkService.getNode()?.port}"
                     NetworkService.getNode()?.addPeer(peer)
@@ -206,18 +204,27 @@ class MainActivity : AppCompatActivity() {
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle("Choose encryption scheme")
                 builder.setMessage("Choose the encryption scheme you need new keys for")
-                builder.setPositiveButton("Paillier") { dialog, _ ->
+                builder.setPositiveButton("Paillier") { _, _ ->
+                    bottomSheetDialog.dismiss()
+                    val progressDialog = ProgressDialog(this)
+                    progressDialog.setMessage("Generating new keys...")
+                    progressDialog.setCancelable(false)
+                    progressDialog.show()
                     // Don't block the UI thread
                     Thread {
                         val time = NetworkService.getNode()?.generatePaillierKeys()
                         if (time != null) {
                             LogService.logActivity("GENKEYS_PAILLIER", time, packageManager.getPackageInfo(packageName, 0).versionName)
                         }
+
+                        runOnUiThread {
+                            progressDialog.dismiss()
+                            setupRecyclerView()
+                            Snackbar.make(binding.root, "New Paillier keys generated", Snackbar.LENGTH_SHORT).show()
+                        }
                     }.start()
-                    bottomSheetDialog.dismiss()
-                    Snackbar.make(binding.root, "New Paillier keys generated", Snackbar.LENGTH_SHORT).show()
                 }
-                builder.setNegativeButton("ElGamal") { dialog, _ ->
+                builder.setNegativeButton("ElGamal") { _, _ ->
                     // TODO: NetworkService.getNode()?.generateElGamalKeys()
                     bottomSheetDialog.dismiss()
                     Snackbar.make(binding.root, "New ElGamal keys generated", Snackbar.LENGTH_SHORT).show()
