@@ -14,6 +14,7 @@ import com.google.firebase.database.FirebaseDatabase
 import java.text.SimpleDateFormat
 import java.util.Date
 
+
 class LogService: Service() {
 
     lateinit var node: Node
@@ -57,6 +58,26 @@ class LogService: Service() {
     }
 
     companion object {
+
+        private var isLoggingCPU = false
+        private var isLoggingRAM = false
+        private var cpu_usage = ArrayList<Float>()
+        private var ram_usage = ArrayList<Int>()
+        private var avg_cpu_time: Float = 0.0F
+        private var avg_ram_usage = 0
+        private var peak_cpu_time: Float = 0.0F
+        private var peak_ram_usage = 0
+
+        private fun clean() {
+            isLoggingCPU = false
+            isLoggingRAM = false
+            cpu_usage = ArrayList()
+            ram_usage = ArrayList()
+            avg_cpu_time = 0.0F
+            avg_ram_usage = 0
+            peak_cpu_time = 0.0F
+            peak_ram_usage = 0
+        }
         fun logActivity(acitvityCode: String, time: Any, version: String, peer: String?= null) {
             val formattedId = NetworkService.getNode()?.id?.replace(".", "-")
             val timestamp = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date())
@@ -70,9 +91,13 @@ class LogService: Service() {
                     "activity_code" to acitvityCode,
                     "peer" to peer,
                     "time" to time,
-                    "RAM" to getRamUsage()
+                    "Avg_RAM" to getRamInfo(),
+                    "Avg_CPU_time" to avg_cpu_time,
+                    "Peak_RAM" to "$peak_ram_usage MB",
+                    "Peak_CPU_time" to peak_cpu_time
                 )
                 ref?.push()?.setValue(log)
+                clean()
                 Log.d(ContentValues.TAG, "Activity log sent to Firebase")
                 return
             }
@@ -83,21 +108,103 @@ class LogService: Service() {
                 "type" to "Android " + android.os.Build.VERSION.RELEASE,
                 "activity_code" to acitvityCode,
                 "time" to time,
-                "RAM" to getRamUsage()
+                "Avg_RAM" to getRamInfo(),
+                "Avg_CPU_time" to avg_cpu_time,
+                "Peak_RAM" to "$peak_ram_usage MB",
+                "Peak_CPU_time" to peak_cpu_time
             )
             ref?.push()?.setValue(log)
+            clean()
             Log.d(ContentValues.TAG, "Activity log sent to Firebase")
         }
 
-        private fun getRamUsage(): String {
+        private fun getRamInfo(): String {
             val memInfo = ActivityManager.MemoryInfo()
             val activityManager = instance?.getSystemService(ACTIVITY_SERVICE) as ActivityManager
             activityManager.getMemoryInfo(memInfo)
-            val availableMem = memInfo.availMem / 0x100000L  // 0x100000L == 1048576L == 1024 * 1024 == 1MB
+            val totalMem = memInfo.totalMem / 0x100000L  // 0x100000L == 1048576L == 1024 * 1024 == 1MB
+            totalMem.toFloat()
+            return "$avg_ram_usage MB / $totalMem MB"
+        }
+
+        private fun getRamUsage(): Int {
+            val memInfo = ActivityManager.MemoryInfo()
+            val activityManager = instance?.getSystemService(ACTIVITY_SERVICE) as ActivityManager
+            activityManager.getMemoryInfo(memInfo)
+            val availableMem = memInfo.availMem / 0x100000L
             val totalMem = memInfo.totalMem / 0x100000L
             val memUse = totalMem - availableMem
-            return "$memUse MB / $totalMem MB - ${memUse * 100 / totalMem}%"
+            return memUse.toInt()
         }
+
+        private fun getCpuTime(): Float {
+            // Obtiene el tiempo de CPU al inicio
+            val startTime = android.os.Debug.threadCpuTimeNanos()
+            Thread.sleep(100)
+            // Obtiene el tiempo de CPU al final
+            val endTime = android.os.Debug.threadCpuTimeNanos()
+            // Calcula el tiempo de CPU consumido durante el intervalo
+            val cpuTime = endTime - startTime
+            return cpuTime / 1e6f  // 1e6f == 1000000f == 1000 * 1000 == 1 ms
+        }
+
+
+        fun startLogging() {
+            isLoggingCPU = true
+            isLoggingRAM = true
+            startLoggingCpu()
+            startLoggingRam()
+        }
+
+        fun stopLogging() {
+            isLoggingCPU = false
+            isLoggingRAM = false
+            stopLoggingCpu()
+            stopLoggingRam()
+        }
+
+        private fun startLoggingCpu() {
+            Thread {
+                while (true) {
+                    val cpu = getCpuTime()
+                    synchronized(cpu_usage) {
+                        cpu_usage.add(cpu)
+                    }
+                    if (!isLoggingCPU) break
+                    Thread.sleep(100)
+                }
+            }.start()
+        }
+
+        private fun startLoggingRam() {
+            Thread {
+                while (true) {
+                    val ram = getRamUsage()
+                    synchronized(ram_usage) {
+                        ram_usage.add(ram)
+                    }
+                    if (!isLoggingRAM) break
+                    Thread.sleep(100)
+                }
+            }.start()
+        }
+
+        private fun stopLoggingCpu() {
+            synchronized(cpu_usage) {  // Synchronize to prevent concurrent modification
+                // 2 decimal places
+                avg_cpu_time = (cpu_usage.sum() / cpu_usage.size).toInt() / 1000.0F
+                peak_cpu_time = cpu_usage.maxOrNull()!!.toInt() / 1000.0F
+            }
+        }
+
+        private fun stopLoggingRam() {
+            synchronized(ram_usage) {
+                avg_ram_usage = (ram_usage.sum() / ram_usage.size)
+                peak_ram_usage = ram_usage.maxOrNull()!!
+            }
+        }
+
+
 
         var instance: LogService? = null
         }
