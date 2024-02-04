@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.app_psi.activities
 
 import android.annotation.SuppressLint
@@ -68,6 +70,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    @SuppressLint("InflateParams")
     private fun setupFloatingActionButton() {
         // Launch the bottom sheet when the FAB is clicked
         binding.fabButton.setOnClickListener {

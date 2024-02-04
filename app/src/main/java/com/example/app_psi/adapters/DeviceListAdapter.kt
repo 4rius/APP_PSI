@@ -109,7 +109,7 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
         val height = context.resources.displayMetrics.heightPixels * 0.5
         bottomSheetDialog.behavior.peekHeight = height.toInt()
         bottomSheetDialog.behavior.isDraggable = true
-        bottomSheetDialog.findViewById<TextView>(R.id.textViewTitleOptions)?.text = "Actions for device " + devices[position]
+        bottomSheetDialog.findViewById<TextView>(R.id.textViewTitleOptions)?.text = context.getString(R.string.actions_for_device, devices[position])
         bottomSheetDialog.findViewById<Button>(R.id.buttonSendLargeMsg)?.setOnClickListener {
             NetworkService.findIntersection(devices[position])
             bottomSheetDialog.dismiss()

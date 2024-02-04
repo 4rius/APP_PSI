@@ -1,5 +1,6 @@
 package com.example.app_psi.objects;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 
 import com.example.app_psi.implementations.Paillier;
@@ -26,6 +27,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
+@SuppressLint("SimpleDateFormat")
 public class Node {
     private boolean running = true;
     private final String id;
@@ -287,15 +289,10 @@ public class Node {
         System.out.println("Node " + id + " (You) - Intersection with " + device + " - Result: " + intersection);
     }
 
-
-
-
-
     public void pingAllDevices() {
         for (Device device : devices.values()) {
             device.socket.send(id + " is pinging you!");
         }
-        // TODO: Que se actualice toda la lista con los nuevos timestamps
     }
 
     public List<String> getDevices() {
@@ -346,7 +343,6 @@ public class Node {
     public double generatePaillierKeys() {
         LogService.Companion.startLogging();
         long startTime = System.currentTimeMillis();
-
         paillier.keyGeneration(1024, 64);
 
         long endTime = System.currentTimeMillis();

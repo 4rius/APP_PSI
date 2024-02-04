@@ -11,16 +11,23 @@ import android.os.Looper
 import android.util.Log
 import com.example.app_psi.objects.Node
 import com.google.firebase.database.FirebaseDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 
 
 class LogService: Service() {
 
-    lateinit var node: Node
+    private lateinit var node: Node
     lateinit var id: String
     lateinit var realtimeDatabase: FirebaseDatabase
-    private val LOG_INTERVAL = 10000L
+    private val logInterval = 10000L
 
     override fun onCreate() {
         super.onCreate()
@@ -45,7 +52,7 @@ class LogService: Service() {
                 else "Stopped"
                 val message = "[$dateFormatted] - ID: $fullId - Port: $port - Devices: $devices - Status: $isRunning"
                 Log.d(ContentValues.TAG, message)
-                handler.postDelayed(this, LOG_INTERVAL)
+                handler.postDelayed(this, logInterval)
             }
         }
         handler.post(logRunnable)
@@ -60,24 +67,30 @@ class LogService: Service() {
     companion object {
 
         private var isLoggingCPU = false
-        private var isLoggingRAM = false
         private var cpu_usage = ArrayList<Float>()
         private var ram_usage = ArrayList<Int>()
+        private var app_ram_usage = ArrayList<Int>()
         private var avg_cpu_time: Float = 0.0F
         private var avg_ram_usage = 0
+        private var app_avg_ram_usage = 0
         private var peak_cpu_time: Float = 0.0F
         private var peak_ram_usage = 0
+        private var peak_app_ram_usage = 0
+        private var ram_job: Job? = null
 
         private fun clean() {
             isLoggingCPU = false
-            isLoggingRAM = false
             cpu_usage = ArrayList()
             ram_usage = ArrayList()
+            app_ram_usage = ArrayList()
             avg_cpu_time = 0.0F
             avg_ram_usage = 0
+            app_avg_ram_usage = 0
             peak_cpu_time = 0.0F
             peak_ram_usage = 0
+            peak_app_ram_usage = 0
         }
+        @SuppressLint("SimpleDateFormat")
         fun logActivity(acitvityCode: String, time: Any, version: String, peer: String?= null) {
             val formattedId = NetworkService.getNode()?.id?.replace(".", "-")
             val timestamp = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date())
@@ -92,9 +105,11 @@ class LogService: Service() {
                     "peer" to peer,
                     "time" to time,
                     "Avg_RAM" to getRamInfo(),
-                    "Avg_CPU_time" to avg_cpu_time,
                     "Peak_RAM" to "$peak_ram_usage MB",
-                    "Peak_CPU_time" to peak_cpu_time
+                    "App_Avg_RAM" to "$app_avg_ram_usage MB",
+                    "App_Peak_RAM" to "$peak_app_ram_usage MB",
+                    "Avg_CPU_time" to "$avg_cpu_time ms",
+                    "Peak_CPU_time" to "$peak_cpu_time ms"
                 )
                 ref?.push()?.setValue(log)
                 clean()
@@ -109,9 +124,11 @@ class LogService: Service() {
                 "activity_code" to acitvityCode,
                 "time" to time,
                 "Avg_RAM" to getRamInfo(),
-                "Avg_CPU_time" to avg_cpu_time,
                 "Peak_RAM" to "$peak_ram_usage MB",
-                "Peak_CPU_time" to peak_cpu_time
+                "App_Avg_RAM" to "$app_avg_ram_usage MB",
+                "App_Peak_RAM" to "$peak_app_ram_usage MB",
+                "Avg_CPU_time" to "$avg_cpu_time ms",
+                "Peak_CPU_time" to "$peak_cpu_time ms"
             )
             ref?.push()?.setValue(log)
             clean()
@@ -127,14 +144,27 @@ class LogService: Service() {
             return "$avg_ram_usage MB / $totalMem MB"
         }
 
-        private fun getRamUsage(): Int {
-            val memInfo = ActivityManager.MemoryInfo()
-            val activityManager = instance?.getSystemService(ACTIVITY_SERVICE) as ActivityManager
-            activityManager.getMemoryInfo(memInfo)
-            val availableMem = memInfo.availMem / 0x100000L
-            val totalMem = memInfo.totalMem / 0x100000L
-            val memUse = totalMem - availableMem
-            return memUse.toInt()
+        private suspend fun getRamUsage(): Int? = withContext(Dispatchers.IO) {
+            val activityManager = instance?.getSystemService(ACTIVITY_SERVICE) as? ActivityManager
+            activityManager?.let {
+                val memInfo = ActivityManager.MemoryInfo()
+                it.getMemoryInfo(memInfo)
+                val availableMem = memInfo.availMem / 0x100000L
+                val totalMem = memInfo.totalMem / 0x100000L
+                val memUse = totalMem - availableMem
+                memUse.toInt()
+            }
+        }
+
+        private suspend fun getAppRamUsage(): Int? = withContext(Dispatchers.IO) {
+            val activityManager = instance?.getSystemService(ACTIVITY_SERVICE) as? ActivityManager
+            activityManager?.let {
+                val memInfo = ActivityManager.MemoryInfo()
+                it.getMemoryInfo(memInfo)
+                val pid = android.os.Process.myPid()
+                val memoryInfo = it.getProcessMemoryInfo(intArrayOf(pid))
+                memoryInfo[0].totalPss / 1024
+            }
         }
 
         private fun getCpuTime(): Float {
@@ -151,14 +181,12 @@ class LogService: Service() {
 
         fun startLogging() {
             isLoggingCPU = true
-            isLoggingRAM = true
             startLoggingCpu()
             startLoggingRam()
         }
 
         fun stopLogging() {
             isLoggingCPU = false
-            isLoggingRAM = false
             stopLoggingCpu()
             stopLoggingRam()
         }
@@ -177,30 +205,34 @@ class LogService: Service() {
         }
 
         private fun startLoggingRam() {
-            Thread {
-                while (true) {
+            ram_job = CoroutineScope(Dispatchers.IO).launch {
+                while (isActive) {
                     val ram = getRamUsage()
+                    val ramApp = getAppRamUsage()
                     synchronized(ram_usage) {
-                        ram_usage.add(ram)
+                        ram?.let { ram_usage.add(it) }
+                        ramApp?.let { app_ram_usage.add(it) }
                     }
-                    if (!isLoggingRAM) break
-                    Thread.sleep(100)
+                    delay(100)
                 }
-            }.start()
+            }
         }
 
         private fun stopLoggingCpu() {
             synchronized(cpu_usage) {  // Synchronize to prevent concurrent modification
                 // 2 decimal places
-                avg_cpu_time = (cpu_usage.sum() / cpu_usage.size).toInt() / 1000.0F
-                peak_cpu_time = cpu_usage.maxOrNull()!!.toInt() / 1000.0F
+                avg_cpu_time = (cpu_usage.sum() / cpu_usage.size)
+                peak_cpu_time = cpu_usage.maxOrNull()!!
             }
         }
 
         private fun stopLoggingRam() {
+            ram_job?.cancel()
             synchronized(ram_usage) {
-                avg_ram_usage = (ram_usage.sum() / ram_usage.size)
-                peak_ram_usage = ram_usage.maxOrNull()!!
+                avg_ram_usage = if (ram_usage.isNotEmpty()) ram_usage.sum() / ram_usage.size else 0
+                peak_ram_usage = ram_usage.maxOrNull() ?: 0
+                app_avg_ram_usage = if (app_ram_usage.isNotEmpty()) app_ram_usage.sum() / app_ram_usage.size else 0
+                peak_app_ram_usage = app_ram_usage.maxOrNull() ?: 0
             }
         }
 
