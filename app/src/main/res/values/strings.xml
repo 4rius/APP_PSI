@@ -71,4 +71,8 @@
     <string name="discover_peers">Discover peers</string>
     <string name="gen_keys">Generate new keys</string>
     <string name="actions_for_device">Actions for device %1$s</string>
+    <string name="intersect_everyone_DamgardJurik">Find every intersection - Damgard Jurik</string>
+    <string name="find_intersection_DamgardJurik">Find intersection - Damgard Jurik</string>
+    <string name="find_cardinality_paillier">Find intersection cardinality - Paillier</string>
+    <string name="find_cardinality_DamgardJurik">Find intersection cardinality - Damgard Jurik</string>
 </resources>

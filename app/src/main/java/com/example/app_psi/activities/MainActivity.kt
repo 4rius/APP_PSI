@@ -209,28 +209,11 @@ class MainActivity : AppCompatActivity() {
                 builder.setMessage("Choose the encryption scheme you need new keys for")
                 builder.setPositiveButton("Paillier") { _, _ ->
                     bottomSheetDialog.dismiss()
-                    val progressDialog = ProgressDialog(this)
-                    progressDialog.setMessage("Generating new keys...")
-                    progressDialog.setCancelable(false)
-                    progressDialog.show()
-                    // Don't block the UI thread
-                    Thread {
-                        val time = NetworkService.getNode()?.generatePaillierKeys()
-                        if (time != null) {
-                            LogService.logActivity("GENKEYS_PAILLIER", time, packageManager.getPackageInfo(packageName, 0).versionName)
-                        }
-
-                        runOnUiThread {
-                            progressDialog.dismiss()
-                            setupRecyclerView()
-                            Snackbar.make(binding.root, "New Paillier keys generated", Snackbar.LENGTH_SHORT).show()
-                        }
-                    }.start()
+                    newKeys("Paillier")
                 }
-                builder.setNegativeButton("ElGamal") { _, _ ->
-                    // TODO: NetworkService.getNode()?.generateElGamalKeys()
+                builder.setNegativeButton("Damgard Jurik") { _, _ ->
                     bottomSheetDialog.dismiss()
-                    Snackbar.make(binding.root, "New ElGamal keys generated", Snackbar.LENGTH_SHORT).show()
+                    newKeys("Damgard Jurik")
                 }
                 builder.setNeutralButton("Cancel") { dialog, _ ->
                     dialog.cancel()
@@ -242,6 +225,39 @@ class MainActivity : AppCompatActivity() {
 
             bottomSheetDialog.show()
         }
+    }
+
+    private fun newKeys(scheme: String) {
+        val progressDialog = ProgressDialog(this)
+        progressDialog.setMessage("Generating new keys...")
+        progressDialog.setCancelable(false)
+        progressDialog.show()
+        // Don't block the UI thread
+        Thread {
+            var aCode = ""
+            var time: Double? = null
+            when (scheme) {
+                "Paillier" -> {
+                    time = NetworkService.getNode()?.generatePaillierKeys()
+                    aCode = "GENKEYS_PAILLIER"
+                }
+                "Damgard Jurik" -> {
+                    time = NetworkService.getNode()?.generateDJKeys()
+                    aCode = "GENKEYS_DJ"
+                }
+            }
+            if (time != null) {
+                LogService.logActivity(aCode, time, packageManager.getPackageInfo(packageName, 0).versionName)
+            } else {
+                LogService.logActivity("GENKEYS_ERROR", 0.0, packageManager.getPackageInfo(packageName, 0).versionName)
+            }
+
+            runOnUiThread {
+                progressDialog.dismiss()
+                setupRecyclerView()
+                Snackbar.make(binding.root, "New $scheme keys generated", Snackbar.LENGTH_SHORT).show()
+            }
+        }.start()
     }
 
     private fun startNetworkService() {

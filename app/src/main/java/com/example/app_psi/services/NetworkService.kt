@@ -116,5 +116,9 @@ class NetworkService: Service() {
             instance?.node?.discoverPeers()
         }
 
+        fun findIntersectionDJ(s: String) {
+            instance?.node?.damgardJurikIntersectionFirstStep(s) ?: "Error"
+        }
+
     }
 }

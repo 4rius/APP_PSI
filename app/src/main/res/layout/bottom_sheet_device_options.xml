@@ -52,11 +52,55 @@
             android:importantForAccessibility="no" />
 
         <Button
-            android:id="@+id/buttonSendSmallMsg"
+            android:id="@+id/buttonFindIntersectionDJ"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
-            android:text="@string/find_intersection_ElGamal" />
+            android:text="@string/find_intersection_DamgardJurik" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/logo3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_numbers_48"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no" />
+
+        <Button
+            android:id="@+id/buttonfindCardinalityPaillier"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:text="@string/find_cardinality_paillier" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/logo4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_numbers_48"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no" />
+
+        <Button
+            android:id="@+id/buttonfindCardinalityDJ"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:text="@string/find_cardinality_DamgardJurik" />
 
     </LinearLayout>
 

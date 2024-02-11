@@ -3,6 +3,7 @@ package com.example.app_psi.objects;
 import android.annotation.SuppressLint;
 import android.util.Log;
 
+import com.example.app_psi.implementations.DamgardJurik;
 import com.example.app_psi.implementations.Paillier;
 import com.example.app_psi.services.LogService;
 import com.google.gson.Gson;
@@ -37,6 +38,7 @@ public class Node {
     private final ZMQ.Socket routerSocket;
     private final Map<String, Device> devices = new HashMap<>();
     public final Paillier paillier = new Paillier(1024, 64); // Objeto Paillier con los métodos de claves, cifrado e intersecciones
+    public final DamgardJurik damgardJurik = new DamgardJurik(1024, 2); // Objeto DamgardJurik con los métodos de claves, cifrado e intersecciones
     public Set<Integer> myData; // Conjunto de datos del nodo (set de 10 números aleatorios)
     private final int domain = 40;  // Dominio de los números aleatorios sobre los que se trabaja
     public HashMap<String, Object> results;  // Resultados de las intersecciones
@@ -92,42 +94,62 @@ public class Node {
             System.out.println("Node " + id + " (You) received: " + message);
             String dayTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
             if (message.endsWith("is pinging you!")) {
-                String peer = message.split(" ")[0];
-                Device device = devices.get(peer);
-                if (device != null) {
-                    device.lastSeen = dayTime;
-                    String msg = id + " is up and running!";
-                    routerSocket.sendMore(peer);
-                    routerSocket.send(msg);
-                }
+                handlePing(message, dayTime);
             } else if (message.startsWith("DISCOVER:")) {
-                String peer = message.split(" ")[2];
-                if (!devices.containsKey(peer)) addNewDevice(peer, dayTime);
-                Device device = devices.get(peer);
-                assert device != null;
-                device.socket.send("DISCOVER_ACK: Node " + id + " acknowledges node " + peer);
+                handleDiscovery(message, dayTime);
             } else if (message.startsWith("DISCOVER_ACK:")) {
-                String peer = message.split(" ")[2];
-                if (!devices.containsKey(peer)) addNewDevice(peer, dayTime);
+                handleDiscoverAck(message, dayTime);
             } else if (message.startsWith("{")) {
                 handleMessage(message);
             } else if (message.startsWith("Added ")) {
-                String peer = message.split(" ")[8];
-                Device device = devices.get(peer);
-                if (device != null) {
-                    device.lastSeen = dayTime;
-                }
+                handleAdded(message, dayTime);
             } else {
-                System.out.println(id + " (You) received: " + message + " but don't know what to do with it");
-                String peer = message.split(" ")[0];
-                Device device = devices.get(peer);
-                if (device != null) {
-                    device.lastSeen = dayTime;
-                }
+                handleUnknownMessage(message, dayTime);
             }
         }
         routerSocket.close();
         context.close();
+    }
+
+    private void handlePing(String message, String dayTime) {
+        String peer = message.split(" ")[0];
+        Device device = devices.get(peer);
+        if (device != null) {
+            device.lastSeen = dayTime;
+            String msg = id + " is up and running!";
+            routerSocket.sendMore(peer);
+            routerSocket.send(msg);
+        }
+    }
+
+    private void handleDiscovery(String message, String dayTime) {
+        String peer = message.split(" ")[2];
+        if (!devices.containsKey(peer)) addNewDevice(peer, dayTime);
+        Device device = devices.get(peer);
+        assert device != null;
+        device.socket.send("DISCOVER_ACK: Node " + id + " acknowledges node " + peer);
+    }
+
+    private void handleDiscoverAck(String message, String dayTime) {
+        String peer = message.split(" ")[2];
+        if (!devices.containsKey(peer)) addNewDevice(peer, dayTime);
+    }
+
+    private void handleAdded(String message, String dayTime) {
+        String peer = message.split(" ")[8];
+        Device device = devices.get(peer);
+        if (device != null) {
+            device.lastSeen = dayTime;
+        }
+    }
+
+    private void handleUnknownMessage(String message, String dayTime) {
+        System.out.println(id + " (You) received: " + message + " but don't know what to do with it");
+        String peer = message.split(" ")[0];
+        Device device = devices.get(peer);
+        if (device != null) {
+            device.lastSeen = dayTime;
+        }
     }
 
     private void addNewDevice(String peer, String dayTime) {
@@ -184,8 +206,6 @@ public class Node {
 
     public void handleMessage(String message) {
         Gson gson = new Gson();
-        LogService.Companion.startLogging();
-        Long start_time = System.currentTimeMillis();
         // Convertir el JSON en un LinkedTreeMap para realizar las operaciones sobre él
         LinkedTreeMap<String, Object> peerData = gson.fromJson(message, LinkedTreeMap.class);
 
@@ -195,26 +215,12 @@ public class Node {
                 String implementation = (String) peerData.remove("implementation");
                 LinkedTreeMap<String, String> peerPubKey = (LinkedTreeMap<String, String>) peerData.remove("pubkey");
                 assert peerPubKey != null;
-                BigInteger peerPubKeyReconstructed = paillier.reconstructPublicKey(peerPubKey);
-                LinkedTreeMap<String, BigInteger> encryptedSet = paillier.getEncryptedSet((LinkedTreeMap<String, String>) peerData.remove("data"));
-                System.out.println("Node " + id + " (You) - Calculating intersection with " + peer + " - " + implementation);
                 if (implementation.equals("Paillier")) {
-                    LinkedTreeMap<String, BigInteger> multipliedSet = paillier.getMultipliedSet(encryptedSet, myData, peerPubKeyReconstructed);
-                    // Serializamos y mandamos de vuelta el resultado
-                    LinkedTreeMap<String, String> serializedMultipliedSet = new LinkedTreeMap<>();
-                    for (Map.Entry<String, BigInteger> entry : multipliedSet.entrySet()) {
-                        serializedMultipliedSet.put(entry.getKey(), entry.getValue().toString());
-                    }
-                    System.out.println("Node " + id + " (You) - Intersection with " + peer + " - Multiplied set: " + multipliedSet);
-                    LinkedTreeMap<String, Object> messageToSend = new LinkedTreeMap<>();
-                    messageToSend.put("data", serializedMultipliedSet);
-                    messageToSend.put("peer", id);
-                    messageToSend.put("cryptpscheme", implementation);
-                    Objects.requireNonNull(devices.get(peer)).socket.send(gson.toJson(messageToSend));
-                    Long end_time = System.currentTimeMillis();
-                    LogService.Companion.stopLogging();
-                    LogService.Companion.logActivity("INTERSECTION_PAILLIER_2", (end_time - start_time) / 1000.0, "1.0 - DEV", peer);
+                    paillierIntesectionSecondStep(peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"));
+                } else if (implementation.equals("DamgardJurik")) {
+                    damgardJurikIntersectionSecondStep(peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"));
                 }
+                System.out.println("Node " + id + " (You) - Calculating intersection with " + peer + " - " + implementation);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -263,6 +269,29 @@ public class Node {
         return "Intersection with " + device + " - Paillier - Device not found";
     }
 
+    public void paillierIntesectionSecondStep(String peer, LinkedTreeMap<String, String> peerPubKey, LinkedTreeMap<String, String> data) {
+        LogService.Companion.startLogging();
+        Long start_time = System.currentTimeMillis();
+        BigInteger peerPubKeyReconstructed = paillier.reconstructPublicKey(peerPubKey);
+        LinkedTreeMap<String, BigInteger> encryptedSet = paillier.getEncryptedSet((LinkedTreeMap<String, String>) data);
+        LinkedTreeMap<String, BigInteger> multipliedSet = paillier.getMultipliedSet(encryptedSet, myData, peerPubKeyReconstructed);
+        // Serializamos y mandamos de vuelta el resultado
+        LinkedTreeMap<String, String> serializedMultipliedSet = new LinkedTreeMap<>();
+        for (Map.Entry<String, BigInteger> entry : multipliedSet.entrySet()) {
+            serializedMultipliedSet.put(entry.getKey(), entry.getValue().toString());
+        }
+        System.out.println("Node " + id + " (You) - Intersection with " + peer + " - Multiplied set: " + multipliedSet);
+        LinkedTreeMap<String, Object> messageToSend = new LinkedTreeMap<>();
+        messageToSend.put("data", serializedMultipliedSet);
+        messageToSend.put("peer", id);
+        messageToSend.put("cryptpscheme", "Paillier");
+        Gson gson = new Gson();
+        Objects.requireNonNull(devices.get(peer)).socket.send(gson.toJson(messageToSend));
+        Long end_time = System.currentTimeMillis();
+        LogService.Companion.stopLogging();
+        LogService.Companion.logActivity("INTERSECTION_PAILLIER_2", (end_time - start_time) / 1000.0, "1.0 - DEV", peer);
+    }
+
     public void paillierIntersectionFinalStep(LinkedTreeMap<String, Object> peerData) {
         LogService.Companion.startLogging();
         Long start_time = System.currentTimeMillis();
@@ -286,6 +315,84 @@ public class Node {
         Long end_time = System.currentTimeMillis();
         LogService.Companion.stopLogging();
         LogService.Companion.logActivity("INTERSECTION_PAILLIER_F", (end_time - start_time) / 1000.0, "1.0 - DEV", device);
+        System.out.println("Node " + id + " (You) - Intersection with " + device + " - Result: " + intersection);
+    }
+
+    public String damgardJurikIntersectionFirstStep(String device) {
+        if (devices.containsKey(device)) {
+            LogService.Companion.startLogging();
+            Long start_time = System.currentTimeMillis();
+            Device device1 = devices.get(device);
+            System.out.println("Node " + id + " (You) - Intersection with " + device + " - DamgardJurik");
+            // Cifrar los datos del nodo
+            LinkedTreeMap<String, BigInteger> myEncryptedSet = damgardJurik.encryptMyData(myData, domain);
+            // Serializamos la clave pública
+            LinkedTreeMap<String, String> publicKeyDict = damgardJurik.serializePublicKey();
+            // Creamos con Gson un objeto que contenga el conjunto cifrado, la clave pública y la implementacion
+            Gson gson = new Gson();
+            HashMap<String, Object> message = new HashMap<>();
+            message.put("data", myEncryptedSet);
+            message.put("pubkey", publicKeyDict);
+            message.put("implementation", "DamgardJurik");
+            message.put("peer", id);
+            String jsonMessage = gson.toJson(message);
+            // Enviamos el mensaje
+            assert device1 != null;
+            device1.socket.send(jsonMessage);
+            Long end_time = System.currentTimeMillis();
+            LogService.Companion.stopLogging();
+            LogService.Companion.logActivity("INTERSECTION_DJ_1", (end_time - start_time) / 1000.0, "1.0 - DEV", device);
+            return "Intersection with " + device + " - DamgardJurik - Waiting for response...";
+        }
+        return "Intersection with " + device + " - DamgardJurik - Device not found";
+    }
+
+    public void damgardJurikIntersectionSecondStep(String peer, LinkedTreeMap<String, String> peerPubKey, LinkedTreeMap<String, String> data) {
+        LogService.Companion.startLogging();
+        Long start_time = System.currentTimeMillis();
+        LinkedTreeMap<String, BigInteger> peerPubKeyReconstructed = damgardJurik.reconstructPublicKey(peerPubKey);
+        LinkedTreeMap<String, BigInteger> encryptedSet = damgardJurik.getEncryptedSet((LinkedTreeMap<String, String>) data);
+        LinkedTreeMap<String, BigInteger> multipliedSet = damgardJurik.getMultipliedSet(encryptedSet, myData, peerPubKeyReconstructed.get("n"));
+        // Serializamos y mandamos de vuelta el resultado
+        LinkedTreeMap<String, String> serializedMultipliedSet = new LinkedTreeMap<>();
+        for (Map.Entry<String, BigInteger> entry : multipliedSet.entrySet()) {
+            serializedMultipliedSet.put(entry.getKey(), entry.getValue().toString());
+        }
+        System.out.println("Node " + id + " (You) - Intersection with " + peer + " - Multiplied set: " + multipliedSet);
+        LinkedTreeMap<String, Object> messageToSend = new LinkedTreeMap<>();
+        messageToSend.put("data", serializedMultipliedSet);
+        messageToSend.put("peer", id);
+        messageToSend.put("cryptpscheme", "DamgardJurik");
+        Gson gson = new Gson();
+        Objects.requireNonNull(devices.get(peer)).socket.send(gson.toJson(messageToSend));
+        Long end_time = System.currentTimeMillis();
+        LogService.Companion.stopLogging();
+        LogService.Companion.logActivity("INTERSECTION_DJ_2", (end_time - start_time) / 1000.0, "1.0 - DEV", peer);
+    }
+
+    public void damgardJurikIntersectionFinalStep(LinkedTreeMap<String, Object> peerData) {
+        LogService.Companion.startLogging();
+        Long start_time = System.currentTimeMillis();
+        LinkedTreeMap<String, String> multipliedSet = (LinkedTreeMap<String, String>) peerData.remove("data");
+        LinkedTreeMap<String, BigInteger> encMultipliedSet = damgardJurik.recvMultipliedSet(multipliedSet);
+        String device = (String) peerData.remove("peer");
+        // Desciframos los datos del peer
+        for (Map.Entry<String, BigInteger> entry : encMultipliedSet.entrySet()) {
+            BigInteger decryptedValue = damgardJurik.Decrypt(entry.getValue());
+            entry.setValue(decryptedValue);
+        }
+        // Cogemos solo los valores que sean 1, que representan la intersección
+        List<Integer> intersection = new ArrayList<>();
+        for (Map.Entry<String, BigInteger> entry : encMultipliedSet.entrySet()) {
+            if (entry.getValue().equals(BigInteger.ONE)) {
+                intersection.add(Integer.parseInt(entry.getKey()));
+            }
+        }
+        // Guardamos el resultado
+        results.put(device, intersection);
+        Long end_time = System.currentTimeMillis();
+        LogService.Companion.stopLogging();
+        LogService.Companion.logActivity("INTERSECTION_DJ_F", (end_time - start_time) / 1000.0, "1.0 - DEV", device);
         System.out.println("Node " + id + " (You) - Intersection with " + device + " - Result: " + intersection);
     }
 
@@ -349,6 +456,18 @@ public class Node {
         long duration = endTime - startTime;
         LogService.Companion.stopLogging();
         Log.d("Paillier", "Key generation time: " + duration / 1000.0 + " seconds");
+        return duration / 1000.0;
+    }
+
+    public double generateDJKeys() {
+        LogService.Companion.startLogging();
+        long startTime = System.currentTimeMillis();
+        damgardJurik.keyGeneration(1024);
+
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+        LogService.Companion.stopLogging();
+        Log.d("DamgardJurik", "Key generation time: " + duration / 1000.0 + " seconds");
         return duration / 1000.0;
     }
 

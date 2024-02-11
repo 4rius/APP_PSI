@@ -115,10 +115,10 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
             bottomSheetDialog.dismiss()
             Snackbar.make(parentView, "Finding intersection with ${devices[position]} using Paillier", Snackbar.LENGTH_SHORT).show()
         }
-        bottomSheetDialog.findViewById<Button>(R.id.buttonSendSmallMsg)?.setOnClickListener {
-            NetworkService.sendSmallMessage(devices[position])
+        bottomSheetDialog.findViewById<Button>(R.id.buttonFindIntersectionDJ)?.setOnClickListener {
+            NetworkService.findIntersectionDJ(devices[position])
             bottomSheetDialog.dismiss()
-            Snackbar.make(parentView, "Finding intersection with ${devices[position]} using ElGamal", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(parentView, "Finding intersection with ${devices[position]} using DamgardJurik", Snackbar.LENGTH_SHORT).show()
         }
 
         bottomSheetDialog.show()
