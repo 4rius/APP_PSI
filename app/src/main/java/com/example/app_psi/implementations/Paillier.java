@@ -74,8 +74,19 @@ public class Paillier {
         }
     }
 
-    public BigInteger homomorphicMultiply(BigInteger cipherText, BigInteger multiplier, BigInteger nSquared) {
-        return cipherText.modPow(multiplier, nSquared);
+    // Suma 2 números cifrados
+    public BigInteger addEncryptedNumbers(BigInteger a, BigInteger b) {
+        return a.multiply(b).mod(nsquare);
+    }
+
+    // Suma número cifrado y escalar
+    public BigInteger addEncryptedAndScalar(BigInteger a, BigInteger b) {
+        return a.multiply(g.modPow(b, nsquare)).mod(nsquare);
+    }
+
+    // Multiplica número cifrado por escalar
+    public BigInteger multiplyEncryptedByScalar(BigInteger a, BigInteger b) {
+        return a.modPow(b, nsquare);
     }
 
 
@@ -126,7 +137,7 @@ public class Paillier {
                 result.put(entry.getKey(), encryptedZero);
                 // Sale 1... result.put(entry.getKey(), paillierSender.homomorphicMultiply(entry.getValue(), BigInteger.ZERO, paillierSender.nsquare));
             } else {
-                result.put(entry.getKey(), paillierSender.homomorphicMultiply(entry.getValue(), BigInteger.ONE, paillierSender.nsquare));
+                result.put(entry.getKey(), paillierSender.multiplyEncryptedByScalar(entry.getValue(), BigInteger.ONE));
             }
         }
         return result;

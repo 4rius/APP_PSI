@@ -10,13 +10,19 @@
               <deviceKey>
                 <Key>
                   <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="$USER_HOME$/.android/avd/Pixel_7_Pro_API_34.avd" />
+                  <value value="$PROJECT_DIR$/../.android/avd/Pixel_7_Pro_API_34.avd" />
                 </Key>
               </deviceKey>
             </Target>
           </targetSelectedWithDropDown>
           <timeTargetWasSelectedWithDropDown value="2024-02-10T23:28:25.603290Z" />
         </State>
+      </entry>
+      <entry key="testope()">
+        <State />
+      </entry>
+      <entry key="testopepaillier">
+        <State />
       </entry>
     </value>
   </component>
