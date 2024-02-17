@@ -1,23 +1,26 @@
 package com.example.app_psi.implementations;
 
+import static com.example.app_psi.implementations.Polynomials.hornerEvalCrypt;
+
 import com.google.gson.internal.LinkedTreeMap;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.security.SecureRandom;
 import java.util.Set;
 
-public class Paillier {
+public class Paillier implements CryptoSystem {
     public BigInteger p, q, lambda; // Variables para almacenar los números primos y lambda
     public BigInteger n; // Clave pública
     public BigInteger nsquare; // n al cuadrado, se usa en el cifrado y descifrado
     private BigInteger g; // Número que se usa en el cifrado y descifrado
-    private int bitLength; // Longitud de los números primos
 
     // Constructor que genera las claves
-    public Paillier(int bitLengthVal, int certainty) {
-        keyGeneration(bitLengthVal, certainty);
+    public Paillier(int bitLengthVal) {
+        keyGeneration(bitLengthVal);
     }
 
     // Constructor para cifrar lo que mande un nodo
@@ -29,14 +32,15 @@ public class Paillier {
 
     // Método para generar las claves, certeza es el grado de certeza con el que queremos que los números generados sean primos
     // A más certeza, más tiempo de computación en generar las claves
-    public void keyGeneration(int bitLengthVal, int certainty) {
-        bitLength = bitLengthVal;
+    public void keyGeneration(int bitLengthVal) {
+        int certainty = 64;
+        // Longitud de los números primos
         SecureRandom r = new SecureRandom();
-        p = new BigInteger(bitLength / 2, certainty, r); // Genera un número primo p
-        q = new BigInteger(bitLength / 2, certainty, r); // Genera un número primo q
+        p = new BigInteger(bitLengthVal / 2, certainty, r); // Genera un número primo p
+        q = new BigInteger(bitLengthVal / 2, certainty, r); // Genera un número primo q
         // Asegurar que p y q son diferentes, sino, n sería primo y se rompería la seguridad del esquema
         while (q.compareTo(p) == 0) {
-            q = new BigInteger(bitLength / 2, certainty, r);
+            q = new BigInteger(bitLengthVal / 2, certainty, r);
         }
         n = p.multiply(q); // Calcula n = p * q, que se usa como la clave pública
         nsquare = n.multiply(n); // Calcula n al cuadrado
@@ -53,7 +57,7 @@ public class Paillier {
     }
 
     // Cifrado de un número
-    public BigInteger Encryption(BigInteger m) {
+    public BigInteger Encrypt(BigInteger m) {
         SecureRandom r = new SecureRandom();
         BigInteger randNum;
         // Asegurar que randNum es coprimo con n y menor que n
@@ -64,7 +68,7 @@ public class Paillier {
     }
 
     // Descifrado de un número
-    public BigInteger Decryption(BigInteger c) {
+    public BigInteger Decrypt(BigInteger c) {
         BigInteger a = g.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n);
         if (!a.gcd(n).equals(BigInteger.ONE)) {
             throw new ArithmeticException("BigInteger not invertible. COMPROBAR n y lambda!!");
@@ -98,8 +102,10 @@ public class Paillier {
     }
 
     // Reconstruir clave pública
-    public BigInteger reconstructPublicKey(LinkedTreeMap<String, String> publicKeyDict) {
-        return new BigInteger(Objects.requireNonNull(publicKeyDict.get("n")));
+    public LinkedTreeMap<String, BigInteger>  reconstructPublicKey(LinkedTreeMap<String, String> publicKeyDict) {
+        LinkedTreeMap<String, BigInteger> publicKey = new LinkedTreeMap<>();
+        publicKey.put("n", new BigInteger(Objects.requireNonNull(publicKeyDict.get("n"))));
+        return publicKey;
     }
 
     public LinkedTreeMap<String, BigInteger> getEncryptedSet(LinkedTreeMap<String, String> serializedEncryptedSet) {
@@ -114,10 +120,26 @@ public class Paillier {
         LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();
         for (int element = 0; element < domain; element++) {
             if (!mySet.contains(element)) {
-                result.put(Integer.toString(element), Encryption(BigInteger.ZERO));
+                result.put(Integer.toString(element), Encrypt(BigInteger.ZERO));
             } else {
-                result.put(Integer.toString(element), Encryption(BigInteger.ONE));
+                result.put(Integer.toString(element), Encrypt(BigInteger.ONE));
             }
+        }
+        return result;
+    }
+
+    public ArrayList<BigInteger> encryptRoots(List<BigInteger> mySet) {
+        ArrayList<BigInteger> result = new ArrayList<>();
+        for (BigInteger element : mySet) {
+            result.add(Encrypt(element));
+        }
+        return result;
+    }
+
+    public ArrayList<BigInteger> encryptMySet(Set<Integer> mySet) {
+        ArrayList<BigInteger> result = new ArrayList<>();
+        for (int element : mySet) {
+            result.add(Encrypt(BigInteger.valueOf(element)));
         }
         return result;
     }
@@ -133,7 +155,7 @@ public class Paillier {
         for (Map.Entry<String, BigInteger> entry : encSet.entrySet()) {
             int element = Integer.parseInt(entry.getKey());
             if (!nodeSet.contains(element)) {
-                BigInteger encryptedZero = paillierSender.Encryption(BigInteger.ZERO);
+                BigInteger encryptedZero = paillierSender.Encrypt(BigInteger.ZERO);
                 result.put(entry.getKey(), encryptedZero);
                 // Sale 1... result.put(entry.getKey(), paillierSender.homomorphicMultiply(entry.getValue(), BigInteger.ZERO, paillierSender.nsquare));
             } else {
@@ -145,6 +167,19 @@ public class Paillier {
     sin cifrar se realiza mediante la exponenciación, no mediante la multiplicación ordinaria.
     Esto es lo que permite que el sistema mantenga su propiedad de homomorfismo. Esto lo tengo que probar
     porque en la phe venía directamente sobrecargado, aquí hay que lidiar con ello.*/
+    }
+
+    public ArrayList<BigInteger> handleOPESecondStep(ArrayList<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n) {
+        ArrayList<BigInteger> encryptedResult = new ArrayList<>();
+        Paillier PeerPubKey = new Paillier(n);
+        for (int element : mySet) {
+            BigInteger Epbj = hornerEvalCrypt(encryptedCoeff, BigInteger.valueOf(element), this);
+            BigInteger result = PeerPubKey.Encrypt(BigInteger.valueOf(element));
+            BigInteger mult = this.multiplyEncryptedByScalar(Epbj, BigInteger.valueOf(-1));
+            result = this.addEncryptedNumbers(result, mult);
+            encryptedResult.add(result);
+        }
+        return encryptedResult;
     }
 }
 

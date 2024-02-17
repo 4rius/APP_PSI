@@ -109,7 +109,7 @@ class NetworkService: Service() {
         }
 
         fun findIntersection(device: String): String {
-            return instance?.node?.paillierIntersectionFirstStep(device) ?: "Error"
+            return instance?.node?.intPaillier(device) ?: "Error"
         }
 
         fun discoverPeers() {
@@ -117,7 +117,15 @@ class NetworkService: Service() {
         }
 
         fun findIntersectionDJ(s: String) {
-            instance?.node?.damgardJurikIntersectionFirstStep(s) ?: "Error"
+            instance?.node?.intDamgardJurik(s) ?: "Error"
+        }
+
+        fun findIntersectionPaillierOPE(s: String) {
+            instance?.node?.intPaillierOPE(s) ?: "Error"
+        }
+
+        fun findIntersectionDJOPE(s: String) {
+            instance?.node?.intDamgardJurikOPE(s) ?: "Error"
         }
 
     }

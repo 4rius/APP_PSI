@@ -25,7 +25,7 @@ public class testopepaillier {
     @Test
     public void testope() {
         // === Alice's Setup ===
-        Paillier paillier = new Paillier(128, 64);
+        Paillier paillier = new Paillier(128);
         List<Integer> aliceSet = Arrays.asList(1, 2, 3, 4, 5, 7, 8);
 
         // Generamos un polinomio que tenga como raíces los elementos de aliceSet
@@ -37,7 +37,7 @@ public class testopepaillier {
         // Ciframos los coeficientes y se los "mandamos" a Bob
         List<BigInteger> encryptedCoeff = new ArrayList<>();
         for (BigInteger coef : coefficients) {
-            encryptedCoeff.add(paillier.Encryption(coef));
+            encryptedCoeff.add(paillier.Encrypt(coef));
         }
 
         // === Bob's Setup ===
@@ -48,8 +48,8 @@ public class testopepaillier {
             BigInteger rb = BigInteger.valueOf(rand.nextInt(1000) + 1);
             BigInteger Epbj = hornerEvalCrypt(encryptedCoeff, BigInteger.valueOf(element), paillier);
             System.out.println("Epbj: " + Epbj);
-            System.out.println("Decrypted Epbj: " + paillier.Decryption(Epbj));
-            BigInteger result = paillier.Encryption(BigInteger.valueOf(element));
+            System.out.println("Decrypted Epbj: " + paillier.Decrypt(Epbj));
+            BigInteger result = paillier.Encrypt(BigInteger.valueOf(element));
             BigInteger mult = paillier.multiplyEncryptedByScalar(Epbj, rb);
             result = paillier.addEncryptedNumbers(result, mult);
             encryptedResult.add(result);
@@ -58,7 +58,7 @@ public class testopepaillier {
         // Resultados
         List<BigInteger> result = new ArrayList<>();
         for (BigInteger res : encryptedResult) {
-            result.add(paillier.Decryption(res));
+            result.add(paillier.Decrypt(res));
         }
         System.out.println("Resultado: " + result);
 

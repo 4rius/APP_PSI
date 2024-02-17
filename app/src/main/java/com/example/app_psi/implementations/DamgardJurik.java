@@ -1,18 +1,22 @@
 package com.example.app_psi.implementations;
 
+import static com.example.app_psi.implementations.Polynomials.hornerEvalCrypt;
+
 import com.google.gson.internal.LinkedTreeMap;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class DamgardJurik {
+public class DamgardJurik implements CryptoSystem {
 
     private BigInteger n;  // Módulo, clave pública
     private BigInteger nPowSPlusOne;  // n^s+1 la diferencia con Paillier es que nSquared es n^2
     private BigInteger g;  // Generador, clave pública, puede ser n+1
     private BigInteger lambda;  // Lambda, clave privada
-    private int s;  // Factor de expansión
+    private final int s;  // Factor de expansión
 
     // Constructor
     public DamgardJurik(int bitLength, int expansionFactor) {
@@ -25,7 +29,7 @@ public class DamgardJurik {
         this.n = n;
         this.s = expansionFactor;
         this.nPowSPlusOne = n.pow(s + 1);
-        while (!isValidGenerator(g)) {
+        while (isValidGenerator(g)) {
             System.out.println("g is not good enough. Trying again...");
             g = g.add(BigInteger.ONE);
         }
@@ -45,7 +49,7 @@ public class DamgardJurik {
         lambda = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE)).divide(p.subtract(BigInteger.ONE).gcd(q.subtract(BigInteger.ONE)));
 
         g = n.add(BigInteger.ONE);
-        while (!isValidGenerator(g)) {
+        while (isValidGenerator(g)) {
             System.out.println("g is not good enough. Trying again...");
             g = g.add(BigInteger.ONE);
         }
@@ -54,7 +58,7 @@ public class DamgardJurik {
     // Comprueba si g es válido, si g es coprimo con n y si n divide el orden de g
     private boolean isValidGenerator(BigInteger g) {
         BigInteger exp = n.pow(s + 1);
-        return g.modPow(lambda, exp).subtract(BigInteger.ONE).divide(n).gcd(n).equals(BigInteger.ONE);
+        return !g.modPow(lambda, exp).subtract(BigInteger.ONE).divide(n).gcd(n).equals(BigInteger.ONE);
     }
 
     // Cifrado
@@ -134,6 +138,22 @@ public class DamgardJurik {
         return result;
     }
 
+    public ArrayList<BigInteger> encryptMySet(Set<Integer> mySet) {
+        ArrayList<BigInteger> result = new ArrayList<>();
+        for (int element : mySet) {
+            result.add(Encrypt(BigInteger.valueOf(element)));
+        }
+        return result;
+    }
+
+    public ArrayList<BigInteger> encryptRoots(List<BigInteger> mySet) {
+        ArrayList<BigInteger> result = new ArrayList<>();
+        for (BigInteger element : mySet) {
+            result.add(Encrypt(element));
+        }
+        return result;
+    }
+
     public LinkedTreeMap<String, BigInteger> recvMultipliedSet(LinkedTreeMap<String, String> serializedMultipliedSet) {
         return getEncryptedSet(serializedMultipliedSet);
     }
@@ -153,5 +173,20 @@ public class DamgardJurik {
             }
         }
         return result;
+    }
+
+    public ArrayList<BigInteger> handleOPESecondStep(ArrayList<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n) {
+        ArrayList<BigInteger> encryptedResult = new ArrayList<>();
+        SecureRandom rand = new SecureRandom();
+        DamgardJurik PeerPubKey = new DamgardJurik(n, 2);
+        for (Integer element : mySet) {
+            BigInteger rb = new BigInteger(1000, rand).add(BigInteger.ONE);
+            BigInteger Epbj = hornerEvalCrypt(encryptedCoeff, BigInteger.valueOf(element), this);
+            BigInteger result = PeerPubKey.Encrypt(BigInteger.valueOf(element));
+            BigInteger mult = multiplyEncryptedByScalar(Epbj, rb);
+            result = addEncryptedNumbers(result, mult);
+            encryptedResult.add(result);
+        }
+        return encryptedResult;
     }
 }
