@@ -83,12 +83,12 @@ public class DamgardJurik {
     }
 
     // Suma homomórfica de dos textos cifrados
-    public BigInteger addCiphertexts(BigInteger ciphertext1, BigInteger ciphertext2) {
+    public BigInteger addEncryptedNumbers(BigInteger ciphertext1, BigInteger ciphertext2) {
         return ciphertext1.multiply(ciphertext2).mod(nPowSPlusOne);
     }
 
     // Multiplicación homomórfica de un texto cifrado por un escalar
-    public BigInteger multiplyCiphertextByScalar(BigInteger ciphertext, BigInteger scalar) {
+    public BigInteger multiplyEncryptedByScalar(BigInteger ciphertext, BigInteger scalar) {
         return ciphertext.modPow(scalar, nPowSPlusOne);
     }
 
@@ -149,7 +149,7 @@ public class DamgardJurik {
                 result.put(entry.getKey(), encryptedZero);
                 // Sale 1... result.put(entry.getKey(), paillierSender.homomorphicMultiply(entry.getValue(), BigInteger.ZERO, paillierSender.nsquare));
             } else {
-                result.put(entry.getKey(), djsender.multiplyCiphertextByScalar(entry.getValue(), BigInteger.ONE));
+                result.put(entry.getKey(), djsender.multiplyEncryptedByScalar(entry.getValue(), BigInteger.ONE));
             }
         }
         return result;

@@ -19,6 +19,22 @@
         </State>
       </entry>
       <entry key="testope()">
+        <State>
+          <targetSelectedWithDropDown>
+            <Target>
+              <type value="QUICK_BOOT_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="VIRTUAL_DEVICE_PATH" />
+                  <value value="$PROJECT_DIR$/../.android/avd/Pixel_7_Pro_API_34.avd" />
+                </Key>
+              </deviceKey>
+            </Target>
+          </targetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-02-17T11:33:40.286799Z" />
+        </State>
+      </entry>
+      <entry key="testopedj">
         <State />
       </entry>
       <entry key="testopepaillier">
