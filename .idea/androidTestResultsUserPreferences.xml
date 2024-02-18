@@ -11,6 +11,7 @@
                   <entry key="Duration" value="90" />
                   <entry key="Pixel_7_Pro_API_34" value="120" />
                   <entry key="Tests" value="360" />
+                  <entry key="samsung SM-G998B" value="120" />
                 </map>
               </option>
             </AndroidTestResultsTableState>
@@ -39,6 +40,7 @@
                   <entry key="Pixel_6_Pro_API_33" value="120" />
                   <entry key="Pixel_7_Pro_API_34" value="120" />
                   <entry key="Tests" value="360" />
+                  <entry key="samsung SM-G998B" value="120" />
                 </map>
               </option>
             </AndroidTestResultsTableState>

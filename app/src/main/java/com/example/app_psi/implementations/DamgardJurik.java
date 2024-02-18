@@ -14,6 +14,7 @@ public class DamgardJurik implements CryptoSystem {
 
     private BigInteger n;  // Módulo, clave pública
     private BigInteger nPowSPlusOne;  // n^s+1 la diferencia con Paillier es que nSquared es n^2
+    private BigInteger ns;  // n^s
     private BigInteger g;  // Generador, clave pública, puede ser n+1
     private BigInteger lambda;  // Lambda, clave privada
     private final int s;  // Factor de expansión
@@ -45,6 +46,7 @@ public class DamgardJurik implements CryptoSystem {
         } while (p.equals(q));
 
         n = p.multiply(q);
+        ns = n.pow(s);
         nPowSPlusOne = n.pow(s + 1);
         lambda = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE)).divide(p.subtract(BigInteger.ONE).gcd(q.subtract(BigInteger.ONE)));
 
@@ -55,6 +57,7 @@ public class DamgardJurik implements CryptoSystem {
         }
     }
 
+
     // Comprueba si g es válido, si g es coprimo con n y si n divide el orden de g
     private boolean isValidGenerator(BigInteger g) {
         BigInteger exp = n.pow(s + 1);
@@ -63,19 +66,29 @@ public class DamgardJurik implements CryptoSystem {
 
     // Cifrado
     public BigInteger Encrypt(BigInteger plaintext) {
-        SecureRandom random = new SecureRandom();
-        BigInteger r = new BigInteger(n.bitLength(), random).mod(n);
-        return g.modPow(plaintext, n.pow(s + 1))
-                .multiply(r.modPow(n.pow(s), n.pow(s + 1)))
-                .mod(n.pow(s + 1));
+        BigInteger r;
+        do {
+            r = new BigInteger(n.bitLength(), new SecureRandom());
+        } while (r.compareTo(n) >= 0);
+        return g.modPow(plaintext, nPowSPlusOne).multiply(r.modPow(n, nPowSPlusOne)).mod(nPowSPlusOne);
     }
 
     // Descifrado
     public BigInteger Decrypt(BigInteger ciphertext) {
-        BigInteger u = ciphertext.modPow(lambda, nPowSPlusOne).subtract(BigInteger.ONE).divide(n);
-        BigInteger v = g.modPow(lambda, nPowSPlusOne).subtract(BigInteger.ONE).divide(n).modInverse(n);
-        return u.multiply(v).mod(n);
+        BigInteger u = g.modPow(lambda, nPowSPlusOne).subtract(BigInteger.ONE).divide(n).modInverse(n);
+        return (ciphertext.modPow(lambda, nPowSPlusOne).subtract(BigInteger.ONE).divide(n).multiply(u)).mod(n);
     }
+
+
+    private BigInteger invMod(BigInteger a, BigInteger m) {
+        return a.modInverse(m);
+    }
+
+
+
+
+
+
 
     // Getters para los valores de la clave pública
     public BigInteger getN() {
@@ -103,17 +116,17 @@ public class DamgardJurik implements CryptoSystem {
     public LinkedTreeMap<String, String> serializePublicKey() {
         LinkedTreeMap<String, String> publicKeyDict = new LinkedTreeMap<>();
         publicKeyDict.put("n", n.toString());
-        publicKeyDict.put("g", g.toString());
+        publicKeyDict.put("s", String.valueOf(s));
         return publicKeyDict;
     }
 
     // Reconstruir clave pública
     public LinkedTreeMap<String, BigInteger> reconstructPublicKey(LinkedTreeMap<String, String> publicKeyDict) {
-        n = new BigInteger(publicKeyDict.get("n"));
-        g = new BigInteger(publicKeyDict.get("g"));
+        BigInteger newN = new BigInteger(publicKeyDict.get("n"));
+        BigInteger newS = new BigInteger(publicKeyDict.get("s"));
         LinkedTreeMap<String, BigInteger> pubkey = new LinkedTreeMap<>();
-        pubkey.put("n", n);
-        pubkey.put("g", g);
+        pubkey.put("n", newN);
+        pubkey.put("s", newS);
         return pubkey;
     }
 
@@ -183,8 +196,8 @@ public class DamgardJurik implements CryptoSystem {
             BigInteger rb = new BigInteger(1000, rand).add(BigInteger.ONE);
             BigInteger Epbj = hornerEvalCrypt(encryptedCoeff, BigInteger.valueOf(element), this);
             BigInteger result = PeerPubKey.Encrypt(BigInteger.valueOf(element));
-            BigInteger mult = multiplyEncryptedByScalar(Epbj, rb);
-            result = addEncryptedNumbers(result, mult);
+            BigInteger mult = PeerPubKey.multiplyEncryptedByScalar(Epbj, rb);
+            result = PeerPubKey.addEncryptedNumbers(result, mult);
             encryptedResult.add(result);
         }
         return encryptedResult;

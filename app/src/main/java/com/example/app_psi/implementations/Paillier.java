@@ -172,11 +172,13 @@ public class Paillier implements CryptoSystem {
     public ArrayList<BigInteger> handleOPESecondStep(ArrayList<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n) {
         ArrayList<BigInteger> encryptedResult = new ArrayList<>();
         Paillier PeerPubKey = new Paillier(n);
+        SecureRandom rand = new SecureRandom();
         for (int element : mySet) {
-            BigInteger Epbj = hornerEvalCrypt(encryptedCoeff, BigInteger.valueOf(element), this);
+            BigInteger rb = BigInteger.valueOf(rand.nextInt(1000) + 1);
+            BigInteger Epbj = hornerEvalCrypt(encryptedCoeff, BigInteger.valueOf(element), PeerPubKey);
             BigInteger result = PeerPubKey.Encrypt(BigInteger.valueOf(element));
-            BigInteger mult = this.multiplyEncryptedByScalar(Epbj, BigInteger.valueOf(-1));
-            result = this.addEncryptedNumbers(result, mult);
+            BigInteger mult = PeerPubKey.multiplyEncryptedByScalar(Epbj, rb);
+            result = PeerPubKey.addEncryptedNumbers(result, mult);
             encryptedResult.add(result);
         }
         return encryptedResult;

@@ -221,8 +221,11 @@ class LogService: Service() {
         private fun stopLoggingCpu() {
             synchronized(cpu_usage) {  // Synchronize to prevent concurrent modification
                 // 2 decimal places
-                avg_cpu_time = (cpu_usage.sum() / cpu_usage.size)
-                peak_cpu_time = cpu_usage.maxOrNull()!!
+                if (cpu_usage.isNotEmpty()) {
+                    avg_cpu_time = (cpu_usage.sum() / cpu_usage.size)
+                    peak_cpu_time = cpu_usage.maxOrNull()!!
+                }
+                else 0.0F
             }
         }
 

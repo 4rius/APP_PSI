@@ -39,8 +39,8 @@ public class Node {
     private final ZContext context;
     private final ZMQ.Socket routerSocket;
     private final Map<String, Device> devices = new HashMap<>();
-    public final Paillier paillier = new Paillier(1024); // Objeto Paillier con los métodos de claves, cifrado e intersecciones
-    public final DamgardJurik damgardJurik = new DamgardJurik(1024, 2); // Objeto DamgardJurik con los métodos de claves, cifrado e intersecciones
+    public final Paillier paillier = new Paillier(128); // Objeto Paillier con los métodos de claves, cifrado e intersecciones
+    public final DamgardJurik damgardJurik = new DamgardJurik(128, 2); // Objeto DamgardJurik con los métodos de claves, cifrado e intersecciones
     public Set<Integer> myData; // Conjunto de datos del nodo (set de 10 números aleatorios)
     private final int domain = 40;  // Dominio de los números aleatorios sobre los que se trabaja
     public HashMap<String, Object> results;  // Resultados de las intersecciones
@@ -226,13 +226,14 @@ public class Node {
                         intersectionSecondStep(peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), damgardJurik);
                         break;
                     case "Paillier OPE":
-                        OPEIntersectionSecondStep(peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), paillier);
+                    case "Paillier_OPE":
+                        OPEIntersectionSecondStep(peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), paillier);
                         break;
                     case "DamgardJurik OPE":
-                        OPEIntersectionSecondStep(peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), damgardJurik);
+                    case "DamgardJurik_OPE":
+                        OPEIntersectionSecondStep(peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), damgardJurik);
                         break;
                 }
-                System.out.println("Node " + id + " (You) - Calculating intersection with " + peer + " - " + implementation);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -249,9 +250,11 @@ public class Node {
                         intersectionFinalStep(peerData, damgardJurik);
                         break;
                     case "Paillier OPE":
+                    case "Paillier_OPE":
                         OPEIntersectionFinalStep(peerData, paillier);
                         break;
                     case "DamgardJurik OPE":
+                    case "DamgardJurik_OPE":
                         OPEIntersectionFinalStep(peerData, damgardJurik);
                         break;
                 }
@@ -375,14 +378,14 @@ public class Node {
         return "Intersection with " + device + " - " + cs.getClass().getSimpleName() + " OPE - Waiting for response...";
     }
 
-    public void OPEIntersectionSecondStep(String peer, LinkedTreeMap<String, String> peerPubKey, LinkedTreeMap<String, String> data, CryptoSystem cs) {
+    public void OPEIntersectionSecondStep(String peer, LinkedTreeMap<String, String> peerPubKey, ArrayList<String> data, CryptoSystem cs) {
         LogService.Companion.startLogging();
         Long start_time = System.currentTimeMillis();
         LinkedTreeMap<String, BigInteger> peerPubKeyReconstructed = cs.reconstructPublicKey(peerPubKey);
         // Obtenemos las raíces cifradas del peer
         ArrayList<BigInteger> coefs = new ArrayList<>();
-        for (Map.Entry<String, String> entry : data.entrySet()) {
-            coefs.add(new BigInteger(entry.getValue()));
+        for (String element : data) {
+            coefs.add(new BigInteger(element));
         }
 
         // Evaluamos el polinomio con las raíces del peer
@@ -405,12 +408,15 @@ public class Node {
     public void OPEIntersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs) {
         LogService.Companion.startLogging();
         Long start_time = System.currentTimeMillis();
-        LinkedTreeMap<String, String> encryptedEval = (LinkedTreeMap<String, String>) peerData.remove("data");
+        ArrayList<String> stringData = (ArrayList<String>) peerData.remove("data");
+        ArrayList<BigInteger> encryptedEval = new ArrayList<>();
+        for (String element : stringData) {
+            encryptedEval.add(new BigInteger(element));
+        }
         String device = (String) peerData.remove("peer");
         ArrayList<BigInteger> decryptedEval = new ArrayList<>();
-        for (Map.Entry<String, String> entry : encryptedEval.entrySet()) {
-            BigInteger decyptedValue = cs.Decrypt(new BigInteger(entry.getValue()));
-            decryptedEval.add(decyptedValue);
+        for (BigInteger element : encryptedEval) {
+            decryptedEval.add(cs.Decrypt(element));
         }
         List<Integer> intersection = new ArrayList<>();
         for (BigInteger element : decryptedEval) {
@@ -504,7 +510,7 @@ public class Node {
     public double keygen(CryptoSystem cs) {
         LogService.Companion.startLogging();
         long startTime = System.currentTimeMillis();
-        cs.keyGeneration(1024);
+        cs.keyGeneration(128);
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
         LogService.Companion.stopLogging();
