@@ -223,6 +223,7 @@ public class Node {
                         intersectionSecondStep(peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), paillier);
                         break;
                     case "DamgardJurik":
+                    case "Damgard-Jurik":
                         intersectionSecondStep(peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), damgardJurik);
                         break;
                     case "Paillier OPE":
@@ -230,7 +231,7 @@ public class Node {
                         OPEIntersectionSecondStep(peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), paillier);
                         break;
                     case "DamgardJurik OPE":
-                    case "DamgardJurik_OPE":
+                    case "Damgard-Jurik_OPE":
                         OPEIntersectionSecondStep(peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), damgardJurik);
                         break;
                 }
@@ -247,6 +248,7 @@ public class Node {
                         intersectionFinalStep(peerData, paillier);
                         break;
                     case "DamgardJurik":
+                    case "Damgard-Jurik":
                         intersectionFinalStep(peerData, damgardJurik);
                         break;
                     case "Paillier OPE":
@@ -254,7 +256,7 @@ public class Node {
                         OPEIntersectionFinalStep(peerData, paillier);
                         break;
                     case "DamgardJurik OPE":
-                    case "DamgardJurik_OPE":
+                    case "Damgard-Jurik_OPE":
                         OPEIntersectionFinalStep(peerData, damgardJurik);
                         break;
                 }
@@ -338,10 +340,11 @@ public class Node {
             }
         }
         // Guardamos el resultado
-        results.put(device, intersection);
+        results.put(device + " " + cs.getClass().getSimpleName(), intersection);
         Long end_time = System.currentTimeMillis();
         LogService.Companion.stopLogging();
         LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_F", (end_time - start_time) / 1000.0, "1.0 - DEV", device);
+        LogService.Companion.logResult(intersection, "1.0 - DEV", device, cs.getClass().getSimpleName());
         System.out.println("Node " + id + " (You) - Intersection with " + device + " - Result: " + intersection);
     }
 
@@ -425,10 +428,11 @@ public class Node {
             }
         }
         // Guardamos el resultado
-        results.put(device, intersection);
+        results.put(device + " " + cs.getClass().getSimpleName() + " OPE", intersection);
         Long end_time = System.currentTimeMillis();
         LogService.Companion.stopLogging();
         LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_OPE_F", (end_time - start_time) / 1000.0, "1.0 - DEV", device);
+        LogService.Companion.logResult(intersection, "1.0 - DEV", device, cs.getClass().getSimpleName() + "_OPE");
         System.out.println("Node " + id + " (You) - Intersection with " + device + " - Result: " + intersection);
     }
 

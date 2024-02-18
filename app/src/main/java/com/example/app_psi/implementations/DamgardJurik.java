@@ -29,11 +29,9 @@ public class DamgardJurik implements CryptoSystem {
     public DamgardJurik(BigInteger n, int expansionFactor) {
         this.n = n;
         this.s = expansionFactor;
+        this.ns = n.pow(s);
+        this.g = n.add(BigInteger.ONE);
         this.nPowSPlusOne = n.pow(s + 1);
-        while (isValidGenerator(g)) {
-            System.out.println("g is not good enough. Trying again...");
-            g = g.add(BigInteger.ONE);
-        }
     }
 
     // Generación de claves
@@ -70,13 +68,13 @@ public class DamgardJurik implements CryptoSystem {
         do {
             r = new BigInteger(n.bitLength(), new SecureRandom());
         } while (r.compareTo(n) >= 0);
-        return g.modPow(plaintext, nPowSPlusOne).multiply(r.modPow(n, nPowSPlusOne)).mod(nPowSPlusOne);
+        return g.modPow(plaintext, nPowSPlusOne).multiply(r.modPow(ns, nPowSPlusOne)).mod(nPowSPlusOne);
     }
 
     // Descifrado
     public BigInteger Decrypt(BigInteger ciphertext) {
         BigInteger u = g.modPow(lambda, nPowSPlusOne).subtract(BigInteger.ONE).divide(n).modInverse(n);
-        return (ciphertext.modPow(lambda, nPowSPlusOne).subtract(BigInteger.ONE).divide(n).multiply(u)).mod(n);
+        return ciphertext.modPow(lambda, nPowSPlusOne).subtract(BigInteger.ONE).divide(n).multiply(u).mod(n);
     }
 
 
@@ -194,7 +192,7 @@ public class DamgardJurik implements CryptoSystem {
         DamgardJurik PeerPubKey = new DamgardJurik(n, 2);
         for (Integer element : mySet) {
             BigInteger rb = new BigInteger(1000, rand).add(BigInteger.ONE);
-            BigInteger Epbj = hornerEvalCrypt(encryptedCoeff, BigInteger.valueOf(element), this);
+            BigInteger Epbj = hornerEvalCrypt(encryptedCoeff, BigInteger.valueOf(element), PeerPubKey);
             BigInteger result = PeerPubKey.Encrypt(BigInteger.valueOf(element));
             BigInteger mult = PeerPubKey.multiplyEncryptedByScalar(Epbj, rb);
             result = PeerPubKey.addEncryptedNumbers(result, mult);

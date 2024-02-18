@@ -135,6 +135,25 @@ class LogService: Service() {
             Log.d(ContentValues.TAG, "Activity log sent to Firebase")
         }
 
+        @SuppressLint("SimpleDateFormat")
+        fun logResult(result: List<Int>, version: String, peer: String, implementation: String) {
+            val formattedId = NetworkService.getNode()?.id?.replace(".", "-")
+            val timestamp = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date())
+            val ref = instance?.realtimeDatabase?.getReference("logs/$formattedId/intersection_results")
+            val log = hashMapOf(
+                "id" to instance?.id,
+                "timestamp" to timestamp,
+                "version" to version,
+                "type" to "Android " + android.os.Build.VERSION.RELEASE,
+                "peer" to peer,
+                "implementation" to implementation,
+                "result" to result,
+            )
+            ref?.push()?.setValue(log)
+            clean()
+            Log.d(ContentValues.TAG, "Intersection result log sent to Firebase")
+        }
+
         private fun getRamInfo(): String {
             val memInfo = ActivityManager.MemoryInfo()
             val activityManager = instance?.getSystemService(ACTIVITY_SERVICE) as ActivityManager
