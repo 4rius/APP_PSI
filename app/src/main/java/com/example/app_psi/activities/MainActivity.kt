@@ -42,10 +42,13 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     notConnected()
                 }
-                binding.textViewNetworkId.text = "Network ID: ${NetworkService.getNode()?.id}"
-                binding.textViewNetworkPort.text = "Network port: ${NetworkService.getNode()?.port}"
+                binding.textViewNetworkId.text =
+                    getString(R.string.network_id, NetworkService.getNode()?.id)
+                binding.textViewNetworkPort.text =
+                    getString(R.string.network_port, NetworkService.getNode()?.port.toString())
             } else if (intent.action == NetworkService.ACTION_STATUS_UPDATED) {
-                binding.textViewNetworkStatus.text = "Network status: ${NetworkService.getStatus()}"
+                binding.textViewNetworkStatus.text =
+                    getString(R.string.network_status, NetworkService.getStatus())
                 setupRecyclerView()
             }
         }
@@ -288,7 +291,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun notConnected() {
         binding.textViewNetworkStatus.animate().alpha(0f).setDuration(500).withEndAction {
-            binding.textViewNetworkStatus.text = "Network status: ${NetworkService.getStatus()}"
+            binding.textViewNetworkStatus.text =
+                getString(R.string.network_status, NetworkService.getStatus())
             binding.textViewNetworkStatus.setTextColor(Color.RED)
             binding.textViewNetworkStatus.animate().alpha(1f).setDuration(500).start()
         }
@@ -297,7 +301,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun connected() {
         binding.textViewNetworkStatus.animate().alpha(0f).setDuration(500).withEndAction {
-            binding.textViewNetworkStatus.text = "Network status: ${NetworkService.getStatus()}"
+            binding.textViewNetworkStatus.text =
+                getString(R.string.network_status, NetworkService.getStatus())
             binding.textViewNetworkStatus.setTextColor(Color.GREEN)
             binding.textViewNetworkStatus.animate().alpha(1f).setDuration(500).start()
         }

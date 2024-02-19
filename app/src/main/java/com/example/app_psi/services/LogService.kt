@@ -136,7 +136,7 @@ class LogService: Service() {
         }
 
         @SuppressLint("SimpleDateFormat")
-        fun logResult(result: List<Int>, version: String, peer: String, implementation: String) {
+        fun logResult(result: List<Int>, size: Int, version: String, peer: String, implementation: String) {
             val formattedId = NetworkService.getNode()?.id?.replace(".", "-")
             val timestamp = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date())
             val ref = instance?.realtimeDatabase?.getReference("logs/$formattedId/intersection_results")
@@ -148,6 +148,7 @@ class LogService: Service() {
                 "peer" to peer,
                 "implementation" to implementation,
                 "result" to result,
+                "size" to size,
             )
             ref?.push()?.setValue(log)
             clean()
@@ -260,6 +261,6 @@ class LogService: Service() {
 
 
 
-        var instance: LogService? = null
+        var instance: LogService? = null  // Singleton
         }
 }

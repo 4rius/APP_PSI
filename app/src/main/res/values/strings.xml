@@ -79,4 +79,7 @@
     <string name="find_intersection_dj_ope">Find intersection - Damgard Jurik OPE</string>
     <string name="intersect_everyone_paillier_ope">Find every intersection - Paillier OPE</string>
     <string name="intersect_everyone_dj_ope">Find every intersection - Damgard Jurik OPE</string>
+    <string name="network_id">Network ID: %1$s</string>
+    <string name="network_port">Network port: %1$s</string>
+    <string name="network_status">Network status: %1$s</string>
 </resources>

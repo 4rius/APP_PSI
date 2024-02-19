@@ -44,6 +44,7 @@ public class Node {
     public Set<Integer> myData; // Conjunto de datos del nodo (set de 10 números aleatorios)
     private final int domain = 40;  // Dominio de los números aleatorios sobre los que se trabaja
     public HashMap<String, Object> results;  // Resultados de las intersecciones
+    private final String VERSION = "1.1 - DEV";
     public Node(String id, int port, ArrayList<String> peers) {
         this.myData = new HashSet<>();
         Random random = new Random();
@@ -268,29 +269,31 @@ public class Node {
 
     public String intersectionFirstStep(String device, CryptoSystem cs) {
         if (devices.containsKey(device)) {
-            LogService.Companion.startLogging();
-            Long start_time = System.currentTimeMillis();
-            Device device1 = devices.get(device);
-            System.out.println("Node " + id + " (You) - Intersection with " + device + " - " + cs.getClass().getSimpleName());
-            // Ciframos los datos del nodo
-            LinkedTreeMap<String, BigInteger> encryptedSet = cs.encryptMyData(myData, domain);
-            // Serializamos la clave pública
-            LinkedTreeMap<String, String> publicKeyDict = cs.serializePublicKey();
-            // Creamos con Gson un objeto que contenga el conjunto cifrado, la clave pública y la implementacion
-            Gson gson = new Gson();
-            HashMap<String, Object> message = new HashMap<>();
-            message.put("data", encryptedSet);
-            message.put("pubkey", publicKeyDict);
-            message.put("implementation", cs.getClass().getSimpleName());
-            message.put("peer", id);
-            String jsonMessage = gson.toJson(message);
-            // Enviamos el mensaje
-            assert device1 != null;
-            device1.socket.send(jsonMessage);
-            Long end_time = System.currentTimeMillis();
-            LogService.Companion.stopLogging();
-            LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName(), (end_time - start_time) / 1000.0, "1.0 - DEV", device);
-        } else {
+            new Thread(() -> {
+                LogService.Companion.startLogging();
+                Long start_time = System.currentTimeMillis();
+                Device device1 = devices.get(device);
+                System.out.println("Node " + id + " (You) - Intersection with " + device + " - " + cs.getClass().getSimpleName());
+                // Ciframos los datos del nodo
+                LinkedTreeMap<String, BigInteger> encryptedSet = cs.encryptMyData(myData, domain);
+                // Serializamos la clave pública
+                LinkedTreeMap<String, String> publicKeyDict = cs.serializePublicKey();
+                // Creamos con Gson un objeto que contenga el conjunto cifrado, la clave pública y la implementacion
+                Gson gson = new Gson();
+                HashMap<String, Object> message = new HashMap<>();
+                message.put("data", encryptedSet);
+                message.put("pubkey", publicKeyDict);
+                message.put("implementation", cs.getClass().getSimpleName());
+                message.put("peer", id);
+                String jsonMessage = gson.toJson(message);
+                // Enviamos el mensaje
+                assert device1 != null;
+                device1.socket.send(jsonMessage);
+                Long end_time = System.currentTimeMillis();
+                LogService.Companion.stopLogging();
+                LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName(), (end_time - start_time) / 1000.0, VERSION, device);
+            }).start();
+            } else {
             return "Intersection with " + device + " - " + cs.getClass().getSimpleName() + " - Device not found";
         }
         return "Intersection with " + device + " - " + cs.getClass().getSimpleName() + " - Waiting for response...";
@@ -317,7 +320,7 @@ public class Node {
         Objects.requireNonNull(devices.get(peer)).socket.send(gson.toJson(messageToSend));
         Long end_time = System.currentTimeMillis();
         LogService.Companion.stopLogging();
-        LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_2", (end_time - start_time) / 1000.0, "1.0 - DEV", peer);
+        LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_2", (end_time - start_time) / 1000.0, VERSION, peer);
     }
 
     @SuppressWarnings("unchecked")
@@ -343,8 +346,9 @@ public class Node {
         results.put(device + " " + cs.getClass().getSimpleName(), intersection);
         Long end_time = System.currentTimeMillis();
         LogService.Companion.stopLogging();
-        LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_F", (end_time - start_time) / 1000.0, "1.0 - DEV", device);
-        LogService.Companion.logResult(intersection, "1.0 - DEV", device, cs.getClass().getSimpleName());
+        LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_F", (end_time - start_time) / 1000.0, VERSION, device);
+        int size = intersection.size();
+        LogService.Companion.logResult(intersection, size, VERSION, device, cs.getClass().getSimpleName());
         System.out.println("Node " + id + " (You) - Intersection with " + device + " - Result: " + intersection);
     }
 
@@ -374,7 +378,7 @@ public class Node {
             device1.socket.send(jsonMessage);
             Long end_time = System.currentTimeMillis();
             LogService.Companion.stopLogging();
-            LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_OPE_1", (end_time - start_time) / 1000.0, "1.0 - DEV", device);
+            LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_OPE_1", (end_time - start_time) / 1000.0, VERSION, device);
         } else {
             return "Intersection with " + device + " - " + cs.getClass().getSimpleName() + " OPE - Device not found";
         }
@@ -404,7 +408,7 @@ public class Node {
         Objects.requireNonNull(devices.get(peer)).socket.send(gson.toJson(messageToSend));
         Long end_time = System.currentTimeMillis();
         LogService.Companion.stopLogging();
-        LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_OPE_2", (end_time - start_time) / 1000.0, "1.0 - DEV", peer);
+        LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_OPE_2", (end_time - start_time) / 1000.0, VERSION, peer);
     }
 
     @SuppressWarnings("unchecked")
@@ -431,8 +435,9 @@ public class Node {
         results.put(device + " " + cs.getClass().getSimpleName() + " OPE", intersection);
         Long end_time = System.currentTimeMillis();
         LogService.Companion.stopLogging();
-        LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_OPE_F", (end_time - start_time) / 1000.0, "1.0 - DEV", device);
-        LogService.Companion.logResult(intersection, "1.0 - DEV", device, cs.getClass().getSimpleName() + "_OPE");
+        LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_OPE_F", (end_time - start_time) / 1000.0, VERSION, device);
+        int size = intersection.size();
+        LogService.Companion.logResult(intersection, size, VERSION, device, cs.getClass().getSimpleName() + "_OPE");
         System.out.println("Node " + id + " (You) - Intersection with " + device + " - Result: " + intersection);
     }
 
