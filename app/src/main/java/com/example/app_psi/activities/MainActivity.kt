@@ -20,8 +20,8 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.app_psi.DbConstants.DbConstants.ACTION_SERVICE_CREATED
-import com.example.app_psi.DbConstants.DbConstants.ACTION_STATUS_UPDATED
+import com.example.app_psi.DbConstants.ACTION_SERVICE_CREATED
+import com.example.app_psi.DbConstants.ACTION_STATUS_UPDATED
 import com.example.app_psi.R
 import com.example.app_psi.adapters.DeviceListAdapter
 import com.example.app_psi.databinding.ActivityMainBinding

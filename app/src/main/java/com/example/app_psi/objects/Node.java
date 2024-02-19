@@ -1,10 +1,11 @@
 package com.example.app_psi.objects;
 
-import static com.example.app_psi.DbConstants.DbConstants.DFL_BIT_LENGTH;
-import static com.example.app_psi.DbConstants.DbConstants.DFL_DOMAIN;
-import static com.example.app_psi.DbConstants.DbConstants.DFL_EXPANSION_FACTOR;
-import static com.example.app_psi.DbConstants.DbConstants.DFL_SET_SIZE;
-import static com.example.app_psi.DbConstants.DbConstants.VERSION;
+
+import static com.example.app_psi.DbConstants.DFL_BIT_LENGTH;
+import static com.example.app_psi.DbConstants.DFL_DOMAIN;
+import static com.example.app_psi.DbConstants.DFL_EXPANSION_FACTOR;
+import static com.example.app_psi.DbConstants.DFL_SET_SIZE;
+import static com.example.app_psi.DbConstants.VERSION;
 
 import android.annotation.SuppressLint;
 import android.util.Log;
