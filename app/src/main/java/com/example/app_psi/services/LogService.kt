@@ -9,7 +9,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
-import com.example.app_psi.DbConstants.Companion.LOG_INTERVAL
+import com.example.app_psi.DbConstants.DbConstants.LOG_INTERVAL
 import com.example.app_psi.objects.Node
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.CoroutineScope

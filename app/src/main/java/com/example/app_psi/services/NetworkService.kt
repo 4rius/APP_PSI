@@ -3,8 +3,8 @@ package com.example.app_psi.services
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import com.example.app_psi.DbConstants.Companion.ACTION_SERVICE_CREATED
-import com.example.app_psi.DbConstants.Companion.DFL_PORT
+import com.example.app_psi.DbConstants.DbConstants.ACTION_SERVICE_CREATED
+import com.example.app_psi.DbConstants.DbConstants.DFL_PORT
 import com.example.app_psi.objects.Node
 import java.net.InetAddress
 import java.net.NetworkInterface

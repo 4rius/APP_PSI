@@ -2,7 +2,7 @@ package com.example.app_psi
 
 class DbConstants {
 
-    companion object {
+    object DbConstants {
 
         // NetworkService
         const val ACTION_STATUS_UPDATED = "com.example.app_psi.receivers.ACTION_STATUS_UPDATED"
