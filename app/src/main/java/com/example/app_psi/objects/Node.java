@@ -1,5 +1,11 @@
 package com.example.app_psi.objects;
 
+import static com.example.app_psi.DbConstants.DFL_BIT_LENGTH;
+import static com.example.app_psi.DbConstants.DFL_DOMAIN;
+import static com.example.app_psi.DbConstants.DFL_EXPANSION_FACTOR;
+import static com.example.app_psi.DbConstants.DFL_SET_SIZE;
+import static com.example.app_psi.DbConstants.VERSION;
+
 import android.annotation.SuppressLint;
 import android.util.Log;
 
@@ -39,16 +45,15 @@ public class Node {
     private final ZContext context;
     private final ZMQ.Socket routerSocket;
     private final Map<String, Device> devices = new HashMap<>();
-    public final Paillier paillier = new Paillier(128); // Objeto Paillier con los métodos de claves, cifrado e intersecciones
-    public final DamgardJurik damgardJurik = new DamgardJurik(128, 2); // Objeto DamgardJurik con los métodos de claves, cifrado e intersecciones
+    public final Paillier paillier = new Paillier(DFL_BIT_LENGTH); // Objeto Paillier con los métodos de claves, cifrado e intersecciones
+    public final DamgardJurik damgardJurik = new DamgardJurik(DFL_BIT_LENGTH, DFL_EXPANSION_FACTOR); // Objeto DamgardJurik con los métodos de claves, cifrado e intersecciones
     public Set<Integer> myData; // Conjunto de datos del nodo (set de 10 números aleatorios)
-    private final int domain = 40;  // Dominio de los números aleatorios sobre los que se trabaja
+    private final int domain = DFL_DOMAIN;  // Dominio de los números aleatorios sobre los que se trabaja
     public HashMap<String, Object> results;  // Resultados de las intersecciones
-    private final String VERSION = "1.1 - DEV";
     public Node(String id, int port, ArrayList<String> peers) {
         this.myData = new HashSet<>();
         Random random = new Random();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < DFL_SET_SIZE; i++) {
             myData.add(random.nextInt(domain));
         }
         this.results = new HashMap<>();
@@ -519,7 +524,7 @@ public class Node {
     public double keygen(CryptoSystem cs) {
         LogService.Companion.startLogging();
         long startTime = System.currentTimeMillis();
-        cs.keyGeneration(128);
+        cs.keyGeneration(DFL_BIT_LENGTH);
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
         LogService.Companion.stopLogging();

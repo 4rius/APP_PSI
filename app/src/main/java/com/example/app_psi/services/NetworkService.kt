@@ -3,6 +3,8 @@ package com.example.app_psi.services
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
+import com.example.app_psi.DbConstants.Companion.ACTION_SERVICE_CREATED
+import com.example.app_psi.DbConstants.Companion.DFL_PORT
 import com.example.app_psi.objects.Node
 import java.net.InetAddress
 import java.net.NetworkInterface
@@ -22,7 +24,7 @@ class NetworkService: Service() {
         val peers = ArrayList<String>()
         peers.add("192.168.1.3:5001")
         peers.add("192.168.1.2:5001")
-        node = Node(id, 5001, peers)
+        node = Node(id, DFL_PORT, peers)
         node.start()
         // Mandar un broadcast para que la MainActivity sepa que el servicio se ha creado
         val intent = Intent(ACTION_SERVICE_CREATED)
@@ -68,8 +70,6 @@ class NetworkService: Service() {
     companion object {
 
         private var instance: NetworkService? = null
-        const val ACTION_SERVICE_CREATED = "com.example.app_psi.receivers.ACTION_SERVICE_CREATED"
-        const val ACTION_STATUS_UPDATED = "com.example.app_psi.receivers.ACTION_STATUS_UPDATED"
 
         fun getNode(): Node? {
             return instance?.node

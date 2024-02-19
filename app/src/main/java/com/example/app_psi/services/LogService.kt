@@ -9,6 +9,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
+import com.example.app_psi.DbConstants.Companion.LOG_INTERVAL
 import com.example.app_psi.objects.Node
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.CoroutineScope
@@ -27,7 +28,6 @@ class LogService: Service() {
     private lateinit var node: Node
     lateinit var id: String
     lateinit var realtimeDatabase: FirebaseDatabase
-    private val logInterval = 10000L
 
     override fun onCreate() {
         super.onCreate()
@@ -52,7 +52,7 @@ class LogService: Service() {
                 else "Stopped"
                 val message = "[$dateFormatted] - ID: $fullId - Port: $port - Devices: $devices - Status: $isRunning"
                 Log.d(ContentValues.TAG, message)
-                handler.postDelayed(this, logInterval)
+                handler.postDelayed(this, LOG_INTERVAL)
             }
         }
         handler.post(logRunnable)

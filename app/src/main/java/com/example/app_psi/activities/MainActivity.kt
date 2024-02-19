@@ -20,6 +20,8 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.app_psi.DbConstants.Companion.ACTION_SERVICE_CREATED
+import com.example.app_psi.DbConstants.Companion.ACTION_STATUS_UPDATED
 import com.example.app_psi.R
 import com.example.app_psi.adapters.DeviceListAdapter
 import com.example.app_psi.databinding.ActivityMainBinding
@@ -34,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == NetworkService.ACTION_SERVICE_CREATED) {
+            if (intent.action == ACTION_SERVICE_CREATED) {
                 if (NetworkService.getStatus() == "Connected") {
                     // Encendemos el LogService
                     startService(Intent(this@MainActivity, LogService::class.java))
@@ -46,7 +48,7 @@ class MainActivity : AppCompatActivity() {
                     getString(R.string.network_id, NetworkService.getNode()?.id)
                 binding.textViewNetworkPort.text =
                     getString(R.string.network_port, NetworkService.getNode()?.port.toString())
-            } else if (intent.action == NetworkService.ACTION_STATUS_UPDATED) {
+            } else if (intent.action == ACTION_STATUS_UPDATED) {
                 binding.textViewNetworkStatus.text =
                     getString(R.string.network_status, NetworkService.getStatus())
                 setupRecyclerView()
@@ -64,8 +66,8 @@ class MainActivity : AppCompatActivity() {
 
         FirebaseApp.initializeApp(this)
 
-        registerReceiver(receiver, IntentFilter(NetworkService.ACTION_SERVICE_CREATED), RECEIVER_EXPORTED)
-        registerReceiver(receiver, IntentFilter(NetworkService.ACTION_STATUS_UPDATED), RECEIVER_EXPORTED)
+        registerReceiver(receiver, IntentFilter(ACTION_SERVICE_CREATED), RECEIVER_EXPORTED)
+        registerReceiver(receiver, IntentFilter(ACTION_STATUS_UPDATED), RECEIVER_EXPORTED)
         startNetworkService()
         setupFloatingActionButton()
 
@@ -315,8 +317,8 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         val filter = IntentFilter()
-        filter.addAction(NetworkService.ACTION_SERVICE_CREATED)
-        filter.addAction(NetworkService.ACTION_STATUS_UPDATED)
+        filter.addAction(ACTION_SERVICE_CREATED)
+        filter.addAction(ACTION_STATUS_UPDATED)
         registerReceiver(receiver, filter, RECEIVER_EXPORTED)
     }
 
