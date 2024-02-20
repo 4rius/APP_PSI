@@ -18,7 +18,6 @@ import com.example.app_psi.DbConstants.INTERSECTION_STEP_2
 import com.example.app_psi.DbConstants.INTERSECTION_STEP_F
 import com.example.app_psi.DbConstants.KEYGEN_DONE
 import com.example.app_psi.DbConstants.KEYGEN_ERROR
-import com.example.app_psi.DbConstants.RECV_MESSAGE
 import com.example.app_psi.R
 import com.example.app_psi.objects.Node
 import java.net.InetAddress
@@ -41,16 +40,13 @@ class NetworkService: Service() {
                     sendNotification("Key generation error", "KEYGEN_ERROR")
                 }
                 INTERSECTION_STEP_1 -> {
-                    sendNotification("Intersection step 1 done", "INTERSECTION_STEP_1")
+                    sendNotification("Intersection step 1 done", "INTERSECTION STEP 1")
                 }
                 INTERSECTION_STEP_2 -> {
-                    sendNotification("Intersection step 2 done", "INTERSECTION_STEP_2")
+                    sendNotification("Intersection step 2 done", "INTERSECTION STEP 2")
                 }
                 INTERSECTION_STEP_F -> {
-                    sendNotification("Intersection finished", "INTERSECTION_STEP_F")
-                }
-                RECV_MESSAGE -> {
-                    sendNotification("Your node received a message! Check out the logcat to see more", "Message received")
+                    sendNotification("Find details on the results option", "INTERSECTION FOUND")
                 }
             }
         }
@@ -94,7 +90,6 @@ class NetworkService: Service() {
         registerReceiver(receiver, IntentFilter(INTERSECTION_STEP_1), RECEIVER_EXPORTED)
         registerReceiver(receiver, IntentFilter(INTERSECTION_STEP_2), RECEIVER_EXPORTED)
         registerReceiver(receiver, IntentFilter(INTERSECTION_STEP_F), RECEIVER_EXPORTED)
-        registerReceiver(receiver, IntentFilter(RECV_MESSAGE), RECEIVER_EXPORTED)
     }
 
     private fun getLocalIp(): String? {

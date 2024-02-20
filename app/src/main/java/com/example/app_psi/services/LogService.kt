@@ -9,6 +9,10 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
+import com.example.app_psi.DbConstants.INTERSECTION_STEP_1
+import com.example.app_psi.DbConstants.INTERSECTION_STEP_2
+import com.example.app_psi.DbConstants.INTERSECTION_STEP_F
+import com.example.app_psi.DbConstants.KEYGEN_DONE
 import com.example.app_psi.DbConstants.LOG_INTERVAL
 import com.example.app_psi.objects.Node
 import com.google.firebase.database.FirebaseDatabase
@@ -95,7 +99,7 @@ class LogService: Service() {
             val formattedId = NetworkService.getNode()?.id?.replace(".", "-")
             val timestamp = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date())
             val ref = instance?.realtimeDatabase?.getReference("logs/$formattedId/activities")
-            cpuTime / 1_000_000.0
+            val cpuTimeF = cpuTime / 1_000_000.0
             if (peer != null) {
                 val log = hashMapOf(
                     "id" to instance?.id,
@@ -109,10 +113,11 @@ class LogService: Service() {
                     "Peak_RAM" to "$peak_ram_usage MB",
                     "App_Avg_RAM" to "$app_avg_ram_usage MB",
                     "App_Peak_RAM" to "$peak_app_ram_usage MB",
-                    "CPU_time" to "$cpuTime ms"
+                    "CPU_time" to "$cpuTimeF ms"
                 )
                 ref?.push()?.setValue(log)
                 clean()
+                broadcaster(acitvityCode)
                 Log.d(ContentValues.TAG, "Activity log sent to Firebase")
                 return
             }
@@ -127,13 +132,23 @@ class LogService: Service() {
                 "Peak_RAM" to "$peak_ram_usage MB",
                 "App_Avg_RAM" to "$app_avg_ram_usage MB",
                 "App_Peak_RAM" to "$peak_app_ram_usage MB",
-                "CPU_time" to "$cpuTime ms"
+                "CPU_time" to "$cpuTimeF ms"
             )
             ref?.push()?.setValue(log)
             clean()
             Log.d(ContentValues.TAG, "Activity log sent to Firebase")
-            broadcastThis(acitvityCode)
+            broadcaster(acitvityCode)
         }
+
+        private fun broadcaster(activityCode: String) {
+            when {
+                activityCode.startsWith("KEYGEN") -> broadcastThis(KEYGEN_DONE)
+                activityCode.startsWith("INTERSECTION") && activityCode.endsWith("1") -> broadcastThis(INTERSECTION_STEP_1)
+                activityCode.startsWith("INTERSECTION") && activityCode.endsWith("2") -> broadcastThis(INTERSECTION_STEP_2)
+                activityCode.startsWith("INTERSECTION") && activityCode.endsWith("F") -> broadcastThis(INTERSECTION_STEP_F)
+            }
+        }
+
 
         private fun broadcastThis(acitvityCode: String) {
             val intent = Intent(acitvityCode)
@@ -158,6 +173,7 @@ class LogService: Service() {
             ref?.push()?.setValue(log)
             clean()
             Log.d(ContentValues.TAG, "Intersection result log sent to Firebase")
+            broadcaster("INTERSECTION_STEP_F")
         }
 
         private fun getRamInfo(): String {
