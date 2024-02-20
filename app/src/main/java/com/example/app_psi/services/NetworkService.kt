@@ -1,10 +1,25 @@
 package com.example.app_psi.services
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
 import android.os.IBinder
+import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationCompat
 import com.example.app_psi.DbConstants.ACTION_SERVICE_CREATED
 import com.example.app_psi.DbConstants.DFL_PORT
+import com.example.app_psi.DbConstants.INTERSECTION_STEP_1
+import com.example.app_psi.DbConstants.INTERSECTION_STEP_2
+import com.example.app_psi.DbConstants.INTERSECTION_STEP_F
+import com.example.app_psi.DbConstants.KEYGEN_DONE
+import com.example.app_psi.DbConstants.KEYGEN_ERROR
+import com.example.app_psi.DbConstants.RECV_MESSAGE
+import com.example.app_psi.R
 import com.example.app_psi.objects.Node
 import java.net.InetAddress
 import java.net.NetworkInterface
@@ -16,7 +31,52 @@ class NetworkService: Service() {
 
     lateinit var node: Node
     lateinit var id: String
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                KEYGEN_DONE -> {
+                    sendNotification("Key generation done", "KEYGEN_DONE")
+                }
+                KEYGEN_ERROR -> {
+                    sendNotification("Key generation error", "KEYGEN_ERROR")
+                }
+                INTERSECTION_STEP_1 -> {
+                    sendNotification("Intersection step 1 done", "INTERSECTION_STEP_1")
+                }
+                INTERSECTION_STEP_2 -> {
+                    sendNotification("Intersection step 2 done", "INTERSECTION_STEP_2")
+                }
+                INTERSECTION_STEP_F -> {
+                    sendNotification("Intersection finished", "INTERSECTION_STEP_F")
+                }
+                RECV_MESSAGE -> {
+                    sendNotification("Your node received a message! Check out the logcat to see more", "Message received")
+                }
+            }
+        }
+    }
 
+    private fun sendNotification(s: String, t: String) {
+        val notificationId = 1
+        val channelId = "channel_id"
+        val notificationBuilder = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle(t)
+            .setContentText(s)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(channelId, "Channel description", NotificationManager.IMPORTANCE_DEFAULT)
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        notificationManager.notify(notificationId, notificationBuilder.build())
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate() {
         super.onCreate()
         instance = this
@@ -29,6 +89,12 @@ class NetworkService: Service() {
         // Mandar un broadcast para que la MainActivity sepa que el servicio se ha creado
         val intent = Intent(ACTION_SERVICE_CREATED)
         sendBroadcast(intent)
+        registerReceiver(receiver, IntentFilter(KEYGEN_DONE), RECEIVER_EXPORTED)
+        registerReceiver(receiver, IntentFilter(KEYGEN_ERROR), RECEIVER_EXPORTED)
+        registerReceiver(receiver, IntentFilter(INTERSECTION_STEP_1), RECEIVER_EXPORTED)
+        registerReceiver(receiver, IntentFilter(INTERSECTION_STEP_2), RECEIVER_EXPORTED)
+        registerReceiver(receiver, IntentFilter(INTERSECTION_STEP_F), RECEIVER_EXPORTED)
+        registerReceiver(receiver, IntentFilter(RECV_MESSAGE), RECEIVER_EXPORTED)
     }
 
     private fun getLocalIp(): String? {

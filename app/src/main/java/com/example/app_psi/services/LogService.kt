@@ -91,10 +91,11 @@ class LogService: Service() {
             peak_app_ram_usage = 0
         }
         @SuppressLint("SimpleDateFormat")
-        fun logActivity(acitvityCode: String, time: Any, version: String, peer: String?= null) {
+        fun logActivity(acitvityCode: String, time: Any, version: String, peer: String?= null, cpuTime: Long) {
             val formattedId = NetworkService.getNode()?.id?.replace(".", "-")
             val timestamp = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date())
             val ref = instance?.realtimeDatabase?.getReference("logs/$formattedId/activities")
+            cpuTime / 1_000_000.0
             if (peer != null) {
                 val log = hashMapOf(
                     "id" to instance?.id,
@@ -108,8 +109,7 @@ class LogService: Service() {
                     "Peak_RAM" to "$peak_ram_usage MB",
                     "App_Avg_RAM" to "$app_avg_ram_usage MB",
                     "App_Peak_RAM" to "$peak_app_ram_usage MB",
-                    "Avg_CPU_time" to "$avg_cpu_time ms",
-                    "Peak_CPU_time" to "$peak_cpu_time ms"
+                    "CPU_time" to "$cpuTime ms"
                 )
                 ref?.push()?.setValue(log)
                 clean()
@@ -127,12 +127,17 @@ class LogService: Service() {
                 "Peak_RAM" to "$peak_ram_usage MB",
                 "App_Avg_RAM" to "$app_avg_ram_usage MB",
                 "App_Peak_RAM" to "$peak_app_ram_usage MB",
-                "Avg_CPU_time" to "$avg_cpu_time ms",
-                "Peak_CPU_time" to "$peak_cpu_time ms"
+                "CPU_time" to "$cpuTime ms"
             )
             ref?.push()?.setValue(log)
             clean()
             Log.d(ContentValues.TAG, "Activity log sent to Firebase")
+            broadcastThis(acitvityCode)
+        }
+
+        private fun broadcastThis(acitvityCode: String) {
+            val intent = Intent(acitvityCode)
+            instance?.sendBroadcast(intent)
         }
 
         @SuppressLint("SimpleDateFormat")
@@ -201,13 +206,13 @@ class LogService: Service() {
 
         fun startLogging() {
             isLoggingCPU = true
-            startLoggingCpu()
+            //startLoggingCpu()
             startLoggingRam()
         }
 
         fun stopLogging() {
             isLoggingCPU = false
-            stopLoggingCpu()
+            //stopLoggingCpu()
             stopLoggingRam()
         }
 

@@ -233,36 +233,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun newKeys(scheme: String) {
-        val progressDialog = ProgressDialog(this)
-        progressDialog.setMessage("Generating new keys...")
-        progressDialog.setCancelable(false)
-        progressDialog.show()
-        // Don't block the UI thread
-        Thread {
-            var aCode = ""
-            var time: Double? = null
-            when (scheme) {
-                "Paillier" -> {
-                    time = NetworkService.getNode()?.generatePaillierKeys()
-                    aCode = "GENKEYS_PAILLIER"
-                }
-                "Damgard Jurik" -> {
-                    time = NetworkService.getNode()?.generateDJKeys()
-                    aCode = "GENKEYS_DJ"
-                }
+        when (scheme) {
+            "Paillier" -> {
+                NetworkService.getNode()?.generatePaillierKeys()
             }
-            if (time != null) {
-                LogService.logActivity(aCode, time, packageManager.getPackageInfo(packageName, 0).versionName)
-            } else {
-                LogService.logActivity("GENKEYS_ERROR", 0.0, packageManager.getPackageInfo(packageName, 0).versionName)
+            "Damgard Jurik" -> {
+                NetworkService.getNode()?.generateDJKeys()
             }
-
-            runOnUiThread {
-                progressDialog.dismiss()
-                setupRecyclerView()
-                Snackbar.make(binding.root, "New $scheme keys generated", Snackbar.LENGTH_SHORT).show()
-            }
-        }.start()
+        }
+        Snackbar.make(binding.root, "New $scheme keys are being generated", Snackbar.LENGTH_SHORT)
+            .show()
     }
 
     private fun startNetworkService() {
