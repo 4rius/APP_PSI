@@ -85,7 +85,7 @@ class LogService: Service() {
         private val activeThreads = AtomicInteger(0)
 
         private fun clean() {
-            if (activeThreads.get() == 0) {
+            if (activeThreads.get() == 1) {
                 isLoggingCPU = false
                 cpu_usage = ArrayList()
                 ram_usage = ArrayList()
@@ -96,6 +96,7 @@ class LogService: Service() {
                 peak_cpu_time = 0.0F
                 peak_ram_usage = 0
                 peak_app_ram_usage = 0
+                Log.d(ContentValues.TAG, "LogService's variables cleaned")
             }
         }
         @SuppressLint("SimpleDateFormat")
@@ -123,6 +124,8 @@ class LogService: Service() {
                 clean()
                 broadcaster(acitvityCode)
                 Log.d(ContentValues.TAG, "Activity log sent to Firebase")
+                activeThreads.decrementAndGet()
+                Log.d(ContentValues.TAG, "Active threads: ${activeThreads.get()}")
                 return
             }
             val log = hashMapOf(
