@@ -78,16 +78,6 @@ public class DamgardJurik implements CryptoSystem {
     }
 
 
-    private BigInteger invMod(BigInteger a, BigInteger m) {
-        return a.modInverse(m);
-    }
-
-
-
-
-
-
-
     // Getters para los valores de la clave pública
     public BigInteger getN() {
         return n;

@@ -54,7 +54,7 @@ public class Node {
     public final DamgardJurik damgardJurik = new DamgardJurik(DFL_BIT_LENGTH, DFL_EXPANSION_FACTOR); // Objeto DamgardJurik con los métodos de claves, cifrado e intersecciones
     public Set<Integer> myData; // Conjunto de datos del nodo (set de 10 números aleatorios)
     private final int domain = DFL_DOMAIN;  // Dominio de los números aleatorios sobre los que se trabaja
-    public HashMap<String, Object> results;  // Resultados de las intersecciones
+    public final HashMap<String, Object> results;  // Resultados de las intersecciones
     public Node(String id, int port, ArrayList<String> peers) {
         this.myData = new HashSet<>();
         Random random = new Random();
@@ -466,8 +466,10 @@ public class Node {
                     intersection.add(element.intValue());
                 }
             }
-            // Guardamos el resultado
-            results.put(device + " " + cs.getClass().getSimpleName() + " OPE", intersection);
+            // Guardamos el resultado, sincronizada por si se hace un broadcast, que no se vayan a perder resultados
+            synchronized (results) {
+                results.put(device + " " + cs.getClass().getSimpleName() + " OPE", intersection);
+            }
             Debug.stopMethodTracing();
             long cpuTime = Debug.threadCpuTimeNanos();
             Long end_time = System.currentTimeMillis();
