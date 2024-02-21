@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.concurrent.atomic.AtomicInteger
 
 
 class LogService: Service() {
@@ -81,18 +82,21 @@ class LogService: Service() {
         private var peak_ram_usage = 0
         private var peak_app_ram_usage = 0
         private var ram_job: Job? = null
+        private val activeThreads = AtomicInteger(0)
 
         private fun clean() {
-            isLoggingCPU = false
-            cpu_usage = ArrayList()
-            ram_usage = ArrayList()
-            app_ram_usage = ArrayList()
-            avg_cpu_time = 0.0F
-            avg_ram_usage = 0
-            app_avg_ram_usage = 0
-            peak_cpu_time = 0.0F
-            peak_ram_usage = 0
-            peak_app_ram_usage = 0
+            if (activeThreads.get() == 0) {
+                isLoggingCPU = false
+                cpu_usage = ArrayList()
+                ram_usage = ArrayList()
+                app_ram_usage = ArrayList()
+                avg_cpu_time = 0.0F
+                avg_ram_usage = 0
+                app_avg_ram_usage = 0
+                peak_cpu_time = 0.0F
+                peak_ram_usage = 0
+                peak_app_ram_usage = 0
+            }
         }
         @SuppressLint("SimpleDateFormat")
         fun logActivity(acitvityCode: String, time: Any, version: String, peer: String?= null, cpuTime: Long) {
@@ -137,6 +141,8 @@ class LogService: Service() {
             ref?.push()?.setValue(log)
             clean()
             Log.d(ContentValues.TAG, "Activity log sent to Firebase")
+            activeThreads.decrementAndGet()
+            Log.d(ContentValues.TAG, "Active threads: ${activeThreads.get()}")
             broadcaster(acitvityCode)
         }
 
@@ -224,6 +230,7 @@ class LogService: Service() {
             isLoggingCPU = true
             //startLoggingCpu()
             startLoggingRam()
+            activeThreads.incrementAndGet()
         }
 
         fun stopLogging() {
