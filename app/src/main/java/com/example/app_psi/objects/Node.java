@@ -5,12 +5,9 @@ import static com.example.app_psi.DbConstants.DFL_BIT_LENGTH;
 import static com.example.app_psi.DbConstants.DFL_DOMAIN;
 import static com.example.app_psi.DbConstants.DFL_EXPANSION_FACTOR;
 import static com.example.app_psi.DbConstants.DFL_SET_SIZE;
-import static com.example.app_psi.DbConstants.KEYGEN_DONE;
 import static com.example.app_psi.DbConstants.VERSION;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Debug;
 import android.util.Log;
 
@@ -50,10 +47,10 @@ public class Node {
     private final ZContext context;
     private final ZMQ.Socket routerSocket;
     private final Map<String, Device> devices = new HashMap<>();
-    public final Paillier paillier = new Paillier(DFL_BIT_LENGTH); // Objeto Paillier con los métodos de claves, cifrado e intersecciones
-    public final DamgardJurik damgardJurik = new DamgardJurik(DFL_BIT_LENGTH, DFL_EXPANSION_FACTOR); // Objeto DamgardJurik con los métodos de claves, cifrado e intersecciones
-    public Set<Integer> myData; // Conjunto de datos del nodo (set de 10 números aleatorios)
-    private final int domain = DFL_DOMAIN;  // Dominio de los números aleatorios sobre los que se trabaja
+    public final CryptoSystem paillier = new Paillier(DFL_BIT_LENGTH); // Objeto Paillier con los métodos de claves, cifrado e intersecciones
+    public final CryptoSystem damgardJurik = new DamgardJurik(DFL_BIT_LENGTH, DFL_EXPANSION_FACTOR); // Objeto DamgardJurik con los métodos de claves, cifrado e intersecciones
+    private final Set<Integer> myData; // Conjunto de datos del nodo (set de 10 números aleatorios)
+    private int domain = DFL_DOMAIN;  // Dominio de los números aleatorios sobre los que se trabaja
     public final HashMap<String, Object> results;  // Resultados de las intersecciones
     public Node(String id, int port, ArrayList<String> peers) {
         this.myData = new HashSet<>();
@@ -570,6 +567,26 @@ public class Node {
         }).start();
     }
 
+    @Nullable
+    public String getDomain() {
+        return String.valueOf(domain);
+    }
+
+    @Nullable
+    public String getSetSize() {
+        return String.valueOf(myData.size());
+    }
+
+    public void modifySetup(int domainSize, int setSize) {
+        domain = domainSize;
+        myData.clear();
+        Random random = new Random();
+        for (int i = 0; i < setSize; i++) {
+            myData.add(random.nextInt(domain));
+        }
+        LogService.Companion.logSetup(domainSize, setSize);
+    }
+
 
     private static class Device {
         ZMQ.Socket socket;
@@ -603,4 +620,10 @@ public class Node {
     public int getPort() {
         return port;
     }
+
+    public Set<Integer> getMyData() {
+        return myData;
+    }
+
+
 }

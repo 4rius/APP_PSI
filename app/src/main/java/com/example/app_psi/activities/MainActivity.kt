@@ -98,6 +98,7 @@ class MainActivity : AppCompatActivity() {
             val buttonAddPeer = bottomSheetView.findViewById<Button>(R.id.buttonAddPeer)
             val buttonDiscoverPeers = bottomSheetView.findViewById<Button>(R.id.buttonDiscoverPeers)
             val buttonGenerateKeys = bottomSheetView.findViewById<Button>(R.id.buttonGenerateKeys)
+            val buttonChangeSetup = bottomSheetView.findViewById<Button>(R.id.buttonChangeSetup)
 
 
             // Configuración de los detalles
@@ -136,13 +137,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             buttonMyKeys.setOnClickListener {
-                val intent = Intent(this, KeysActivity::class.java)
-                val publicKey = NetworkService.getNode()?.paillier?.n.toString()
-                val privateKey = NetworkService.getNode()?.paillier?.lambda.toString()
-                intent.putExtra("publicKey", publicKey)
-                intent.putExtra("privateKey", privateKey)
-                startActivity(intent)
-                bottomSheetDialog.dismiss()
+                // TODO: Show the details of every cs
             }
 
             buttonMyData.setOnClickListener {
@@ -226,6 +221,27 @@ class MainActivity : AppCompatActivity() {
                 }
                 builder.show()
             }
+
+            buttonChangeSetup.setOnClickListener {
+                val builder = AlertDialog.Builder(this)
+                val inflater = layoutInflater
+                builder.setTitle("Configuración de Red")
+
+                val dialogLayout = inflater.inflate(R.layout.custom_alert_dialog, null)
+                val editTextDomainSize  = dialogLayout.findViewById<EditText>(R.id.editTextDomainSize)
+                val editTextSetSize  = dialogLayout.findViewById<EditText>(R.id.editTextSetSize)
+
+                builder.setView(dialogLayout)
+                builder.setPositiveButton("OK") { _, _ ->
+                    val domainSize = editTextDomainSize.text.toString().toInt()
+                    val setSize = editTextSetSize.text.toString().toInt()
+                    NetworkService.getNode()?.modifySetup(domainSize, setSize)
+                    Snackbar.make(binding.root, "New setup: domain size $domainSize, set size $setSize", Snackbar.LENGTH_SHORT).show()
+                    bottomSheetDialog.dismiss()
+                }
+                builder.show()
+            }
+
 
 
             bottomSheetDialog.show()

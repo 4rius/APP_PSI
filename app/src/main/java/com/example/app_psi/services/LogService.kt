@@ -9,11 +9,14 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
+import com.example.app_psi.DbConstants.DFL_DOMAIN
+import com.example.app_psi.DbConstants.DFL_SET_SIZE
 import com.example.app_psi.DbConstants.INTERSECTION_STEP_1
 import com.example.app_psi.DbConstants.INTERSECTION_STEP_2
 import com.example.app_psi.DbConstants.INTERSECTION_STEP_F
 import com.example.app_psi.DbConstants.KEYGEN_DONE
 import com.example.app_psi.DbConstants.LOG_INTERVAL
+import com.example.app_psi.DbConstants.VERSION
 import com.example.app_psi.objects.Node
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.CoroutineScope
@@ -41,6 +44,7 @@ class LogService: Service() {
         node = NetworkService.getNode()!!
         id = node.id
         generalLog()
+        logSetup(DFL_DOMAIN, DFL_SET_SIZE)
     }
 
     private fun generalLog() {
@@ -98,6 +102,22 @@ class LogService: Service() {
                 peak_app_ram_usage = 0
                 Log.d(ContentValues.TAG, "LogService's variables cleaned")
             }
+        }
+
+        @SuppressLint("SimpleDateFormat")
+        fun logSetup(domainSize: Int, setSize: Int) {
+            val formattedId = NetworkService.getNode()?.id?.replace(".", "-")
+            val ref = instance?.realtimeDatabase?.getReference("logs/$formattedId/setup")
+            val log = hashMapOf(
+                "id" to instance?.id,
+                "version" to VERSION,
+                "type" to "Android " + android.os.Build.VERSION.RELEASE,
+                "timestamp" to SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date()),
+                "Domain" to domainSize,
+                "Set_size" to setSize
+            )
+            ref?.push()?.setValue(log)
+            Log.d(ContentValues.TAG, "Setup log sent to Firebase")
         }
         @SuppressLint("SimpleDateFormat")
         fun logActivity(acitvityCode: String, time: Any, version: String, peer: String?= null, cpuTime: Long) {

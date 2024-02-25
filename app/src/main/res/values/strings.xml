@@ -82,4 +82,9 @@
     <string name="network_id">Network ID: %1$s</string>
     <string name="network_port">Network port: %1$s</string>
     <string name="network_status">Network status: %1$s</string>
+    <string name="change_setup">Modify domain and set</string>
+    <string name="domain_size">Tamaño del Dominio</string>
+    <string name="domain_zie_1">Introduce el tamaño del dominio</string>
+    <string name="set_size">Tamaño del Set</string>
+    <string name="set_size_1">Introduce el tamaño del set</string>
 </resources>
