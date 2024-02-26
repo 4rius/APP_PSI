@@ -72,28 +72,20 @@ class LogService: Service() {
         return null
     }
 
+    class LoggingObj {
+        var ram_usage = ArrayList<Int>()
+        var app_ram_usage = ArrayList<Int>()
+        var avg_ram_usage = 0
+        var app_avg_ram_usage = 0
+        var peak_ram_usage = 0
+        var peak_app_ram_usage = 0
+    }
+
     companion object {
 
-        private var ram_usage = ArrayList<Int>()
-        private var app_ram_usage = ArrayList<Int>()
-        private var avg_ram_usage = 0
-        private var app_avg_ram_usage = 0
-        private var peak_ram_usage = 0
-        private var peak_app_ram_usage = 0
-        private var ram_job: Job? = null
-        private val activeThreads = AtomicInteger(0)
+        private val threadLocalLoggingObj = ThreadLocal<LoggingObj>()
+        private val jobs = mutableMapOf<Thread, Job>()
 
-        private fun clean() {
-            if (activeThreads.get() == 1) {
-                ram_usage = ArrayList()
-                app_ram_usage = ArrayList()
-                avg_ram_usage = 0
-                app_avg_ram_usage = 0
-                peak_ram_usage = 0
-                peak_app_ram_usage = 0
-                Log.d(ContentValues.TAG, "LogService's variables cleaned")
-            }
-        }
 
         @SuppressLint("SimpleDateFormat")
         fun logSetup(domainSize: Int, setSize: Int) {
@@ -116,30 +108,8 @@ class LogService: Service() {
             val timestamp = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date())
             val ref = instance?.realtimeDatabase?.getReference("logs/$formattedId/activities")
             val cpuTimeF = cpuTime / 1_000_000.0
-            if (peer != null) {
-                val log = hashMapOf(
-                    "id" to instance?.id,
-                    "timestamp" to timestamp,
-                    "version" to version,
-                    "type" to "Android " + android.os.Build.VERSION.RELEASE,
-                    "activity_code" to acitvityCode,
-                    "peer" to peer,
-                    "time" to time,
-                    "Avg_RAM" to getRamInfo(),
-                    "Peak_RAM" to "$peak_ram_usage MB",
-                    "App_Avg_RAM" to "$app_avg_ram_usage MB",
-                    "App_Peak_RAM" to "$peak_app_ram_usage MB",
-                    "CPU_time" to "$cpuTimeF ms",
-                    "Active_threads" to "${activeThreads.get()}",
-                )
-                ref?.push()?.setValue(log)
-                clean()
-                broadcaster(acitvityCode)
-                Log.d(ContentValues.TAG, "Activity log sent to Firebase")
-                activeThreads.decrementAndGet()
-                Log.d(ContentValues.TAG, "Active threads: ${activeThreads.get()}")
-                return
-            }
+            val loggingObj = threadLocalLoggingObj.get()
+
             val log = hashMapOf(
                 "id" to instance?.id,
                 "timestamp" to timestamp,
@@ -147,20 +117,22 @@ class LogService: Service() {
                 "type" to "Android " + android.os.Build.VERSION.RELEASE,
                 "activity_code" to acitvityCode,
                 "time" to time,
-                "Avg_RAM" to getRamInfo(),
-                "Peak_RAM" to "$peak_ram_usage MB",
-                "App_Avg_RAM" to "$app_avg_ram_usage MB",
-                "App_Peak_RAM" to "$peak_app_ram_usage MB",
+                "Avg_RAM" to "${loggingObj?.avg_ram_usage} MB",
+                "Peak_RAM" to "${loggingObj?.peak_ram_usage} MB",
+                "App_Avg_RAM" to "${loggingObj?.app_avg_ram_usage} MB",
+                "App_Peak_RAM" to "${loggingObj?.peak_app_ram_usage} MB",
                 "CPU_time" to "$cpuTimeF ms",
-                "Active_threads" to "${activeThreads.get()}",
             )
+
+            if (peer != null) {
+                log["peer"] = peer
+            }
+
             ref?.push()?.setValue(log)
-            clean()
-            Log.d(ContentValues.TAG, "Activity log sent to Firebase")
-            activeThreads.decrementAndGet()
-            Log.d(ContentValues.TAG, "Active threads: ${activeThreads.get()}")
+            Log.d(ContentValues.TAG, "Activity log sent to Firebase - Thread: ${Thread.currentThread().name}")
             broadcaster(acitvityCode)
         }
+
 
         private fun broadcaster(activityCode: String) {
             when {
@@ -193,20 +165,9 @@ class LogService: Service() {
                 "size" to size,
             )
             ref?.push()?.setValue(log)
-            clean()
             Log.d(ContentValues.TAG, "Intersection result log sent to Firebase")
             broadcaster("INTERSECTION_STEP_F")
         }
-
-        private fun getRamInfo(): String {
-            val memInfo = ActivityManager.MemoryInfo()
-            val activityManager = instance?.getSystemService(ACTIVITY_SERVICE) as ActivityManager
-            activityManager.getMemoryInfo(memInfo)
-            val totalMem = memInfo.totalMem / 0x100000L  // 0x100000L == 1048576L == 1024 * 1024 == 1MB
-            totalMem.toFloat()
-            return "$avg_ram_usage MB / $totalMem MB"
-        }
-
         private suspend fun getRamUsage(): Int? = withContext(Dispatchers.IO) {
             val activityManager = instance?.getSystemService(ACTIVITY_SERVICE) as? ActivityManager
             activityManager?.let {
@@ -233,37 +194,41 @@ class LogService: Service() {
 
         fun startLogging() {
             startLoggingRam()
-            activeThreads.incrementAndGet()
         }
 
         fun stopLogging() {
             stopLoggingRam()
         }
 
-        private fun startLoggingRam() {
-            ram_job = CoroutineScope(Dispatchers.IO).launch {
+        private fun startLoggingRam(): LoggingObj {
+            val loggingObj = LoggingObj()
+            threadLocalLoggingObj.set(loggingObj)
+            val job = CoroutineScope(Dispatchers.IO).launch {
                 while (isActive) {
                     val ram = getRamUsage()
                     val ramApp = getAppRamUsage()
-                    synchronized(ram_usage) {
-                        ram?.let { ram_usage.add(it) }
-                        ramApp?.let { app_ram_usage.add(it) }
-                    }
+                    loggingObj.ram_usage.add(ram ?: 0)
+                    loggingObj.app_ram_usage.add(ramApp ?: 0)
                     delay(100)
                 }
             }
+            jobs[Thread.currentThread()] = job
+            return loggingObj
         }
 
         private fun stopLoggingRam() {
-            synchronized(ram_usage) {
-                avg_ram_usage = if (ram_usage.isNotEmpty()) ram_usage.sum() / ram_usage.size else 0
-                peak_ram_usage = ram_usage.maxOrNull() ?: 0
-                app_avg_ram_usage = if (app_ram_usage.isNotEmpty()) app_ram_usage.sum() / app_ram_usage.size else 0
-                peak_app_ram_usage = app_ram_usage.maxOrNull() ?: 0
+            val loggingObj = threadLocalLoggingObj.get()
+            if (loggingObj != null) {
+                synchronized(loggingObj.ram_usage) {
+                    loggingObj.avg_ram_usage = if (loggingObj.ram_usage.isNotEmpty()) loggingObj.ram_usage.sum() / loggingObj.ram_usage.size else 0
+                    loggingObj.peak_ram_usage = loggingObj.ram_usage.maxOrNull() ?: 0
+                    loggingObj.app_avg_ram_usage = if (loggingObj.app_ram_usage.isNotEmpty()) loggingObj.app_ram_usage.sum() / loggingObj.app_ram_usage.size else 0
+                    loggingObj.peak_app_ram_usage = loggingObj.app_ram_usage.maxOrNull() ?: 0
+                }
             }
-            if (activeThreads.get() == 1) {
-                ram_job?.cancel()
-            }
+            jobs[Thread.currentThread()]?.cancel()
+            jobs.remove(Thread.currentThread())
+            Log.d(ContentValues.TAG, "Logging stopped for thread ${Thread.currentThread().name}")
         }
 
 
