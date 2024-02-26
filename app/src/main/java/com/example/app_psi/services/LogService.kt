@@ -25,6 +25,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -66,8 +67,6 @@ class LogService: Service() {
         }
         handler.post(logRunnable)
     }
-    //private fun getCPUUsage(): String {} - De momento no se va a implementar por no poder leer el /proc/stat que era como se hacía pero se ha bloqueado por temas de seguridad.
-
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -75,14 +74,10 @@ class LogService: Service() {
 
     companion object {
 
-        private var isLoggingCPU = false
-        private var cpu_usage = ArrayList<Float>()
         private var ram_usage = ArrayList<Int>()
         private var app_ram_usage = ArrayList<Int>()
-        private var avg_cpu_time: Float = 0.0F
         private var avg_ram_usage = 0
         private var app_avg_ram_usage = 0
-        private var peak_cpu_time: Float = 0.0F
         private var peak_ram_usage = 0
         private var peak_app_ram_usage = 0
         private var ram_job: Job? = null
@@ -90,14 +85,10 @@ class LogService: Service() {
 
         private fun clean() {
             if (activeThreads.get() == 1) {
-                isLoggingCPU = false
-                cpu_usage = ArrayList()
                 ram_usage = ArrayList()
                 app_ram_usage = ArrayList()
-                avg_cpu_time = 0.0F
                 avg_ram_usage = 0
                 app_avg_ram_usage = 0
-                peak_cpu_time = 0.0F
                 peak_ram_usage = 0
                 peak_app_ram_usage = 0
                 Log.d(ContentValues.TAG, "LogService's variables cleaned")
@@ -138,7 +129,8 @@ class LogService: Service() {
                     "Peak_RAM" to "$peak_ram_usage MB",
                     "App_Avg_RAM" to "$app_avg_ram_usage MB",
                     "App_Peak_RAM" to "$peak_app_ram_usage MB",
-                    "CPU_time" to "$cpuTimeF ms"
+                    "CPU_time" to "$cpuTimeF ms",
+                    "Active_threads" to "${activeThreads.get()}",
                 )
                 ref?.push()?.setValue(log)
                 clean()
@@ -159,7 +151,8 @@ class LogService: Service() {
                 "Peak_RAM" to "$peak_ram_usage MB",
                 "App_Avg_RAM" to "$app_avg_ram_usage MB",
                 "App_Peak_RAM" to "$peak_app_ram_usage MB",
-                "CPU_time" to "$cpuTimeF ms"
+                "CPU_time" to "$cpuTimeF ms",
+                "Active_threads" to "${activeThreads.get()}",
             )
             ref?.push()?.setValue(log)
             clean()
@@ -237,42 +230,14 @@ class LogService: Service() {
             }
         }
 
-        private fun getCpuTime(): Float {
-            // Obtiene el tiempo de CPU al inicio
-            val startTime = android.os.Debug.threadCpuTimeNanos()
-            Thread.sleep(100)
-            // Obtiene el tiempo de CPU al final
-            val endTime = android.os.Debug.threadCpuTimeNanos()
-            // Calcula el tiempo de CPU consumido durante el intervalo
-            val cpuTime = endTime - startTime
-            return cpuTime / 1e6f  // 1e6f == 1000000f == 1000 * 1000 == 1 ms
-        }
-
 
         fun startLogging() {
-            isLoggingCPU = true
-            //startLoggingCpu()
             startLoggingRam()
             activeThreads.incrementAndGet()
         }
 
         fun stopLogging() {
-            isLoggingCPU = false
-            //stopLoggingCpu()
             stopLoggingRam()
-        }
-
-        private fun startLoggingCpu() {
-            Thread {
-                while (true) {
-                    val cpu = getCpuTime()
-                    synchronized(cpu_usage) {
-                        cpu_usage.add(cpu)
-                    }
-                    if (!isLoggingCPU) break
-                    Thread.sleep(100)
-                }
-            }.start()
         }
 
         private fun startLoggingRam() {
@@ -289,24 +254,15 @@ class LogService: Service() {
             }
         }
 
-        private fun stopLoggingCpu() {
-            synchronized(cpu_usage) {  // Synchronize to prevent concurrent modification
-                // 2 decimal places
-                if (cpu_usage.isNotEmpty()) {
-                    avg_cpu_time = (cpu_usage.sum() / cpu_usage.size)
-                    peak_cpu_time = cpu_usage.maxOrNull()!!
-                }
-                else 0.0F
-            }
-        }
-
         private fun stopLoggingRam() {
-            ram_job?.cancel()
             synchronized(ram_usage) {
                 avg_ram_usage = if (ram_usage.isNotEmpty()) ram_usage.sum() / ram_usage.size else 0
                 peak_ram_usage = ram_usage.maxOrNull() ?: 0
                 app_avg_ram_usage = if (app_ram_usage.isNotEmpty()) app_ram_usage.sum() / app_ram_usage.size else 0
                 peak_app_ram_usage = app_ram_usage.maxOrNull() ?: 0
+            }
+            if (activeThreads.get() == 1) {
+                ram_job?.cancel()
             }
         }
 
