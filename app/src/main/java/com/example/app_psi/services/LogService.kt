@@ -200,7 +200,7 @@ class LogService: Service() {
             stopLoggingRam()
         }
 
-        private fun startLoggingRam(): LoggingObj {
+        private fun startLoggingRam() {
             val loggingObj = LoggingObj()
             threadLocalLoggingObj.set(loggingObj)
             val job = CoroutineScope(Dispatchers.IO).launch {
@@ -213,11 +213,11 @@ class LogService: Service() {
                 }
             }
             jobs[Thread.currentThread()] = job
-            return loggingObj
         }
 
         private fun stopLoggingRam() {
             val loggingObj = threadLocalLoggingObj.get()
+            Log.d(ContentValues.TAG, "RAW RAM USAGE: ${loggingObj?.ram_usage}")
             if (loggingObj != null) {
                 synchronized(loggingObj.ram_usage) {
                     loggingObj.avg_ram_usage = if (loggingObj.ram_usage.isNotEmpty()) loggingObj.ram_usage.sum() / loggingObj.ram_usage.size else 0
