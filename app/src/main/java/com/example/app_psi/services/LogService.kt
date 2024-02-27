@@ -212,6 +212,8 @@ class LogService: Service() {
                     delay(100)
                 }
             }
+            Log.d(ContentValues.TAG, "Logging started for thread ${Thread.currentThread().name}")
+            Log.d(ContentValues.TAG, "LoggingObj: $loggingObj")
             jobs[Thread.currentThread()] = job
         }
 
