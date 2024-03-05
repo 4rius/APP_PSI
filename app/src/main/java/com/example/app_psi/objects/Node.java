@@ -11,6 +11,7 @@ import android.annotation.SuppressLint;
 import android.os.Debug;
 import android.util.Log;
 
+import com.example.app_psi.handlers.IntersectionHandler;
 import com.example.app_psi.implementations.CryptoSystem;
 import com.example.app_psi.implementations.DamgardJurik;
 import com.example.app_psi.implementations.Paillier;
@@ -52,6 +53,7 @@ public class Node {
     private final Set<Integer> myData; // Conjunto de datos del nodo (set de 10 números aleatorios)
     private int domain = DFL_DOMAIN;  // Dominio de los números aleatorios sobre los que se trabaja
     public final HashMap<String, Object> results;  // Resultados de las intersecciones
+    private final IntersectionHandler intersectionHandler = new IntersectionHandler();
     public Node(String id, int port, ArrayList<String> peers) {
         this.myData = new HashSet<>();
         Random random = new Random();
@@ -274,208 +276,46 @@ public class Node {
         }
     }
 
-    public String intersectionFirstStep(String device, CryptoSystem cs) {
-        if (devices.containsKey(device)) {
-            new Thread(() -> {
-                LogService.Companion.startLogging();
-                Long start_time = System.currentTimeMillis();
-                Debug.startMethodTracing();
-                Device device1 = devices.get(device);
-                System.out.println("Node " + id + " (You) - Intersection with " + device + " - " + cs.getClass().getSimpleName());
-                // Ciframos los datos del nodo
-                LinkedTreeMap<String, BigInteger> encryptedSet = cs.encryptMyData(myData, domain);
-                // Serializamos la clave pública
-                LinkedTreeMap<String, String> publicKeyDict = cs.serializePublicKey();
-                // Creamos con Gson un objeto que contenga el conjunto cifrado, la clave pública y la implementacion
-                Gson gson = new Gson();
-                HashMap<String, Object> message = new HashMap<>();
-                message.put("data", encryptedSet);
-                message.put("pubkey", publicKeyDict);
-                message.put("implementation", cs.getClass().getSimpleName());
-                message.put("peer", id);
-                String jsonMessage = gson.toJson(message);
-                // Enviamos el mensaje
-                assert device1 != null;
-                device1.socket.send(jsonMessage);
-                Debug.stopMethodTracing();
-                long cpuTime = Debug.threadCpuTimeNanos();
-                Long end_time = System.currentTimeMillis();
-                LogService.Companion.stopLogging();
-                LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_1", (end_time - start_time) / 1000.0, VERSION, device, cpuTime);
-            }).start();
-            } else {
-            return "Intersection with " + device + " - " + cs.getClass().getSimpleName() + " - Device not found";
+    public String intersectionFirstStep(String deviceId, CryptoSystem cs) {
+        Device device = devices.get(deviceId);
+        if (device != null) {
+            return intersectionHandler.intersectionFirstStep(device, cs, id, myData, deviceId, domain);
+        } else {
+            return "Intersection with " + deviceId + " - " + cs.getClass().getSimpleName() + " - Device not found";
         }
-        return "Intersection with " + device + " - " + cs.getClass().getSimpleName() + " - Waiting for response...";
     }
 
     public void intersectionSecondStep(String peer, LinkedTreeMap<String, String> peerPubKey, LinkedTreeMap<String, String> data, CryptoSystem cs) {
-        new Thread(() -> {
-            LogService.Companion.startLogging();
-            Long start_time = System.currentTimeMillis();
-            Debug.startMethodTracing();
-            LinkedTreeMap<String, BigInteger> peerPubKeyReconstructed = cs.reconstructPublicKey(peerPubKey);
-            BigInteger n = peerPubKeyReconstructed.get("n");
-            LinkedTreeMap<String, BigInteger> encryptedSet = cs.getEncryptedSet(data);
-            LinkedTreeMap<String, BigInteger> multipliedSet = cs.getMultipliedSet(encryptedSet, myData, n);
-            // Serializamos y mandamos de vuelta el resultado
-            LinkedTreeMap<String, String> serializedMultipliedSet = new LinkedTreeMap<>();
-            for (Map.Entry<String, BigInteger> entry : multipliedSet.entrySet()) {
-                serializedMultipliedSet.put(entry.getKey(), entry.getValue().toString());
-            }
-            System.out.println("Node " + id + " (You) - Intersection with " + peer + " - Multiplied set: " + serializedMultipliedSet);
-            LinkedTreeMap<String, Object> messageToSend = new LinkedTreeMap<>();
-            messageToSend.put("data", serializedMultipliedSet);
-            messageToSend.put("peer", id);
-            messageToSend.put("cryptpscheme", cs.getClass().getSimpleName());
-            Gson gson = new Gson();
-            Objects.requireNonNull(devices.get(peer)).socket.send(gson.toJson(messageToSend));
-            Debug.stopMethodTracing();
-            long cpuTime = Debug.threadCpuTimeNanos();
-            Long end_time = System.currentTimeMillis();
-            LogService.Companion.stopLogging();
-            LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_2", (end_time - start_time) / 1000.0, VERSION, peer, cpuTime);
-        }).start();
+        Device device = devices.get(peer);
+        if (device != null) {
+            intersectionHandler.intersectionSecondStep(device, peer, peerPubKey, data, cs, id, myData);
+        }
     }
 
     @SuppressWarnings("unchecked")
     public void intersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs) {
-        new Thread(() -> {
-            LogService.Companion.startLogging();
-            Long start_time = System.currentTimeMillis();
-            Debug.startMethodTracing();
-            LinkedTreeMap<String, String> multipliedSet = (LinkedTreeMap<String, String>) peerData.remove("data");
-            LinkedTreeMap<String, BigInteger> encMultipliedSet = cs.recvMultipliedSet(multipliedSet);
-            String device = (String) peerData.remove("peer");
-            // Desciframos los datos del peer
-            for (Map.Entry<String, BigInteger> entry : encMultipliedSet.entrySet()) {
-                BigInteger decryptedValue = cs.Decrypt(entry.getValue());
-                entry.setValue(decryptedValue);
-            }
-            // Cogemos solo los valores que sean 1, que representan la intersección
-            List<Integer> intersection = new ArrayList<>();
-            for (Map.Entry<String, BigInteger> entry : encMultipliedSet.entrySet()) {
-                if (entry.getValue().equals(BigInteger.ONE)) {
-                    intersection.add(Integer.parseInt(entry.getKey()));
-                }
-            }
-            // Guardamos el resultado
-            results.put(device + " " + cs.getClass().getSimpleName(), intersection);
-            Debug.stopMethodTracing();
-            long cpuTime = Debug.threadCpuTimeNanos();
-            Long end_time = System.currentTimeMillis();
-            LogService.Companion.stopLogging();
-            LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_F", (end_time - start_time) / 1000.0, VERSION, device, cpuTime);
-            int size = intersection.size();
-            LogService.Companion.logResult(intersection, size, VERSION, device, cs.getClass().getSimpleName());
-            System.out.println("Node " + id + " (You) - Intersection with " + device + " - Result: " + intersection);
-        }).start();
+        intersectionHandler.intersectionFinalStep(peerData, cs, id, results);
     }
 
-    public String OPEIntersectionFirstStep(String device, CryptoSystem cs) {
-        if (devices.containsKey(device)) {
-            new Thread(() -> {
-                LogService.Companion.startLogging();
-                Long start_time = System.currentTimeMillis();
-                Debug.startMethodTracing();
-                Device device1 = devices.get(device);
-                System.out.println("Node " + id + " (You) - Intersection with " + device + " - " + cs.getClass().getSimpleName() + " OPE");
-                // Obtenemos las raíces del polinomio
-                List<Integer> myData = new ArrayList<>(this.myData);
-                List<BigInteger> roots = Polynomials.polyFromRoots(myData, BigInteger.valueOf(-1), BigInteger.ONE);
-                // Ciframos las raíces
-                ArrayList<BigInteger> encryptedRoots = cs.encryptRoots(roots);
-                // Serializamos la clave pública
-                LinkedTreeMap<String, String> publicKeyDict = cs.serializePublicKey();
-                // Creamos con Gson un objeto que contenga el conjunto cifrado, la clave pública y la implementacion
-                Gson gson = new Gson();
-                HashMap<String, Object> message = new HashMap<>();
-                message.put("data", encryptedRoots);
-                message.put("pubkey", publicKeyDict);
-                message.put("implementation", cs.getClass().getSimpleName() + " OPE");
-                message.put("peer", id);
-                String jsonMessage = gson.toJson(message);
-                // Enviamos el mensaje
-                assert device1 != null;
-                device1.socket.send(jsonMessage);
-                Debug.stopMethodTracing();
-                long cpuTime = Debug.threadCpuTimeNanos();
-                Long end_time = System.currentTimeMillis();
-                LogService.Companion.stopLogging();
-                LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_OPE_1", (end_time - start_time) / 1000.0, VERSION, device, cpuTime);
-            }).start();
+    public String OPEIntersectionFirstStep(String deviceId, CryptoSystem cs) {
+        Device device = devices.get(deviceId);
+        if (device != null) {
+            return intersectionHandler.OPEIntersectionFirstStep(device, cs, id, myData, deviceId);
         } else {
-            return "Intersection with " + device + " - " + cs.getClass().getSimpleName() + " OPE - Device not found";
+            return "Intersection with " + deviceId + " - " + cs.getClass().getSimpleName() + " OPE - Device not found";
         }
-        return "Intersection with " + device + " - " + cs.getClass().getSimpleName() + " OPE - Waiting for response...";
     }
 
     public void OPEIntersectionSecondStep(String peer, LinkedTreeMap<String, String> peerPubKey, ArrayList<String> data, CryptoSystem cs) {
-        new Thread(() -> {
-            LogService.Companion.startLogging();
-            Long start_time = System.currentTimeMillis();
-            Debug.startMethodTracing();
-            LinkedTreeMap<String, BigInteger> peerPubKeyReconstructed = cs.reconstructPublicKey(peerPubKey);
-            // Obtenemos las raíces cifradas del peer
-            ArrayList<BigInteger> coefs = new ArrayList<>();
-            for (String element : data) {
-                coefs.add(new BigInteger(element));
-            }
-
-            // Evaluamos el polinomio con las raíces del peer
-            List<Integer> myData = new ArrayList<>(this.myData);
-            ArrayList<BigInteger> encryptedEval = cs.handleOPESecondStep(coefs, myData, peerPubKeyReconstructed.get("n"));
-
-            System.out.println("Node " + id + " (You) - Intersection with " + peer + " - Encrypted evalutaion: " + encryptedEval);
-            LinkedTreeMap<String, Object> messageToSend = new LinkedTreeMap<>();
-            messageToSend.put("data", encryptedEval);
-            messageToSend.put("peer", id);
-            messageToSend.put("cryptpscheme", cs.getClass().getSimpleName() + " OPE");
-            Gson gson = new Gson();
-            Objects.requireNonNull(devices.get(peer)).socket.send(gson.toJson(messageToSend));
-            Debug.stopMethodTracing();
-            long cpuTime = Debug.threadCpuTimeNanos();
-            Long end_time = System.currentTimeMillis();
-            LogService.Companion.stopLogging();
-            LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_OPE_2", (end_time - start_time) / 1000.0, VERSION, peer, cpuTime);
-        }).start();
+        Device device = devices.get(peer);
+        if (device != null) {
+            intersectionHandler.OPEIntersectionSecondStep(device, peer, peerPubKey, data, cs, id, myData);
+        }
     }
 
     @SuppressWarnings("unchecked")
     public void OPEIntersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs) {
-        new Thread(() -> {
-            LogService.Companion.startLogging();
-            Long start_time = System.currentTimeMillis();
-            Debug.startMethodTracing();
-            ArrayList<String> stringData = (ArrayList<String>) peerData.remove("data");
-            ArrayList<BigInteger> encryptedEval = new ArrayList<>();
-            for (String element : stringData) {
-                encryptedEval.add(new BigInteger(element));
-            }
-            String device = (String) peerData.remove("peer");
-            ArrayList<BigInteger> decryptedEval = new ArrayList<>();
-            for (BigInteger element : encryptedEval) {
-                decryptedEval.add(cs.Decrypt(element));
-            }
-            List<Integer> intersection = new ArrayList<>();
-            for (BigInteger element : decryptedEval) {
-                if (myData.contains(element.intValue())) {
-                    intersection.add(element.intValue());
-                }
-            }
-            // Guardamos el resultado, sincronizada por si se hace un broadcast, que no se vayan a perder resultados
-            synchronized (results) {
-                results.put(device + " " + cs.getClass().getSimpleName() + " OPE", intersection);
-            }
-            Debug.stopMethodTracing();
-            long cpuTime = Debug.threadCpuTimeNanos();
-            Long end_time = System.currentTimeMillis();
-            LogService.Companion.stopLogging();
-            LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_OPE_F", (end_time - start_time) / 1000.0, VERSION, device, cpuTime);
-            int size = intersection.size();
-            LogService.Companion.logResult(intersection, size, VERSION, device, cs.getClass().getSimpleName() + "_OPE");
-            System.out.println("Node " + id + " (You) - Intersection with " + device + " - Result: " + intersection);
-        }).start();
+            intersectionHandler.OPEIntersectionFinalStep(peerData, cs, id, myData, results);
     }
 
     public String intPaillierOPE(String device) {
@@ -585,17 +425,6 @@ public class Node {
             myData.add(random.nextInt(domain));
         }
         LogService.Companion.logSetup(domainSize, setSize);
-    }
-
-
-    private static class Device {
-        ZMQ.Socket socket;
-        String lastSeen;
-
-        Device(ZMQ.Socket socket, String lastSeen) {
-            this.socket = socket;
-            this.lastSeen = lastSeen;
-        }
     }
 
     public String getId() {
