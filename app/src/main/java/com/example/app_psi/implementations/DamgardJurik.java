@@ -8,6 +8,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 public class DamgardJurik implements CryptoSystem {
@@ -189,5 +190,19 @@ public class DamgardJurik implements CryptoSystem {
             encryptedResult.add(result);
         }
         return encryptedResult;
+    }
+
+    public ArrayList<BigInteger> getEvaluationSet(List<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n) {
+        ArrayList<BigInteger> evaluations = new ArrayList<>();
+        DamgardJurik PeerPubKey = new DamgardJurik(n, 2);
+        SecureRandom rand = new SecureRandom();
+        for (Integer element : mySet) {
+            BigInteger rb = new BigInteger(1000, rand).add(BigInteger.ONE);
+            BigInteger Epbj = hornerEvalCrypt(encryptedCoeff, BigInteger.valueOf(element), PeerPubKey);
+            BigInteger mult = PeerPubKey.multiplyEncryptedByScalar(Epbj, rb);
+            BigInteger result = PeerPubKey.addEncryptedNumbers(PeerPubKey.Encrypt(BigInteger.ZERO), mult);
+            evaluations.add(result);
+        }
+        return evaluations;
     }
 }

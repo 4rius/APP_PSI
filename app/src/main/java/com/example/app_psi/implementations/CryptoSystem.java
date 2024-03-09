@@ -26,6 +26,8 @@ public interface CryptoSystem {
     LinkedTreeMap<String, BigInteger> reconstructPublicKey(LinkedTreeMap<String, String> peerPubKey);
     ArrayList<BigInteger> handleOPESecondStep(ArrayList<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n);
 
+    ArrayList<BigInteger> getEvaluationSet(List<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n);
+
     BigInteger Decrypt(BigInteger encryptedNumber);
     BigInteger Encrypt(BigInteger number);
 

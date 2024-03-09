@@ -183,6 +183,20 @@ public class Paillier implements CryptoSystem {
         }
         return encryptedResult;
     }
+
+    public ArrayList<BigInteger> getEvaluationSet(List<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n) {
+        ArrayList<BigInteger> evaluations = new ArrayList<>();
+        Paillier PeerPubKey = new Paillier(n);
+        SecureRandom rand = new SecureRandom();
+        for (int element : mySet) {
+            BigInteger rb = new BigInteger(1000, rand).add(BigInteger.ONE);
+            BigInteger Epbj = hornerEvalCrypt(encryptedCoeff, BigInteger.valueOf(element), PeerPubKey);
+            BigInteger mult = PeerPubKey.multiplyEncryptedByScalar(Epbj, rb);
+            BigInteger result = PeerPubKey.addEncryptedNumbers(PeerPubKey.Encrypt(BigInteger.ZERO), mult);
+            evaluations.add(result);
+        }
+        return evaluations;
+    }
 }
 
 
