@@ -189,10 +189,10 @@ public class Paillier implements CryptoSystem {
         Paillier PeerPubKey = new Paillier(n);
         SecureRandom rand = new SecureRandom();
         for (int element : mySet) {
-            BigInteger rb = new BigInteger(1000, rand).add(BigInteger.ONE);
+            BigInteger rb = BigInteger.valueOf(rand.nextInt(1000) + 1);
             BigInteger Epbj = hornerEvalCrypt(encryptedCoeff, BigInteger.valueOf(element), PeerPubKey);
             BigInteger mult = PeerPubKey.multiplyEncryptedByScalar(Epbj, rb);
-            BigInteger result = PeerPubKey.addEncryptedNumbers(PeerPubKey.Encrypt(BigInteger.ZERO), mult);
+            BigInteger result = PeerPubKey.addEncryptedNumbers(PeerPubKey.Encrypt(BigInteger.valueOf(0)), mult);
             evaluations.add(result);
         }
         return evaluations;
