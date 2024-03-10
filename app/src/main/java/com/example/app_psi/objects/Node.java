@@ -15,7 +15,6 @@ import com.example.app_psi.handlers.IntersectionHandler;
 import com.example.app_psi.implementations.CryptoSystem;
 import com.example.app_psi.implementations.DamgardJurik;
 import com.example.app_psi.implementations.Paillier;
-import com.example.app_psi.implementations.Polynomials;
 import com.example.app_psi.services.LogService;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -27,7 +26,6 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
-import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,7 +33,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
@@ -238,11 +235,11 @@ public class Node {
                         break;
                     case "Paillier OPE":
                     case "Paillier_OPE":
-                        OPEIntersectionSecondStep(peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), paillier);
+                        OPEIntersectionSecondStep(peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), paillier, "PSI");
                         break;
                     case "DamgardJurik OPE":
                     case "Damgard-Jurik_OPE":
-                        OPEIntersectionSecondStep(peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), damgardJurik);
+                        OPEIntersectionSecondStep(peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), damgardJurik, "PSI");
                         break;
                 }
             } catch (Exception e) {
@@ -269,11 +266,21 @@ public class Node {
                     case "Damgard-Jurik_OPE":
                         OPEIntersectionFinalStep(peerData, damgardJurik);
                         break;
+                    case "Paillier PSI-CA OPE":
+                        CAOPEIntersectionFinalStep(peerData, paillier);
+                        break;
+                    case "Damgard-Jurik PSI-CA OPE":
+                        CAOPEIntersectionFinalStep(peerData, damgardJurik);
+                        break;
                 }
             } catch (JsonSyntaxException e) {
                 System.out.println("Received message is not a valid JSON.");
             }
         }
+    }
+
+    private void CAOPEIntersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs) {
+        intersectionHandler.CAOPEIntersectionFinalStep(peerData, cs, id, results);
     }
 
     public String intersectionFirstStep(String deviceId, CryptoSystem cs) {
@@ -292,38 +299,48 @@ public class Node {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public void intersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs) {
         intersectionHandler.intersectionFinalStep(peerData, cs, id, results);
     }
 
-    public String OPEIntersectionFirstStep(String deviceId, CryptoSystem cs) {
+    public String OPEIntersectionFirstStep(String deviceId, CryptoSystem cs, String type) {
         Device device = devices.get(deviceId);
         if (device != null) {
-            return intersectionHandler.OPEIntersectionFirstStep(device, cs, id, myData, deviceId);
+            return intersectionHandler.OPEIntersectionFirstStep(device, cs, id, myData, deviceId, type);
         } else {
-            return "Intersection with " + deviceId + " - " + cs.getClass().getSimpleName() + " OPE - Device not found";
+            return "Intersection with " + deviceId + " - " + cs.getClass().getSimpleName() + " " + type + " OPE - Device not found";
         }
     }
 
-    public void OPEIntersectionSecondStep(String peer, LinkedTreeMap<String, String> peerPubKey, ArrayList<String> data, CryptoSystem cs) {
+    public void OPEIntersectionSecondStep(String peer, LinkedTreeMap<String, String> peerPubKey, ArrayList<String> data, CryptoSystem cs, String type) {
         Device device = devices.get(peer);
         if (device != null) {
-            intersectionHandler.OPEIntersectionSecondStep(device, peer, peerPubKey, data, cs, id, myData);
+            if (type.equals("Paillier PSI-CA OPE") || type.equals("Damgard-Jurik PSI-CA OPE")) {
+                intersectionHandler.CAOPEIntersectionSecondStep(device, peer, peerPubKey, data, cs, id, myData);
+            } else {
+                intersectionHandler.OPEIntersectionSecondStep(device, peer, peerPubKey, data, cs, id, myData);
+            }
         }
     }
 
-    @SuppressWarnings("unchecked")
     public void OPEIntersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs) {
             intersectionHandler.OPEIntersectionFinalStep(peerData, cs, id, myData, results);
     }
 
     public String intPaillierOPE(String device) {
-        return OPEIntersectionFirstStep(device, paillier);
+        return OPEIntersectionFirstStep(device, paillier, "PSI");
     }
 
     public String intDamgardJurikOPE(String device) {
-        return OPEIntersectionFirstStep(device, damgardJurik);
+        return OPEIntersectionFirstStep(device, damgardJurik, "PSI");
+    }
+
+    public String intPaillierOPECA(String device) {
+        return OPEIntersectionFirstStep(device, paillier, "PSI-CA");
+    }
+
+    public String intDamgardJurikOPECA(String device) {
+        return OPEIntersectionFirstStep(device, damgardJurik, "PSI-CA");
     }
 
     public String intPaillier(String device) {

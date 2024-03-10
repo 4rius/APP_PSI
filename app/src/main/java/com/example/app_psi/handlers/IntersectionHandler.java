@@ -20,7 +20,7 @@ import java.util.Set;
 
 public class IntersectionHandler {
 
-    public String OPEIntersectionFirstStep(Device device, CryptoSystem cs, String id, Set<Integer> myData, String peerId) {
+    public String OPEIntersectionFirstStep(Device device, CryptoSystem cs, String id, Set<Integer> myData, String peerId, String type) {
         new Thread(() -> {
             LogService.Companion.startLogging();
             Long start_time = System.currentTimeMillis();
@@ -38,7 +38,8 @@ public class IntersectionHandler {
             HashMap<String, Object> message = new HashMap<>();
             message.put("data", encryptedRoots);
             message.put("pubkey", publicKeyDict);
-            message.put("implementation", cs.getClass().getSimpleName() + " OPE");
+            if (type.equals("PSI-CA")) message.put("implementation", cs.getClass().getSimpleName() + " PSI-CA OPE");
+            else message.put("implementation", cs.getClass().getSimpleName() + " OPE");
             message.put("peer", id);
             String jsonMessage = gson.toJson(message);
             // Enviamos el mensaje
@@ -209,6 +210,69 @@ public class IntersectionHandler {
             int size = intersection.size();
             LogService.Companion.logResult(intersection, size, VERSION, peer, cs.getClass().getSimpleName());
             System.out.println("Node " + id + " (You) - Intersection with " + peer + " - Result: " + intersection);
+        }).start();
+    }
+
+    public void CAOPEIntersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, ArrayList<String> data, CryptoSystem cs, String id, Set<Integer> myData) {
+        new Thread(() -> {
+            LogService.Companion.startLogging();
+            Long start_time = System.currentTimeMillis();
+            Debug.startMethodTracing();
+            LinkedTreeMap<String, BigInteger> peerPubKeyReconstructed = cs.reconstructPublicKey(peerPubKey);
+            // Obtenemos las raíces cifradas del peer
+            ArrayList<BigInteger> coefs = new ArrayList<>();
+            for (String element : data) {
+                coefs.add(new BigInteger(element));
+            }
+            // Evaluamos el polinomio con las raíces del peer
+            List<Integer> myDataList = new ArrayList<>(myData);
+            ArrayList<BigInteger> encryptedEval = cs.getEvaluationSet(coefs, myDataList, peerPubKeyReconstructed.get("n"));
+            System.out.println("Node " + id + " (You) - Intersection with " + peer + " - Encrypted evalutaion: " + encryptedEval);
+            LinkedTreeMap<String, Object> messageToSend = new LinkedTreeMap<>();
+            messageToSend.put("data", encryptedEval);
+            messageToSend.put("peer", id);
+            messageToSend.put("cryptpscheme", cs.getClass().getSimpleName() + " PSI-CA OPE");
+            Gson gson = new Gson();
+            device.socket.send(gson.toJson(messageToSend));
+            Debug.stopMethodTracing();
+            long cpuTime = Debug.threadCpuTimeNanos();
+            Long end_time = System.currentTimeMillis();
+            LogService.Companion.stopLogging();
+            LogService.Companion.logActivity("CARDINALITY_" + cs.getClass().getSimpleName() + "_OPE_2", (end_time - start_time) / 1000.0, VERSION, peer, cpuTime);
+        }).start();
+    }
+
+    public void CAOPEIntersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs, String id, HashMap<String, Object> results) {
+        new Thread(() -> {
+            LogService.Companion.startLogging();
+            Long start_time = System.currentTimeMillis();
+            Debug.startMethodTracing();
+            ArrayList<String> stringData = (ArrayList<String>) peerData.remove("data");
+            ArrayList<BigInteger> encryptedEval = new ArrayList<>();
+            for (String element : stringData) {
+                encryptedEval.add(new BigInteger(element));
+            }
+            ArrayList<BigInteger> decryptedEval = new ArrayList<>();
+            for (BigInteger element : encryptedEval) {
+                decryptedEval.add(cs.Decrypt(element));
+            }
+            int result = 0;
+            for (BigInteger element : decryptedEval) {
+                // Cada 0 representa un elemento que está en el conjunto
+                if (element.equals(BigInteger.ZERO)) {
+                    result++;
+                }
+            }
+            synchronized (results) {
+                results.put(id + " " + cs.getClass().getSimpleName() + " PSI-CA OPE", result);
+            }
+            Debug.stopMethodTracing();
+            long cpuTime = Debug.threadCpuTimeNanos();
+            Long end_time = System.currentTimeMillis();
+            LogService.Companion.stopLogging();
+            LogService.Companion.logActivity("CARDINALITY_" + cs.getClass().getSimpleName() + "_F", (end_time - start_time) / 1000.0, VERSION, id, cpuTime);
+            LogService.Companion.logResult(null, result, VERSION, id, cs.getClass().getSimpleName() + "_PSI-CA_OPE");
+            System.out.println("Node " + id + " (You) - PSI-CA with " + id + " - Result: " + result);
         }).start();
     }
 }

@@ -25,11 +25,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.concurrent.atomic.AtomicInteger
 
 
 class LogService: Service() {
@@ -150,22 +148,24 @@ class LogService: Service() {
         }
 
         @SuppressLint("SimpleDateFormat")
-        fun logResult(result: List<Int>, size: Int, version: String, peer: String, implementation: String) {
+        fun logResult(result: List<Int>?, size: Int, version: String, peer: String, implementation: String) {
             val formattedId = NetworkService.getNode()?.id?.replace(".", "-")
             val timestamp = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date())
             val ref = instance?.realtimeDatabase?.getReference("logs/$formattedId/intersection_results")
-            val log = hashMapOf(
+            val log: HashMap<String, Any?> = hashMapOf(
                 "id" to instance?.id,
                 "timestamp" to timestamp,
                 "version" to version,
                 "type" to "Android " + android.os.Build.VERSION.RELEASE,
                 "peer" to peer,
                 "implementation" to implementation,
-                "result" to result,
                 "size" to size,
             )
+            if (result != null) {
+                log["result"] = result
+            }
             ref?.push()?.setValue(log)
-            Log.d(ContentValues.TAG, "Intersection result log sent to Firebase")
+            Log.d(ContentValues.TAG, "Result log sent to Firebase")
             broadcaster("INTERSECTION_STEP_F")
         }
         private suspend fun getRamUsage(): Int? = withContext(Dispatchers.IO) {
