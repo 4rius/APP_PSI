@@ -163,10 +163,12 @@ class LogService: Service() {
             )
             if (result != null) {
                 log["result"] = result
+                broadcaster("INTERSECTION_STEP_F")
+            } else {
+                broadcaster("CARDINALITY_DONE")
             }
             ref?.push()?.setValue(log)
             Log.d(ContentValues.TAG, "Result log sent to Firebase")
-            broadcaster("INTERSECTION_STEP_F")
         }
         private suspend fun getRamUsage(): Int? = withContext(Dispatchers.IO) {
             val activityManager = instance?.getSystemService(ACTIVITY_SERVICE) as? ActivityManager

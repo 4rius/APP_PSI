@@ -11,6 +11,7 @@ object DbConstants {
     const val INTERSECTION_STEP_1 = "com.example.app_psi.receivers.INTERSECTION_STEP_1"
     const val INTERSECTION_STEP_2 = "com.example.app_psi.receivers.INTERSECTION_STEP_2"
     const val INTERSECTION_STEP_F = "com.example.app_psi.receivers.INTERSECTION_STEP_F"
+    const val CARDINALITY_DONE = "com.example.app_psi.receivers.CARDINALITY_DONE"
     val REGEX_KEYGEN = Regex("^KEYGEN_.*")
     val REGEX_INTERSECTION_1 = Regex("^INTERSECTION.*1$")
     val REGEX_INTERSECTION_2 = Regex("^INTERSECTION.*2$")
@@ -18,7 +19,7 @@ object DbConstants {
 
     // Node
     const val VERSION = "1.1 - DEV"
-    const val DFL_BIT_LENGTH = 512
+    const val DFL_BIT_LENGTH = 1024
     const val DFL_DOMAIN = 500
     const val DFL_SET_SIZE = 50
     const val DFL_EXPANSION_FACTOR = 2

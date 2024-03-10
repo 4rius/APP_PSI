@@ -13,6 +13,7 @@ import com.google.gson.internal.LinkedTreeMap;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class IntersectionHandler {
             LogService.Companion.stopLogging();
             LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_OPE_1", (end_time - start_time) / 1000.0, VERSION, peerId, cpuTime);
         }).start();
-        return "Intersection with " + device + " - " + cs.getClass().getSimpleName() + " OPE - Waiting for response...";
+        return "Intersection with " + device + " - " + cs.getClass().getSimpleName() + " " + type + " OPE - Waiting for response...";
     }
 
     public void OPEIntersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, ArrayList<String> data, CryptoSystem cs, String id, Set<Integer> myData) {
@@ -115,6 +116,7 @@ public class IntersectionHandler {
             LogService.Companion.stopLogging();
             LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_OPE_F", (end_time - start_time) / 1000.0, VERSION, peer, cpuTime);
             int size = intersection.size();
+            assert peer != null;
             LogService.Companion.logResult(intersection, size, VERSION, peer, cs.getClass().getSimpleName() + "_OPE");
             System.out.println("Node " + id + " (You) - Intersection with " + peer + " - Result: " + intersection);
         }).start();
@@ -208,6 +210,7 @@ public class IntersectionHandler {
             LogService.Companion.stopLogging();
             LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_F", (end_time - start_time) / 1000.0, VERSION, peer, cpuTime);
             int size = intersection.size();
+            assert peer != null;
             LogService.Companion.logResult(intersection, size, VERSION, peer, cs.getClass().getSimpleName());
             System.out.println("Node " + id + " (You) - Intersection with " + peer + " - Result: " + intersection);
         }).start();
@@ -227,8 +230,10 @@ public class IntersectionHandler {
             // Evaluamos el polinomio con las raíces del peer
             List<Integer> myDataList = new ArrayList<>(myData);
             ArrayList<BigInteger> encryptedEval = cs.getEvaluationSet(coefs, myDataList, peerPubKeyReconstructed.get("n"));
-            System.out.println("Node " + id + " (You) - Intersection with " + peer + " - Encrypted evalutaion: " + encryptedEval);
+            System.out.println("Node " + id + " (You) - PSI-CA with " + peer + " - Encrypted evalutaion: " + encryptedEval);
             LinkedTreeMap<String, Object> messageToSend = new LinkedTreeMap<>();
+            // Shuffle the encrypted evaluation to not reveal positional information
+            //Collections.shuffle(encryptedEval); Causes exception
             messageToSend.put("data", encryptedEval);
             messageToSend.put("peer", id);
             messageToSend.put("cryptpscheme", cs.getClass().getSimpleName() + " PSI-CA OPE");
@@ -249,6 +254,7 @@ public class IntersectionHandler {
             Debug.startMethodTracing();
             ArrayList<String> stringData = (ArrayList<String>) peerData.remove("data");
             ArrayList<BigInteger> encryptedEval = new ArrayList<>();
+            assert stringData != null;
             for (String element : stringData) {
                 encryptedEval.add(new BigInteger(element));
             }
@@ -272,7 +278,7 @@ public class IntersectionHandler {
             LogService.Companion.stopLogging();
             LogService.Companion.logActivity("CARDINALITY_" + cs.getClass().getSimpleName() + "_F", (end_time - start_time) / 1000.0, VERSION, id, cpuTime);
             LogService.Companion.logResult(null, result, VERSION, id, cs.getClass().getSimpleName() + "_PSI-CA_OPE");
-            System.out.println("Node " + id + " (You) - PSI-CA with " + id + " - Result: " + result);
+            System.out.println("Node " + id + " (You) - " + cs.getClass().getSimpleName() + " PSI-CA with " + id + " - Result: " + result);
         }).start();
     }
 }

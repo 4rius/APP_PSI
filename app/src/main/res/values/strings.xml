@@ -73,8 +73,8 @@
     <string name="actions_for_device">Actions for device %1$s</string>
     <string name="intersect_everyone_DamgardJurik">Find every intersection - Damgard Jurik</string>
     <string name="find_intersection_DamgardJurik">Find intersection - Damgard Jurik</string>
-    <string name="find_cardinality_paillier">Find intersection cardinality - Paillier</string>
-    <string name="find_cardinality_DamgardJurik">Find intersection cardinality - Damgard Jurik</string>
+    <string name="find_cardinality_paillier">Cardinality - Paillier</string>
+    <string name="find_cardinality_DamgardJurik">Cardinality - Damgard Jurik</string>
     <string name="find_intersection_ope">Find intersection - Paillier OPE</string>
     <string name="find_intersection_dj_ope">Find intersection - Damgard Jurik OPE</string>
     <string name="intersect_everyone_paillier_ope">Find every intersection - Paillier OPE</string>

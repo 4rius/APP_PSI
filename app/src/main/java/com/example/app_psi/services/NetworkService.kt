@@ -12,6 +12,7 @@ import android.os.IBinder
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.app_psi.DbConstants.ACTION_SERVICE_CREATED
+import com.example.app_psi.DbConstants.CARDINALITY_DONE
 import com.example.app_psi.DbConstants.DFL_PORT
 import com.example.app_psi.DbConstants.INTERSECTION_STEP_1
 import com.example.app_psi.DbConstants.INTERSECTION_STEP_2
@@ -47,6 +48,9 @@ class NetworkService: Service() {
                 }
                 INTERSECTION_STEP_F -> {
                     sendNotification("Find details on the results option", "INTERSECTION FOUND")
+                }
+                CARDINALITY_DONE -> {
+                    sendNotification("Find details on the results option", "CARDINALITY FOUND")
                 }
             }
         }
@@ -143,10 +147,6 @@ class NetworkService: Service() {
             return instance?.node?.pingDevice(device) ?: false
         }
 
-        fun sendSmallMessage(device: String) {
-            TODO("Not yet implemented")
-        }
-
         fun getStatus(): String {
             return if (instance == null) "Inactive"
             else if (instance?.node?.isRunning == true) "Connected"
@@ -187,6 +187,14 @@ class NetworkService: Service() {
 
         fun findIntersectionDJOPE(s: String) {
             instance?.node?.intDamgardJurikOPE(s) ?: "Error"
+        }
+
+        fun findCardinalityPaillier(s: String) {
+            instance?.node?.intPaillierOPECA(s) ?: "Error"
+        }
+
+        fun findCardinalityDJ(s: String) {
+            instance?.node?.intDamgardJurikOPECA(s) ?: "Error"
         }
 
     }

@@ -11,6 +11,8 @@ import android.annotation.SuppressLint;
 import android.os.Debug;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.example.app_psi.handlers.IntersectionHandler;
 import com.example.app_psi.implementations.CryptoSystem;
 import com.example.app_psi.implementations.DamgardJurik;
@@ -33,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
@@ -87,14 +90,6 @@ public class Node {
         }
     }
 
-    private String extractId(String peer) {
-        if (peer.startsWith("[")) {  // Si es una dirección IPv6
-            return peer.substring(peer.indexOf("[") + 1, peer.indexOf("]"));
-        } else {  // Si es una dirección IPv4
-            return peer.split(":")[0];
-        }
-    }
-
     private void startRouterSocket() {
         while (running) {
             String sender = routerSocket.recvStr();
@@ -119,7 +114,7 @@ public class Node {
         context.close();
     }
 
-    private void handlePing(String message, String dayTime) {
+    private void handlePing(@NonNull String message, String dayTime) {
         String peer = message.split(" ")[0];
         Device device = devices.get(peer);
         if (device != null) {
@@ -130,7 +125,7 @@ public class Node {
         }
     }
 
-    private void handleDiscovery(String message, String dayTime) {
+    private void handleDiscovery(@NonNull String message, String dayTime) {
         String peer = message.split(" ")[2];
         if (!devices.containsKey(peer)) addNewDevice(peer, dayTime);
         Device device = devices.get(peer);
@@ -138,12 +133,12 @@ public class Node {
         device.socket.send("DISCOVER_ACK: Node " + id + " acknowledges node " + peer);
     }
 
-    private void handleDiscoverAck(String message, String dayTime) {
+    private void handleDiscoverAck(@NonNull String message, String dayTime) {
         String peer = message.split(" ")[2];
         if (!devices.containsKey(peer)) addNewDevice(peer, dayTime);
     }
 
-    private void handleAdded(String message, String dayTime) {
+    private void handleAdded(@NonNull String message, String dayTime) {
         String peer = message.split(" ")[8];
         Device device = devices.get(peer);
         if (device != null) {
@@ -151,7 +146,7 @@ public class Node {
         }
     }
 
-    private void handleUnknownMessage(String message, String dayTime) {
+    private void handleUnknownMessage(@NonNull String message, String dayTime) {
         System.out.println(id + " (You) received: " + message + " but don't know what to do with it");
         String peer = message.split(" ")[0];
         Device device = devices.get(peer);
@@ -218,69 +213,77 @@ public class Node {
         // Convertir el JSON en un LinkedTreeMap para realizar las operaciones sobre él
         LinkedTreeMap<String, Object> peerData = gson.fromJson(message, LinkedTreeMap.class);
 
-        if (peerData.containsKey("implementation") && peerData.containsKey("peer")) {
+        if (peerData.containsKey("implementation") && peerData.containsKey("peer")) {  // El mensaje que viene queriendo buscar la intersección
             try {
                 String peer = (String) peerData.remove("peer");
+                Device device = devices.get(peer);
+                if (device == null) {
+                    throw new Exception("Device not found");
+                }
                 String implementation = (String) peerData.remove("implementation");
 
                 LinkedTreeMap<String, String> peerPubKey = (LinkedTreeMap<String, String>) peerData.remove("pubkey");
                 assert peerPubKey != null;
-                switch (implementation) {
+                switch (Objects.requireNonNull(implementation)) {
                     case "Paillier":
-                        intersectionSecondStep(peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), paillier);
+                        intersectionHandler.intersectionSecondStep(device, peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), paillier, id, myData);
                         break;
                     case "DamgardJurik":
                     case "Damgard-Jurik":
-                        intersectionSecondStep(peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), damgardJurik);
+                        intersectionHandler.intersectionSecondStep(device, peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), damgardJurik, id, myData);
                         break;
                     case "Paillier OPE":
                     case "Paillier_OPE":
-                        OPEIntersectionSecondStep(peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), paillier, "PSI");
+                        intersectionHandler.OPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), paillier, id, myData);
                         break;
                     case "DamgardJurik OPE":
                     case "Damgard-Jurik_OPE":
-                        OPEIntersectionSecondStep(peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), damgardJurik, "PSI");
+                        intersectionHandler.OPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), damgardJurik, id, myData);
+                        break;
+                    case "Paillier PSI-CA OPE":
+                        intersectionHandler.CAOPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), paillier, id, myData);
+                        break;
+                    case "Damgard-Jurik PSI-CA OPE":
+                    case "DamgardJurik PSI-CA OPE":
+                        intersectionHandler.CAOPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), damgardJurik, id, myData);
                         break;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        else if (message.startsWith("{")) {
+        else if (message.startsWith("{")) {  // El mensaje que viene de vuelta del otro nodo
             try {
                 String cryptoScheme = (String) peerData.remove("cryptpscheme");
                 assert cryptoScheme != null;
                 switch (cryptoScheme) {
                     case "Paillier":
-                        intersectionFinalStep(peerData, paillier);
+                        intersectionHandler.intersectionFinalStep(peerData, paillier, id, results);
                         break;
                     case "DamgardJurik":
                     case "Damgard-Jurik":
-                        intersectionFinalStep(peerData, damgardJurik);
+                        intersectionHandler.intersectionFinalStep(peerData, damgardJurik, id, results);
                         break;
                     case "Paillier OPE":
                     case "Paillier_OPE":
-                        OPEIntersectionFinalStep(peerData, paillier);
+                        intersectionHandler.OPEIntersectionFinalStep(peerData, paillier, id, myData, results);
                         break;
                     case "DamgardJurik OPE":
                     case "Damgard-Jurik_OPE":
-                        OPEIntersectionFinalStep(peerData, damgardJurik);
+                        intersectionHandler.OPEIntersectionFinalStep(peerData, damgardJurik, id, myData, results);
                         break;
                     case "Paillier PSI-CA OPE":
-                        CAOPEIntersectionFinalStep(peerData, paillier);
+                        intersectionHandler.CAOPEIntersectionFinalStep(peerData, paillier, id, results);
                         break;
                     case "Damgard-Jurik PSI-CA OPE":
-                        CAOPEIntersectionFinalStep(peerData, damgardJurik);
+                    case "DamgardJurik PSI-CA OPE":
+                        intersectionHandler.CAOPEIntersectionFinalStep(peerData, damgardJurik, id, results);
                         break;
                 }
             } catch (JsonSyntaxException e) {
                 System.out.println("Received message is not a valid JSON.");
             }
         }
-    }
-
-    private void CAOPEIntersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs) {
-        intersectionHandler.CAOPEIntersectionFinalStep(peerData, cs, id, results);
     }
 
     public String intersectionFirstStep(String deviceId, CryptoSystem cs) {
@@ -292,17 +295,6 @@ public class Node {
         }
     }
 
-    public void intersectionSecondStep(String peer, LinkedTreeMap<String, String> peerPubKey, LinkedTreeMap<String, String> data, CryptoSystem cs) {
-        Device device = devices.get(peer);
-        if (device != null) {
-            intersectionHandler.intersectionSecondStep(device, peer, peerPubKey, data, cs, id, myData);
-        }
-    }
-
-    public void intersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs) {
-        intersectionHandler.intersectionFinalStep(peerData, cs, id, results);
-    }
-
     public String OPEIntersectionFirstStep(String deviceId, CryptoSystem cs, String type) {
         Device device = devices.get(deviceId);
         if (device != null) {
@@ -310,21 +302,6 @@ public class Node {
         } else {
             return "Intersection with " + deviceId + " - " + cs.getClass().getSimpleName() + " " + type + " OPE - Device not found";
         }
-    }
-
-    public void OPEIntersectionSecondStep(String peer, LinkedTreeMap<String, String> peerPubKey, ArrayList<String> data, CryptoSystem cs, String type) {
-        Device device = devices.get(peer);
-        if (device != null) {
-            if (type.equals("Paillier PSI-CA OPE") || type.equals("Damgard-Jurik PSI-CA OPE")) {
-                intersectionHandler.CAOPEIntersectionSecondStep(device, peer, peerPubKey, data, cs, id, myData);
-            } else {
-                intersectionHandler.OPEIntersectionSecondStep(device, peer, peerPubKey, data, cs, id, myData);
-            }
-        }
-    }
-
-    public void OPEIntersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs) {
-            intersectionHandler.OPEIntersectionFinalStep(peerData, cs, id, myData, results);
     }
 
     public String intPaillierOPE(String device) {
@@ -349,12 +326,6 @@ public class Node {
 
     public String intDamgardJurik(String device) {
         return intersectionFirstStep(device, damgardJurik);
-    }
-
-    public void pingAllDevices() {
-        for (Device device : devices.values()) {
-            device.socket.send(id + " is pinging you!");
-        }
     }
 
     public List<String> getDevices() {
@@ -424,16 +395,6 @@ public class Node {
         }).start();
     }
 
-    @Nullable
-    public String getDomain() {
-        return String.valueOf(domain);
-    }
-
-    @Nullable
-    public String getSetSize() {
-        return String.valueOf(myData.size());
-    }
-
     public void modifySetup(int domainSize, int setSize) {
         domain = domainSize;
         myData.clear();
@@ -469,6 +430,14 @@ public class Node {
 
     public Set<Integer> getMyData() {
         return myData;
+    }
+
+    public String extractId(@NonNull String peer) {
+        if (peer.startsWith("[")) {  // Si es una dirección IPv6
+            return peer.substring(peer.indexOf("[") + 1, peer.indexOf("]"));
+        } else {  // Si es una dirección IPv4
+            return peer.split(":")[0];
+        }
     }
 
 

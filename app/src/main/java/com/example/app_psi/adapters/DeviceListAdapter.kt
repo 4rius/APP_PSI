@@ -135,6 +135,18 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
             Snackbar.make(parentView, "Finding intersection with ${devices[position]} using Paillier OPE", Snackbar.LENGTH_SHORT).show()
         }
 
+        bottomSheetDialog.findViewById<Button>(R.id.buttonfindCardinalityPaillier)?.setOnClickListener {
+            NetworkService.findCardinalityPaillier(devices[position])
+            bottomSheetDialog.dismiss()
+            Snackbar.make(parentView, "Finding cardinality of the intersection with ${devices[position]} using Paillier", Snackbar.LENGTH_SHORT).show()
+        }
+
+        bottomSheetDialog.findViewById<Button>(R.id.buttonfindCardinalityDJ)?.setOnClickListener {
+            NetworkService.findCardinalityDJ(devices[position])
+            bottomSheetDialog.dismiss()
+            Snackbar.make(parentView, "Finding cardinality of the intersection with ${devices[position]} using DamgardJurik", Snackbar.LENGTH_SHORT).show()
+        }
+
         bottomSheetDialog.show()
     }
 
