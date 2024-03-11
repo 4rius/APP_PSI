@@ -31,94 +31,6 @@
         android:orientation="horizontal">
 
         <ImageView
-            android:id="@+id/logo1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/baseline_file_upload_48"
-            android:layout_gravity="center"
-            android:importantForAccessibility="no" />
-
-        <Button
-            android:id="@+id/buttonSendLargeMsg"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="2dp"
-            android:text="@string/intersect_everyone_paillier" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:id="@+id/logo2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/baseline_file_upload_48"
-            android:layout_gravity="center"
-            android:importantForAccessibility="no" />
-
-        <Button
-            android:id="@+id/buttonSendSmallMsg"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="2dp"
-            android:text="@string/intersect_everyone_DamgardJurik" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:id="@+id/logo13"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/baseline_file_upload_48"
-            android:layout_gravity="center"
-            android:importantForAccessibility="no" />
-
-        <Button
-            android:id="@+id/findIntersectionPaillierOPE"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="2dp"
-            android:text="@string/intersect_everyone_paillier_ope" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:id="@+id/logo14"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/baseline_file_upload_48"
-            android:layout_gravity="center"
-            android:importantForAccessibility="no" />
-
-        <Button
-            android:id="@+id/findIntersectionDJOPE"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="2dp"
-            android:text="@string/intersect_everyone_dj_ope" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <ImageView
             android:id="@+id/logo6"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -254,7 +166,7 @@
             android:id="@+id/logo15"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/baseline_connect_without_contact_24"
+            android:src="@drawable/baseline_mode_48"
             android:layout_gravity="center"
             android:importantForAccessibility="no" />
 

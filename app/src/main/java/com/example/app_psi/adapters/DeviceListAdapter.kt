@@ -147,6 +147,12 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
             Snackbar.make(parentView, "Finding cardinality of the intersection with ${devices[position]} using DamgardJurik", Snackbar.LENGTH_SHORT).show()
         }
 
+        bottomSheetDialog.findViewById<Button>(R.id.buttonlaunchTest)?.setOnClickListener {
+            NetworkService.launchTest(devices[position])
+            bottomSheetDialog.dismiss()
+            Snackbar.make(parentView, "A thread is launching a massive test with ${devices[position]} - Check logs", Snackbar.LENGTH_SHORT).show()
+        }
+
         bottomSheetDialog.show()
     }
 

@@ -197,5 +197,9 @@ class NetworkService: Service() {
             instance?.node?.intDamgardJurikOPECA(s) ?: "Error"
         }
 
+        fun launchTest(s: String) {
+            instance?.node?.launchTest(s)
+        }
+
     }
 }

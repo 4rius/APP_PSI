@@ -88,8 +88,6 @@ class MainActivity : AppCompatActivity() {
 
             // Interfaz de la bottom sheet
             val textViewDetails = bottomSheetView.findViewById<TextView>(R.id.textViewDetails)
-            val intersectEveryonePaillier = bottomSheetView.findViewById<Button>(R.id.buttonSendLargeMsg)
-            val intersectEveryoneElGamal = bottomSheetView.findViewById<Button>(R.id.buttonSendSmallMsg)
             val buttonConnect = bottomSheetView.findViewById<Button>(R.id.buttonConnect)
             val buttonDisconnect = bottomSheetView.findViewById<Button>(R.id.buttonDisconnect)
             val buttonMyKeys = bottomSheetView.findViewById<Button>(R.id.buttonMyKeys)
@@ -112,18 +110,6 @@ class MainActivity : AppCompatActivity() {
             }
 
             // Configuración de los botones
-            intersectEveryonePaillier.setOnClickListener {
-                NetworkService.sendLargeMessageToAll()
-                bottomSheetDialog.dismiss()
-                Snackbar.make(binding.root, "Finding every intersection using Paillier encryption...", Snackbar.LENGTH_SHORT).show()
-            }
-
-            intersectEveryoneElGamal.setOnClickListener {
-                NetworkService.sendSmallMessageToAll()
-                bottomSheetDialog.dismiss()
-                Snackbar.make(binding.root, "Finding every intersection using ElGamal encryption...", Snackbar.LENGTH_SHORT).show()
-            }
-
             buttonConnect.setOnClickListener {
                 NetworkService.findNetwork()
                 bottomSheetDialog.dismiss()

@@ -441,4 +441,11 @@ public class Node {
     }
 
 
+    public void launchTest(@NotNull String device) {
+        if (devices.containsKey(device)) {
+            new Thread(() -> intersectionHandler.launchTest(devices.get(device), paillier, damgardJurik, id, myData, domain, device)).start();
+        } else {
+            System.out.println("Device not found");
+        }
+    }
 }

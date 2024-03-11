@@ -23,6 +23,7 @@ object DbConstants {
     const val DFL_DOMAIN = 500
     const val DFL_SET_SIZE = 50
     const val DFL_EXPANSION_FACTOR = 2
+    const val TEST_ROUNDS = 20 // 120 operations
 
     // LogService
     const val LOG_INTERVAL = 10000L

@@ -1,5 +1,6 @@
 package com.example.app_psi.handlers;
 
+import static com.example.app_psi.DbConstants.TEST_ROUNDS;
 import static com.example.app_psi.DbConstants.VERSION;
 
 import android.os.Debug;
@@ -25,7 +26,6 @@ public class IntersectionHandler {
         new Thread(() -> {
             LogService.Companion.startLogging();
             Long start_time = System.currentTimeMillis();
-            Debug.startMethodTracing();
             System.out.println("Node " + id + " (You) - Intersection with " + device + " - " + cs.getClass().getSimpleName() + " OPE");
             // Obtenemos las raíces del polinomio
             List<Integer> myDataList = new ArrayList<>(myData);
@@ -45,7 +45,6 @@ public class IntersectionHandler {
             String jsonMessage = gson.toJson(message);
             // Enviamos el mensaje
             device.socket.send(jsonMessage);
-            Debug.stopMethodTracing();
             long cpuTime = Debug.threadCpuTimeNanos();
             Long end_time = System.currentTimeMillis();
             LogService.Companion.stopLogging();
@@ -58,7 +57,6 @@ public class IntersectionHandler {
         new Thread(() -> {
             LogService.Companion.startLogging();
             Long start_time = System.currentTimeMillis();
-            Debug.startMethodTracing();
             LinkedTreeMap<String, BigInteger> peerPubKeyReconstructed = cs.reconstructPublicKey(peerPubKey);
             // Obtenemos las raíces cifradas del peer
             ArrayList<BigInteger> coefs = new ArrayList<>();
@@ -77,7 +75,6 @@ public class IntersectionHandler {
             messageToSend.put("cryptpscheme", cs.getClass().getSimpleName() + " OPE");
             Gson gson = new Gson();
             device.socket.send(gson.toJson(messageToSend));
-            Debug.stopMethodTracing();
             long cpuTime = Debug.threadCpuTimeNanos();
             Long end_time = System.currentTimeMillis();
             LogService.Companion.stopLogging();
@@ -89,7 +86,6 @@ public class IntersectionHandler {
         new Thread(() -> {
             LogService.Companion.startLogging();
             Long start_time = System.currentTimeMillis();
-            Debug.startMethodTracing();
             ArrayList<String> stringData = (ArrayList<String>) peerData.remove("data");
             ArrayList<BigInteger> encryptedEval = new ArrayList<>();
             for (String element : stringData) {
@@ -110,7 +106,6 @@ public class IntersectionHandler {
             synchronized (results) {
                 results.put(peer + " " + cs.getClass().getSimpleName() + " OPE", intersection);
             }
-            Debug.stopMethodTracing();
             long cpuTime = Debug.threadCpuTimeNanos();
             Long end_time = System.currentTimeMillis();
             LogService.Companion.stopLogging();
@@ -126,7 +121,6 @@ public class IntersectionHandler {
         new Thread(() -> {
             LogService.Companion.startLogging();
             Long start_time = System.currentTimeMillis();
-            Debug.startMethodTracing();
             System.out.println("Node " + id + " (You) - Intersection with " + peerId + " - " + cs.getClass().getSimpleName());
             // Ciframos los datos del nodo
             LinkedTreeMap<String, BigInteger> encryptedSet = cs.encryptMyData(myData, domain);
@@ -142,7 +136,6 @@ public class IntersectionHandler {
             String jsonMessage = gson.toJson(message);
             // Enviamos el mensaje
             device.socket.send(jsonMessage);
-            Debug.stopMethodTracing();
             long cpuTime = Debug.threadCpuTimeNanos();
             Long end_time = System.currentTimeMillis();
             LogService.Companion.stopLogging();
@@ -155,7 +148,6 @@ public class IntersectionHandler {
         new Thread(() -> {
             LogService.Companion.startLogging();
             Long start_time = System.currentTimeMillis();
-            Debug.startMethodTracing();
             LinkedTreeMap<String, BigInteger> peerPubKeyReconstructed = cs.reconstructPublicKey(peerPubKey);
             BigInteger n = peerPubKeyReconstructed.get("n");
             LinkedTreeMap<String, BigInteger> encryptedSet = cs.getEncryptedSet(data);
@@ -172,7 +164,6 @@ public class IntersectionHandler {
             messageToSend.put("cryptpscheme", cs.getClass().getSimpleName());
             Gson gson = new Gson();
             device.socket.send(gson.toJson(messageToSend));
-            Debug.stopMethodTracing();
             long cpuTime = Debug.threadCpuTimeNanos();
             Long end_time = System.currentTimeMillis();
             LogService.Companion.stopLogging();
@@ -184,7 +175,6 @@ public class IntersectionHandler {
         new Thread(() -> {
             LogService.Companion.startLogging();
             Long start_time = System.currentTimeMillis();
-            Debug.startMethodTracing();
             LinkedTreeMap<String, String> multipliedSet = (LinkedTreeMap<String, String>) peerData.remove("data");
             LinkedTreeMap<String, BigInteger> encMultipliedSet = cs.recvMultipliedSet(multipliedSet);
             String peer = (String) peerData.remove("peer");
@@ -204,7 +194,6 @@ public class IntersectionHandler {
             synchronized (results) {
                 results.put(peer + " " + cs.getClass().getSimpleName(), intersection);
             }
-            Debug.stopMethodTracing();
             long cpuTime = Debug.threadCpuTimeNanos();
             Long end_time = System.currentTimeMillis();
             LogService.Companion.stopLogging();
@@ -220,7 +209,6 @@ public class IntersectionHandler {
         new Thread(() -> {
             LogService.Companion.startLogging();
             Long start_time = System.currentTimeMillis();
-            Debug.startMethodTracing();
             LinkedTreeMap<String, BigInteger> peerPubKeyReconstructed = cs.reconstructPublicKey(peerPubKey);
             // Obtenemos las raíces cifradas del peer
             ArrayList<BigInteger> coefs = new ArrayList<>();
@@ -239,7 +227,6 @@ public class IntersectionHandler {
             messageToSend.put("cryptpscheme", cs.getClass().getSimpleName() + " PSI-CA OPE");
             Gson gson = new Gson();
             device.socket.send(gson.toJson(messageToSend));
-            Debug.stopMethodTracing();
             long cpuTime = Debug.threadCpuTimeNanos();
             Long end_time = System.currentTimeMillis();
             LogService.Companion.stopLogging();
@@ -251,7 +238,6 @@ public class IntersectionHandler {
         new Thread(() -> {
             LogService.Companion.startLogging();
             Long start_time = System.currentTimeMillis();
-            Debug.startMethodTracing();
             ArrayList<String> stringData = (ArrayList<String>) peerData.remove("data");
             ArrayList<BigInteger> encryptedEval = new ArrayList<>();
             assert stringData != null;
@@ -272,7 +258,6 @@ public class IntersectionHandler {
             synchronized (results) {
                 results.put(id + " " + cs.getClass().getSimpleName() + " PSI-CA OPE", result);
             }
-            Debug.stopMethodTracing();
             long cpuTime = Debug.threadCpuTimeNanos();
             Long end_time = System.currentTimeMillis();
             LogService.Companion.stopLogging();
@@ -280,5 +265,16 @@ public class IntersectionHandler {
             LogService.Companion.logResult(null, result, VERSION, id, cs.getClass().getSimpleName() + "_PSI-CA_OPE");
             System.out.println("Node " + id + " (You) - " + cs.getClass().getSimpleName() + " PSI-CA with " + id + " - Result: " + result);
         }).start();
+    }
+
+    public void launchTest(Device device, CryptoSystem paillier, CryptoSystem damgardJurik, String id, Set<Integer> myData, int domain, String peerId) {
+        for (int i = 0; i < TEST_ROUNDS; i++) {
+            intersectionFirstStep(device, paillier, id, myData, peerId, domain);
+            intersectionFirstStep(device, damgardJurik, id, myData, peerId, domain);
+            OPEIntersectionFirstStep(device, paillier, id, myData, peerId, "PSI");
+            OPEIntersectionFirstStep(device, damgardJurik, id, myData, peerId, "PSI");
+            OPEIntersectionFirstStep(device, paillier, id, myData, peerId, "PSI-CA");
+            OPEIntersectionFirstStep(device, damgardJurik, id, myData, peerId, "PSI-CA");
+        }
     }
 }
