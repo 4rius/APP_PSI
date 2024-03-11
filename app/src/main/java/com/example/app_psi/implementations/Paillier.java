@@ -2,10 +2,13 @@ package com.example.app_psi.implementations;
 
 import static com.example.app_psi.implementations.Polynomials.hornerEvalCrypt;
 
+import androidx.annotation.NonNull;
+
 import com.google.gson.internal.LinkedTreeMap;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -24,7 +27,7 @@ public class Paillier implements CryptoSystem {
     }
 
     // Constructor para cifrar lo que mande un nodo
-    public Paillier(BigInteger n) {
+    public Paillier(@NonNull BigInteger n) {
         this.n = n;
         this.nsquare = n.multiply(n);
         this.g = n.add(BigInteger.ONE);  // g puede ser n+1
@@ -79,17 +82,17 @@ public class Paillier implements CryptoSystem {
     }
 
     // Suma 2 números cifrados
-    public BigInteger addEncryptedNumbers(BigInteger a, BigInteger b) {
+    public BigInteger addEncryptedNumbers(@NonNull BigInteger a, BigInteger b) {
         return a.multiply(b).mod(nsquare);
     }
 
     // Suma número cifrado y escalar
-    public BigInteger addEncryptedAndScalar(BigInteger a, BigInteger b) {
+    public BigInteger addEncryptedAndScalar(@NonNull BigInteger a, BigInteger b) {
         return a.multiply(g.modPow(b, nsquare)).mod(nsquare);
     }
 
     // Multiplica número cifrado por escalar
-    public BigInteger multiplyEncryptedByScalar(BigInteger a, BigInteger b) {
+    public BigInteger multiplyEncryptedByScalar(@NonNull BigInteger a, BigInteger b) {
         return a.modPow(b, nsquare);
     }
 
@@ -102,13 +105,13 @@ public class Paillier implements CryptoSystem {
     }
 
     // Reconstruir clave pública
-    public LinkedTreeMap<String, BigInteger>  reconstructPublicKey(LinkedTreeMap<String, String> publicKeyDict) {
+    public LinkedTreeMap<String, BigInteger>  reconstructPublicKey(@NonNull LinkedTreeMap<String, String> publicKeyDict) {
         LinkedTreeMap<String, BigInteger> publicKey = new LinkedTreeMap<>();
         publicKey.put("n", new BigInteger(Objects.requireNonNull(publicKeyDict.get("n"))));
         return publicKey;
     }
 
-    public LinkedTreeMap<String, BigInteger> getEncryptedSet(LinkedTreeMap<String, String> serializedEncryptedSet) {
+    public LinkedTreeMap<String, BigInteger> getEncryptedSet(@NonNull LinkedTreeMap<String, String> serializedEncryptedSet) {
         LinkedTreeMap<String, BigInteger> encryptedSet = new LinkedTreeMap<>();
         for (Map.Entry<String, String> entry : serializedEncryptedSet.entrySet()) {
             encryptedSet.put(entry.getKey(), new BigInteger(entry.getValue()));
@@ -128,7 +131,7 @@ public class Paillier implements CryptoSystem {
         return result;
     }
 
-    public ArrayList<BigInteger> encryptRoots(List<BigInteger> mySet) {
+    public ArrayList<BigInteger> encryptRoots(@NonNull List<BigInteger> mySet) {
         ArrayList<BigInteger> result = new ArrayList<>();
         for (BigInteger element : mySet) {
             result.add(Encrypt(element));
@@ -136,7 +139,7 @@ public class Paillier implements CryptoSystem {
         return result;
     }
 
-    public ArrayList<BigInteger> encryptMySet(Set<Integer> mySet) {
+    public ArrayList<BigInteger> encryptMySet(@NonNull Set<Integer> mySet) {
         ArrayList<BigInteger> result = new ArrayList<>();
         for (int element : mySet) {
             result.add(Encrypt(BigInteger.valueOf(element)));
@@ -149,7 +152,7 @@ public class Paillier implements CryptoSystem {
     }
 
     // Sacar el conjunto multiplicado
-    public LinkedTreeMap<String, BigInteger> getMultipliedSet(LinkedTreeMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n) {
+    public LinkedTreeMap<String, BigInteger> getMultipliedSet(@NonNull LinkedTreeMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n) {
         LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();
         Paillier paillierSender = new Paillier(n);
         for (Map.Entry<String, BigInteger> entry : encSet.entrySet()) {
@@ -169,7 +172,7 @@ public class Paillier implements CryptoSystem {
     porque en la phe venía directamente sobrecargado, aquí hay que lidiar con ello.*/
     }
 
-    public ArrayList<BigInteger> handleOPESecondStep(ArrayList<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n) {
+    public ArrayList<BigInteger> handleOPESecondStep(ArrayList<BigInteger> encryptedCoeff, @NonNull List<Integer> mySet, BigInteger n) {
         ArrayList<BigInteger> encryptedResult = new ArrayList<>();
         Paillier PeerPubKey = new Paillier(n);
         SecureRandom rand = new SecureRandom();
@@ -184,7 +187,7 @@ public class Paillier implements CryptoSystem {
         return encryptedResult;
     }
 
-    public ArrayList<BigInteger> getEvaluationSet(List<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n) {
+    public ArrayList<BigInteger> getEvaluationSet(List<BigInteger> encryptedCoeff, @NonNull List<Integer> mySet, BigInteger n) {
         ArrayList<BigInteger> evaluations = new ArrayList<>();
         Paillier PeerPubKey = new Paillier(n);
         SecureRandom rand = new SecureRandom();
@@ -195,6 +198,7 @@ public class Paillier implements CryptoSystem {
             BigInteger result = PeerPubKey.addEncryptedNumbers(PeerPubKey.Encrypt(BigInteger.valueOf(0)), mult);
             evaluations.add(result);
         }
+        Collections.shuffle(evaluations, new SecureRandom());
         return evaluations;
     }
 }

@@ -2,10 +2,13 @@ package com.example.app_psi.implementations;
 
 import static com.example.app_psi.implementations.Polynomials.hornerEvalCrypt;
 
+import androidx.annotation.NonNull;
+
 import com.google.gson.internal.LinkedTreeMap;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -161,7 +164,7 @@ public class DamgardJurik implements CryptoSystem {
     }
 
     // Sacar el conjunto multiplicado
-    public LinkedTreeMap<String, BigInteger> getMultipliedSet(LinkedTreeMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n) {
+    public LinkedTreeMap<String, BigInteger> getMultipliedSet(@NonNull LinkedTreeMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n) {
         LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();
         DamgardJurik djsender = new DamgardJurik(n, 2);
         for (Map.Entry<String, BigInteger> entry : encSet.entrySet()) {
@@ -177,7 +180,7 @@ public class DamgardJurik implements CryptoSystem {
         return result;
     }
 
-    public ArrayList<BigInteger> handleOPESecondStep(ArrayList<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n) {
+    public ArrayList<BigInteger> handleOPESecondStep(ArrayList<BigInteger> encryptedCoeff, @NonNull List<Integer> mySet, BigInteger n) {
         ArrayList<BigInteger> encryptedResult = new ArrayList<>();
         SecureRandom rand = new SecureRandom();
         DamgardJurik PeerPubKey = new DamgardJurik(n, 2);
@@ -192,7 +195,7 @@ public class DamgardJurik implements CryptoSystem {
         return encryptedResult;
     }
 
-    public ArrayList<BigInteger> getEvaluationSet(List<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n) {
+    public ArrayList<BigInteger> getEvaluationSet(List<BigInteger> encryptedCoeff, @NonNull List<Integer> mySet, BigInteger n) {
         ArrayList<BigInteger> evaluations = new ArrayList<>();
         DamgardJurik PeerPubKey = new DamgardJurik(n, 2);
         SecureRandom rand = new SecureRandom();
@@ -203,6 +206,8 @@ public class DamgardJurik implements CryptoSystem {
             BigInteger result = PeerPubKey.addEncryptedNumbers(PeerPubKey.Encrypt(BigInteger.ZERO), mult);
             evaluations.add(result);
         }
+        // Shuffle the evaluations
+        Collections.shuffle(evaluations, new SecureRandom());
         return evaluations;
     }
 }
