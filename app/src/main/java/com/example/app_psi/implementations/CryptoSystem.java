@@ -13,7 +13,17 @@ public interface CryptoSystem {
 
     ArrayList<BigInteger> encryptMySet(Set<Integer> mySet);
 
-    LinkedTreeMap<String, BigInteger> encryptMyData(Set<Integer> myData, int domain);
+    default LinkedTreeMap<String, BigInteger> encryptMyData(Set<Integer> myData, int domain) {
+        LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();
+        for (int element = 0; element < domain; element++) {
+            if (!myData.contains(element)) {
+                result.put(Integer.toString(element), Encrypt(BigInteger.ZERO));
+            } else {
+                result.put(Integer.toString(element), Encrypt(BigInteger.ONE));
+            }
+        }
+        return result;
+    }
 
     ArrayList<BigInteger> encryptRoots(List<BigInteger> mySet);
 

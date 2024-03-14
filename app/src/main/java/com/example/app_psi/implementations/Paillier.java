@@ -119,18 +119,6 @@ public class Paillier implements CryptoSystem {
         return encryptedSet;
     }
 
-    public LinkedTreeMap<String, BigInteger> encryptMyData(Set<Integer> mySet, int domain) {
-        LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();
-        for (int element = 0; element < domain; element++) {
-            if (!mySet.contains(element)) {
-                result.put(Integer.toString(element), Encrypt(BigInteger.ZERO));
-            } else {
-                result.put(Integer.toString(element), Encrypt(BigInteger.ONE));
-            }
-        }
-        return result;
-    }
-
     public ArrayList<BigInteger> encryptRoots(@NonNull List<BigInteger> mySet) {
         ArrayList<BigInteger> result = new ArrayList<>();
         for (BigInteger element : mySet) {
@@ -202,16 +190,3 @@ public class Paillier implements CryptoSystem {
         return evaluations;
     }
 }
-
-
-    /*public static void main(String[] args) {
-        // Generación de claves
-        Paillier paillier = new Paillier(1024, 64);
-        BigInteger publicKey = paillier.n;
-
-        // Cifrar los elementos de A
-        Map<Integer, BigInteger> encryptedSet = encryptMyData(new int[]{1, 2, 3}, publicKey, 10);
-
-        // Recibir el set
-        Map<Integer, BigInteger> multipliedSet = recvMultipliedSet(encryptedSet, new int[]{2, 3, 4});
-    }*/

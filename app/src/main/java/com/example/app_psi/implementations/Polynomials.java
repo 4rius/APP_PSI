@@ -1,5 +1,7 @@
 package com.example.app_psi.implementations;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,7 +11,7 @@ import java.util.List;
 public class Polynomials {
 
     // Método para generar un polinomio a partir de sus raíces
-    public static List<BigInteger> polyFromRoots(List<Integer> roots, BigInteger negOne, BigInteger one) {
+    public static List<BigInteger> polyFromRoots(@NotNull List<Integer> roots, BigInteger negOne, @NotNull BigInteger one) {
         BigInteger zero = one.add(negOne);
         List<BigInteger> coefs = Arrays.asList(negOne.multiply(BigInteger.valueOf(roots.get(0))), one);
         for (int i = 1; i < roots.size(); i++) {
@@ -19,7 +21,7 @@ public class Polynomials {
     }
 
     // Método para multiplicar dos polinomios
-    public static List<BigInteger> polyMul(List<BigInteger> coefs1, List<BigInteger> coefs2, BigInteger zero) {
+    public static @NotNull List<BigInteger> polyMul(@NotNull List<BigInteger> coefs1, @NotNull List<BigInteger> coefs2, BigInteger zero) {
         // Inicializar coefs3 con ceros, nCopies inicializa la lista más eficientemente que add
         List<BigInteger> coefs3 = new ArrayList<>(Collections.nCopies(coefs1.size() + coefs2.size() - 1, zero));
         for (int i = 0; i < coefs1.size(); i++) {
@@ -31,7 +33,7 @@ public class Polynomials {
     }
 
     // Método para evaluar un polinomio cifrado
-    public static BigInteger hornerEvalCrypt(List<BigInteger> coefs, BigInteger x, CryptoSystem cs) {
+    public static BigInteger hornerEvalCrypt(@NotNull List<BigInteger> coefs, BigInteger x, CryptoSystem cs) {
         BigInteger result = coefs.get(coefs.size() - 1);
         for (int i = coefs.size() - 2; i >= 0; i--) {
             result = cs.multiplyEncryptedByScalar(result, x);

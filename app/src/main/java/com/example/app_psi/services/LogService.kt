@@ -71,12 +71,8 @@ class LogService: Service() {
     }
 
     class LoggingObj {
-        var ram_usage = ArrayList<Int>()
-        var app_ram_usage = ArrayList<Int>()
-        var avg_ram_usage = 0
-        var app_avg_ram_usage = 0
-        var peak_ram_usage = 0
-        var peak_app_ram_usage = 0
+        var ramUsage = ArrayList<Int>()
+        var appRamUsage = ArrayList<Int>()
     }
 
     companion object {
@@ -114,11 +110,11 @@ class LogService: Service() {
             var peakAppRamUsage = 0
 
             if (loggingObj != null) {
-                synchronized(loggingObj.ram_usage) {
-                    avgRamUsage = if (loggingObj.ram_usage.isNotEmpty()) loggingObj.ram_usage.sum() / loggingObj.ram_usage.size else 0
-                    peakRamUsage = loggingObj.ram_usage.maxOrNull() ?: 0
-                    appAvgRamUsage = if (loggingObj.app_ram_usage.isNotEmpty()) loggingObj.app_ram_usage.sum() / loggingObj.app_ram_usage.size else 0
-                    peakAppRamUsage = loggingObj.app_ram_usage.maxOrNull() ?: 0
+                synchronized(loggingObj.ramUsage) {
+                    avgRamUsage = if (loggingObj.ramUsage.isNotEmpty()) loggingObj.ramUsage.sum() / loggingObj.ramUsage.size else 0
+                    peakRamUsage = loggingObj.ramUsage.maxOrNull() ?: 0
+                    appAvgRamUsage = if (loggingObj.appRamUsage.isNotEmpty()) loggingObj.appRamUsage.sum() / loggingObj.appRamUsage.size else 0
+                    peakAppRamUsage = loggingObj.appRamUsage.maxOrNull() ?: 0
                 }
             }
 
@@ -224,8 +220,8 @@ class LogService: Service() {
                 while (isActive) {
                     val ram = getRamUsage()
                     val ramApp = getAppRamUsage()
-                    loggingObj.ram_usage.add(ram ?: 0)
-                    loggingObj.app_ram_usage.add(ramApp ?: 0)
+                    loggingObj.ramUsage.add(ram ?: 0)
+                    loggingObj.appRamUsage.add(ramApp ?: 0)
                     delay(100)
                 }
             }

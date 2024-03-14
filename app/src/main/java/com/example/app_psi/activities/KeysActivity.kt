@@ -27,14 +27,14 @@ class KeysActivity : AppCompatActivity() {
         buttonGoBack = findViewById(R.id.buttonGoBack)
 
         if (dataset != null) {
-            textViewKeys.text = "Dataset"
-            textViewKeyValue.text = "Dataset: $dataset"
+            textViewKeys.text = getString(R.string.dataset)
+            textViewKeyValue.text = getString(R.string.dataset_res, dataset)
         } else if (results != null) {
-            textViewKeys.text = "Results"
-            textViewKeyValue.text = "Results: $results"
+            textViewKeys.text = getString(R.string.results_ac)
+            textViewKeyValue.text = getString(R.string.results_ac_res, results)
         } else {
-            textViewKeys.text = "Keys"
-            textViewKeyValue.text = "Public key (n): $publicKey\nPrivate key (lambda): $privateKey"
+            textViewKeys.text = getString(R.string.keys_ac)
+            textViewKeyValue.text = getString(R.string.keys_ac_res, publicKey, privateKey)
         }
 
         buttonGoBack.setOnClickListener {

@@ -88,4 +88,10 @@
     <string name="set_size">Tamaño del Set</string>
     <string name="set_size_1">Introduce el tamaño del set</string>
     <string name="launch_test">Launch test</string>
+    <string name="dataset">Dataset</string>
+    <string name="dataset_res">Dataset: %1$s</string>
+    <string name="results_ac">Results</string>
+    <string name="results_ac_res">Results: %1$s</string>
+    <string name="keys_ac">Keys</string>
+    <string name="keys_ac_res">Public key (n): %1$s\nPrivate key (lambda): %2$s</string>
 </resources>

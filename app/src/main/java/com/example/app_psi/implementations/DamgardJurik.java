@@ -1,18 +1,13 @@
 package com.example.app_psi.implementations;
 
-import static com.example.app_psi.implementations.Polynomials.hornerEvalCrypt;
-
 import androidx.annotation.NonNull;
-
 import com.google.gson.internal.LinkedTreeMap;
+
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
+
+import static com.example.app_psi.implementations.Polynomials.hornerEvalCrypt;
 
 public class DamgardJurik implements CryptoSystem {
 
@@ -128,19 +123,6 @@ public class DamgardJurik implements CryptoSystem {
             encryptedSet.put(entry.getKey(), new BigInteger(entry.getValue()));
         }
         return encryptedSet;
-    }
-
-    // El dominio podría ser el tamaño del conjunto de datos cuando se haga con OPEs
-    public LinkedTreeMap<String, BigInteger> encryptMyData(Set<Integer> mySet, int domain) {
-        LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();
-        for (int element = 0; element < domain; element++) {
-            if (!mySet.contains(element)) {
-                result.put(Integer.toString(element), Encrypt(BigInteger.ZERO));
-            } else {
-                result.put(Integer.toString(element), Encrypt(BigInteger.ONE));
-            }
-        }
-        return result;
     }
 
     public ArrayList<BigInteger> encryptMySet(Set<Integer> mySet) {
