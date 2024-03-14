@@ -16,6 +16,8 @@ import java.util.*;
 
 import static com.example.app_psi.DbConstants.*;
 
+import androidx.annotation.NonNull;
+
 public class SchemeHandler {
 
     private final CryptoSystem paillier; // Objeto Paillier con los métodos de claves, cifrado e intersecciones
@@ -26,11 +28,11 @@ public class SchemeHandler {
         this.damgardJurik = new DamgardJurik(DFL_BIT_LENGTH, DFL_EXPANSION_FACTOR);
     }
 
-    public String OPEIntersectionFirstStep(Device device, CryptoSystem cs, String id, Set<Integer> myData, String peerId, String type) {
+    public String OPEIntersectionFirstStep(Device device, @NonNull CryptoSystem cs, String id, Set<Integer> myData, String peerId, String type) {
         new Thread(() -> {
             LogService.Companion.startLogging();
             Long start_time = System.currentTimeMillis();
-            System.out.println("Node " + id + " (You) - Intersection with " + device + " - " + cs.getClass().getSimpleName() + " OPE");
+            System.out.println("Node " + id + " (You) - Intersection with " + peerId + " - " + cs.getClass().getSimpleName() + " OPE");
             // Obtenemos las raíces del polinomio
             List<Integer> myDataList = new ArrayList<>(myData);
             List<BigInteger> roots = Polynomials.polyFromRoots(myDataList, BigInteger.valueOf(-1), BigInteger.ONE);
@@ -123,7 +125,7 @@ public class SchemeHandler {
         }).start();
     }
 
-    public String intersectionFirstStep(Device device, CryptoSystem cs, String id, Set<Integer> myData, String peerId, int domain) {
+    public String intersectionFirstStep(Device device, @NonNull CryptoSystem cs, String id, Set<Integer> myData, String peerId, int domain) {
         new Thread(() -> {
             LogService.Companion.startLogging();
             Long start_time = System.currentTimeMillis();

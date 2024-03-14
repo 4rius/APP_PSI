@@ -83,7 +83,7 @@ class NetworkService: Service() {
         instance = this
         id = getLocalIp()!!
         val peers = ArrayList<String>()
-        peers.add("192.168.1.3:5001")
+        peers.add("192.168.1.155:5001")
         peers.add("192.168.1.2:5001")
         node = Node(id, DFL_PORT, peers)
         node.start()
