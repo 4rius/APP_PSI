@@ -1,27 +1,14 @@
 package com.example.app_psi.objects;
 
 
-import static com.example.app_psi.DbConstants.DFL_BIT_LENGTH;
-import static com.example.app_psi.DbConstants.DFL_DOMAIN;
-import static com.example.app_psi.DbConstants.DFL_EXPANSION_FACTOR;
-import static com.example.app_psi.DbConstants.DFL_SET_SIZE;
-import static com.example.app_psi.DbConstants.VERSION;
-
 import android.annotation.SuppressLint;
-import android.os.Debug;
-import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import com.example.app_psi.handlers.IntersectionHandler;
 import com.example.app_psi.implementations.CryptoSystem;
-import com.example.app_psi.implementations.DamgardJurik;
-import com.example.app_psi.implementations.Paillier;
 import com.example.app_psi.services.LogService;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.zeromq.SocketType;
@@ -29,15 +16,12 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.example.app_psi.DbConstants.DFL_DOMAIN;
+import static com.example.app_psi.DbConstants.DFL_SET_SIZE;
 
 @SuppressLint("SimpleDateFormat")
 public class Node {
@@ -48,12 +32,11 @@ public class Node {
     private final ZContext context;
     private final ZMQ.Socket routerSocket;
     private final Map<String, Device> devices = new HashMap<>();
-    public final CryptoSystem paillier = new Paillier(DFL_BIT_LENGTH); // Objeto Paillier con los métodos de claves, cifrado e intersecciones
-    public final CryptoSystem damgardJurik = new DamgardJurik(DFL_BIT_LENGTH, DFL_EXPANSION_FACTOR); // Objeto DamgardJurik con los métodos de claves, cifrado e intersecciones
     private final Set<Integer> myData; // Conjunto de datos del nodo (set de 10 números aleatorios)
     private int domain = DFL_DOMAIN;  // Dominio de los números aleatorios sobre los que se trabaja
-    public final HashMap<String, Object> results;  // Resultados de las intersecciones
+    private final HashMap<String, Object> results;  // Resultados de las intersecciones
     private final IntersectionHandler intersectionHandler = new IntersectionHandler();
+    private final Logger logger = Logger.getLogger(Node.class.getName());
     public Node(String id, int port, ArrayList<String> peers) {
         this.myData = new HashSet<>();
         Random random = new Random();
@@ -75,7 +58,7 @@ public class Node {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Interrupted!", e);
         }
 
         for (String peer : peers) {
@@ -92,7 +75,6 @@ public class Node {
 
     private void startRouterSocket() {
         while (running) {
-            String sender = routerSocket.recvStr();
             String message = routerSocket.recvStr();
             System.out.println("Node " + id + " (You) received: " + message);
             String dayTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
@@ -171,12 +153,6 @@ public class Node {
         devices.clear();
     }
 
-    public void broadcastMessage(String message) {
-        for (Device device : devices.values()) {
-            device.socket.send(message);
-        }
-    }
-
     public boolean pingDevice(@NotNull String device) {
         if (devices.containsKey(device)) {
             System.out.println("Pinging " + device);
@@ -198,7 +174,7 @@ public class Node {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        logger.log(Level.SEVERE, "Interrupted!", e);
                     }
                     attempts++;
                 }
@@ -210,7 +186,6 @@ public class Node {
     @SuppressWarnings("unchecked")  // Todos los casteos son seguros aunque al IDE no le guste
     public void handleMessage(String message) {
         Gson gson = new Gson();
-        // Convertir el JSON en un LinkedTreeMap para realizar las operaciones sobre él
         LinkedTreeMap<String, Object> peerData = gson.fromJson(message, LinkedTreeMap.class);
 
         if (peerData.containsKey("implementation") && peerData.containsKey("peer")) {  // El mensaje que viene queriendo buscar la intersección
@@ -226,30 +201,30 @@ public class Node {
                 assert peerPubKey != null;
                 switch (Objects.requireNonNull(implementation)) {
                     case "Paillier":
-                        intersectionHandler.intersectionSecondStep(device, peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), paillier, id, myData);
+                        intersectionHandler.intersectionSecondStep(device, peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), intersectionHandler.getPaillier(), id, myData);
                         break;
                     case "DamgardJurik":
                     case "Damgard-Jurik":
-                        intersectionHandler.intersectionSecondStep(device, peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), damgardJurik, id, myData);
+                        intersectionHandler.intersectionSecondStep(device, peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), intersectionHandler.getDamgardJurik(), id, myData);
                         break;
                     case "Paillier OPE":
                     case "Paillier_OPE":
-                        intersectionHandler.OPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), paillier, id, myData);
+                        intersectionHandler.OPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), intersectionHandler.getPaillier(), id, myData);
                         break;
                     case "DamgardJurik OPE":
                     case "Damgard-Jurik_OPE":
-                        intersectionHandler.OPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), damgardJurik, id, myData);
+                        intersectionHandler.OPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), intersectionHandler.getDamgardJurik(), id, myData);
                         break;
                     case "Paillier PSI-CA OPE":
-                        intersectionHandler.CAOPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), paillier, id, myData);
+                        intersectionHandler.CAOPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), intersectionHandler.getPaillier(), id, myData);
                         break;
                     case "Damgard-Jurik PSI-CA OPE":
                     case "DamgardJurik PSI-CA OPE":
-                        intersectionHandler.CAOPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), damgardJurik, id, myData);
+                        intersectionHandler.CAOPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), intersectionHandler.getDamgardJurik(), id, myData);
                         break;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.SEVERE, "Error while processing message", e);
             }
         }
         else if (message.startsWith("{")) {  // El mensaje que viene de vuelta del otro nodo
@@ -258,26 +233,26 @@ public class Node {
                 assert cryptoScheme != null;
                 switch (cryptoScheme) {
                     case "Paillier":
-                        intersectionHandler.intersectionFinalStep(peerData, paillier, id, results);
+                        intersectionHandler.intersectionFinalStep(peerData, intersectionHandler.getPaillier(), id, results);
                         break;
                     case "DamgardJurik":
                     case "Damgard-Jurik":
-                        intersectionHandler.intersectionFinalStep(peerData, damgardJurik, id, results);
+                        intersectionHandler.intersectionFinalStep(peerData, intersectionHandler.getDamgardJurik(), id, results);
                         break;
                     case "Paillier OPE":
                     case "Paillier_OPE":
-                        intersectionHandler.OPEIntersectionFinalStep(peerData, paillier, id, myData, results);
+                        intersectionHandler.OPEIntersectionFinalStep(peerData, intersectionHandler.getPaillier(), id, myData, results);
                         break;
                     case "DamgardJurik OPE":
                     case "Damgard-Jurik_OPE":
-                        intersectionHandler.OPEIntersectionFinalStep(peerData, damgardJurik, id, myData, results);
+                        intersectionHandler.OPEIntersectionFinalStep(peerData, intersectionHandler.getDamgardJurik(), id, myData, results);
                         break;
                     case "Paillier PSI-CA OPE":
-                        intersectionHandler.CAOPEIntersectionFinalStep(peerData, paillier, id, results);
+                        intersectionHandler.CAOPEIntersectionFinalStep(peerData, intersectionHandler.getPaillier(), id, results);
                         break;
                     case "Damgard-Jurik PSI-CA OPE":
                     case "DamgardJurik PSI-CA OPE":
-                        intersectionHandler.CAOPEIntersectionFinalStep(peerData, damgardJurik, id, results);
+                        intersectionHandler.CAOPEIntersectionFinalStep(peerData, intersectionHandler.getDamgardJurik(), id, results);
                         break;
                 }
             } catch (JsonSyntaxException e) {
@@ -305,27 +280,27 @@ public class Node {
     }
 
     public String intPaillierOPE(String device) {
-        return OPEIntersectionFirstStep(device, paillier, "PSI");
+        return OPEIntersectionFirstStep(device, intersectionHandler.getPaillier(), "PSI");
     }
 
     public String intDamgardJurikOPE(String device) {
-        return OPEIntersectionFirstStep(device, damgardJurik, "PSI");
+        return OPEIntersectionFirstStep(device, intersectionHandler.getDamgardJurik(), "PSI");
     }
 
     public String intPaillierOPECA(String device) {
-        return OPEIntersectionFirstStep(device, paillier, "PSI-CA");
+        return OPEIntersectionFirstStep(device, intersectionHandler.getPaillier(), "PSI-CA");
     }
 
     public String intDamgardJurikOPECA(String device) {
-        return OPEIntersectionFirstStep(device, damgardJurik, "PSI-CA");
+        return OPEIntersectionFirstStep(device, intersectionHandler.getDamgardJurik(), "PSI-CA");
     }
 
     public String intPaillier(String device) {
-        return intersectionFirstStep(device, paillier);
+        return intersectionFirstStep(device, intersectionHandler.getPaillier());
     }
 
     public String intDamgardJurik(String device) {
-        return intersectionFirstStep(device, damgardJurik);
+        return intersectionFirstStep(device, intersectionHandler.getDamgardJurik());
     }
 
     public List<String> getDevices() {
@@ -373,26 +348,11 @@ public class Node {
         for (ZMQ.Socket socket : sockets) context.destroySocket(socket);
     }
 
-    public void generatePaillierKeys() {keygen(paillier);}
+    public void generatePaillierKeys() {
+        intersectionHandler.keygen(intersectionHandler.getPaillier());}
 
     public void generateDJKeys() {
-        keygen(damgardJurik);
-    }
-
-    public void keygen(CryptoSystem cs) {
-        new Thread(() -> {
-            LogService.Companion.startLogging();
-            long startTime = System.currentTimeMillis();
-            Debug.startMethodTracing();
-            cs.keyGeneration(DFL_BIT_LENGTH);
-            Debug.stopMethodTracing();
-            long cpuTime = Debug.threadCpuTimeNanos();
-            long endTime = System.currentTimeMillis();
-            long duration = endTime - startTime;
-            LogService.Companion.stopLogging();
-            LogService.Companion.logActivity("KEYGEN_" + cs.getClass().getSimpleName(), duration / 1000.0, VERSION, null, cpuTime);
-            Log.d(cs.getClass().getSimpleName(), "Key generation time: " + duration / 1000.0 + " seconds");
-        }).start();
+        intersectionHandler.keygen(intersectionHandler.getDamgardJurik());
     }
 
     public void modifySetup(int domainSize, int setSize) {
@@ -443,9 +403,13 @@ public class Node {
 
     public void launchTest(@NotNull String device) {
         if (devices.containsKey(device)) {
-            new Thread(() -> intersectionHandler.launchTest(devices.get(device), paillier, damgardJurik, id, myData, domain, device)).start();
+            new Thread(() -> intersectionHandler.launchTest(devices.get(device), id, myData, domain, device)).start();
         } else {
             System.out.println("Device not found");
         }
+    }
+
+    public HashMap<String, Object> getResults() {
+        return results;
     }
 }

@@ -24,7 +24,7 @@ import com.example.app_psi.objects.Node
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.SocketException
-import java.util.Enumeration
+import java.util.*
 
 
 class NetworkService: Service() {
@@ -119,10 +119,6 @@ class NetworkService: Service() {
         return null
     }
 
-    fun getDevices(): List<String> {
-        return node.devices
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         node.join()
@@ -139,6 +135,7 @@ class NetworkService: Service() {
         fun getNode(): Node? {
             return instance?.node
         }
+
         fun getLastSeen(device: String): String {
             return instance?.node?.getLastSeen(device) ?: "Unknown"
         }
@@ -151,14 +148,6 @@ class NetworkService: Service() {
             return if (instance == null) "Inactive"
             else if (instance?.node?.isRunning == true) "Connected"
             else "Connecting"
-        }
-
-        fun sendLargeMessageToAll() {
-            TODO("Not yet implemented")
-        }
-
-        fun sendSmallMessageToAll() {
-            TODO("Not yet implemented")
         }
 
         fun findNetwork() {

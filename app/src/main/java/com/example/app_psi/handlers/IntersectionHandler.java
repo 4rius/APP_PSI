@@ -1,11 +1,10 @@
 package com.example.app_psi.handlers;
 
-import static com.example.app_psi.DbConstants.TEST_ROUNDS;
-import static com.example.app_psi.DbConstants.VERSION;
-
 import android.os.Debug;
-
+import android.util.Log;
 import com.example.app_psi.implementations.CryptoSystem;
+import com.example.app_psi.implementations.DamgardJurik;
+import com.example.app_psi.implementations.Paillier;
 import com.example.app_psi.implementations.Polynomials;
 import com.example.app_psi.objects.Device;
 import com.example.app_psi.services.LogService;
@@ -13,14 +12,19 @@ import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import static com.example.app_psi.DbConstants.*;
 
 public class IntersectionHandler {
+
+    private final CryptoSystem paillier; // Objeto Paillier con los métodos de claves, cifrado e intersecciones
+    private final CryptoSystem damgardJurik; // Objeto DamgardJurik con los métodos de claves, cifrado e intersecciones
+
+    public IntersectionHandler() {
+        this.paillier = new Paillier(DFL_BIT_LENGTH);
+        this.damgardJurik = new DamgardJurik(DFL_BIT_LENGTH, DFL_EXPANSION_FACTOR);
+    }
 
     public String OPEIntersectionFirstStep(Device device, CryptoSystem cs, String id, Set<Integer> myData, String peerId, String type) {
         new Thread(() -> {
@@ -82,12 +86,14 @@ public class IntersectionHandler {
         }).start();
     }
 
+    /** @noinspection unchecked*/
     public void OPEIntersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs, String id, Set<Integer> myData, HashMap<String, Object> results) {
         new Thread(() -> {
             LogService.Companion.startLogging();
             Long start_time = System.currentTimeMillis();
             ArrayList<String> stringData = (ArrayList<String>) peerData.remove("data");
             ArrayList<BigInteger> encryptedEval = new ArrayList<>();
+            assert stringData != null;
             for (String element : stringData) {
                 encryptedEval.add(new BigInteger(element));
             }
@@ -171,6 +177,7 @@ public class IntersectionHandler {
         }).start();
     }
 
+    /** @noinspection unchecked*/
     public void intersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs, String id, HashMap<String, Object> results) {
         new Thread(() -> {
             LogService.Companion.startLogging();
@@ -234,6 +241,7 @@ public class IntersectionHandler {
         }).start();
     }
 
+    /** @noinspection unchecked*/
     public void CAOPEIntersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs, String id, HashMap<String, Object> results) {
         new Thread(() -> {
             LogService.Companion.startLogging();
@@ -267,7 +275,7 @@ public class IntersectionHandler {
         }).start();
     }
 
-    public void launchTest(Device device, CryptoSystem paillier, CryptoSystem damgardJurik, String id, Set<Integer> myData, int domain, String peerId) {
+    public void launchTest(Device device, String id, Set<Integer> myData, int domain, String peerId) {
         for (int i = 0; i < TEST_ROUNDS; i++) {
             intersectionFirstStep(device, paillier, id, myData, peerId, domain);
             intersectionFirstStep(device, damgardJurik, id, myData, peerId, domain);
@@ -276,5 +284,29 @@ public class IntersectionHandler {
             OPEIntersectionFirstStep(device, paillier, id, myData, peerId, "PSI-CA");
             OPEIntersectionFirstStep(device, damgardJurik, id, myData, peerId, "PSI-CA");
         }
+    }
+
+    public void keygen(CryptoSystem cs) {
+        new Thread(() -> {
+            LogService.Companion.startLogging();
+            long startTime = System.currentTimeMillis();
+            Debug.startMethodTracing();
+            cs.keyGeneration(DFL_BIT_LENGTH);
+            Debug.stopMethodTracing();
+            long cpuTime = Debug.threadCpuTimeNanos();
+            long endTime = System.currentTimeMillis();
+            long duration = endTime - startTime;
+            LogService.Companion.stopLogging();
+            LogService.Companion.logActivity("KEYGEN_" + cs.getClass().getSimpleName(), duration / 1000.0, VERSION, null, cpuTime);
+            Log.d(cs.getClass().getSimpleName(), "Key generation time: " + duration / 1000.0 + " seconds");
+        }).start();
+    }
+
+    public CryptoSystem getPaillier() {
+        return paillier;
+    }
+
+    public CryptoSystem getDamgardJurik() {
+        return damgardJurik;
     }
 }
