@@ -16,12 +16,12 @@ import java.util.*;
 
 import static com.example.app_psi.DbConstants.*;
 
-public class IntersectionHandler {
+public class SchemeHandler {
 
     private final CryptoSystem paillier; // Objeto Paillier con los métodos de claves, cifrado e intersecciones
     private final CryptoSystem damgardJurik; // Objeto DamgardJurik con los métodos de claves, cifrado e intersecciones
 
-    public IntersectionHandler() {
+    public SchemeHandler() {
         this.paillier = new Paillier(DFL_BIT_LENGTH);
         this.damgardJurik = new DamgardJurik(DFL_BIT_LENGTH, DFL_EXPANSION_FACTOR);
     }

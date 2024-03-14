@@ -20,6 +20,7 @@ import com.example.app_psi.DbConstants.INTERSECTION_STEP_F
 import com.example.app_psi.DbConstants.KEYGEN_DONE
 import com.example.app_psi.DbConstants.KEYGEN_ERROR
 import com.example.app_psi.R
+import com.example.app_psi.handlers.SchemeHandler
 import com.example.app_psi.objects.Node
 import java.net.InetAddress
 import java.net.NetworkInterface
@@ -134,6 +135,10 @@ class NetworkService: Service() {
 
         fun getNode(): Node? {
             return instance?.node
+        }
+
+        fun getIntersectionHandler(): SchemeHandler {
+            return instance?.node?.intersectionHandler ?: SchemeHandler()
         }
 
         fun getLastSeen(device: String): String {

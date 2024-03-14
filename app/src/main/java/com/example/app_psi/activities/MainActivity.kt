@@ -237,10 +237,10 @@ class MainActivity : AppCompatActivity() {
     private fun newKeys(scheme: String) {
         when (scheme) {
             "Paillier" -> {
-                NetworkService.getNode()?.generatePaillierKeys()
+                NetworkService.getIntersectionHandler().keygen(NetworkService.getIntersectionHandler().paillier)
             }
             "Damgard Jurik" -> {
-                NetworkService.getNode()?.generateDJKeys()
+                NetworkService.getIntersectionHandler().keygen(NetworkService.getIntersectionHandler().damgardJurik)
             }
         }
         Snackbar.make(binding.root, "New $scheme keys are being generated", Snackbar.LENGTH_SHORT)

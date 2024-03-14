@@ -3,7 +3,7 @@ package com.example.app_psi.objects;
 
 import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
-import com.example.app_psi.handlers.IntersectionHandler;
+import com.example.app_psi.handlers.SchemeHandler;
 import com.example.app_psi.implementations.CryptoSystem;
 import com.example.app_psi.services.LogService;
 import com.google.gson.Gson;
@@ -35,7 +35,7 @@ public class Node {
     private final Set<Integer> myData; // Conjunto de datos del nodo (set de 10 números aleatorios)
     private int domain = DFL_DOMAIN;  // Dominio de los números aleatorios sobre los que se trabaja
     private final HashMap<String, Object> results;  // Resultados de las intersecciones
-    private final IntersectionHandler intersectionHandler = new IntersectionHandler();
+    private final SchemeHandler schemeHandler = new SchemeHandler();
     private final Logger logger = Logger.getLogger(Node.class.getName());
     public Node(String id, int port, ArrayList<String> peers) {
         this.myData = new HashSet<>();
@@ -201,26 +201,26 @@ public class Node {
                 assert peerPubKey != null;
                 switch (Objects.requireNonNull(implementation)) {
                     case "Paillier":
-                        intersectionHandler.intersectionSecondStep(device, peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), intersectionHandler.getPaillier(), id, myData);
+                        schemeHandler.intersectionSecondStep(device, peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), schemeHandler.getPaillier(), id, myData);
                         break;
                     case "DamgardJurik":
                     case "Damgard-Jurik":
-                        intersectionHandler.intersectionSecondStep(device, peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), intersectionHandler.getDamgardJurik(), id, myData);
+                        schemeHandler.intersectionSecondStep(device, peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), schemeHandler.getDamgardJurik(), id, myData);
                         break;
                     case "Paillier OPE":
                     case "Paillier_OPE":
-                        intersectionHandler.OPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), intersectionHandler.getPaillier(), id, myData);
+                        schemeHandler.OPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), schemeHandler.getPaillier(), id, myData);
                         break;
                     case "DamgardJurik OPE":
                     case "Damgard-Jurik_OPE":
-                        intersectionHandler.OPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), intersectionHandler.getDamgardJurik(), id, myData);
+                        schemeHandler.OPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), schemeHandler.getDamgardJurik(), id, myData);
                         break;
                     case "Paillier PSI-CA OPE":
-                        intersectionHandler.CAOPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), intersectionHandler.getPaillier(), id, myData);
+                        schemeHandler.CAOPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), schemeHandler.getPaillier(), id, myData);
                         break;
                     case "Damgard-Jurik PSI-CA OPE":
                     case "DamgardJurik PSI-CA OPE":
-                        intersectionHandler.CAOPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), intersectionHandler.getDamgardJurik(), id, myData);
+                        schemeHandler.CAOPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), schemeHandler.getDamgardJurik(), id, myData);
                         break;
                 }
             } catch (Exception e) {
@@ -233,26 +233,26 @@ public class Node {
                 assert cryptoScheme != null;
                 switch (cryptoScheme) {
                     case "Paillier":
-                        intersectionHandler.intersectionFinalStep(peerData, intersectionHandler.getPaillier(), id, results);
+                        schemeHandler.intersectionFinalStep(peerData, schemeHandler.getPaillier(), id, results);
                         break;
                     case "DamgardJurik":
                     case "Damgard-Jurik":
-                        intersectionHandler.intersectionFinalStep(peerData, intersectionHandler.getDamgardJurik(), id, results);
+                        schemeHandler.intersectionFinalStep(peerData, schemeHandler.getDamgardJurik(), id, results);
                         break;
                     case "Paillier OPE":
                     case "Paillier_OPE":
-                        intersectionHandler.OPEIntersectionFinalStep(peerData, intersectionHandler.getPaillier(), id, myData, results);
+                        schemeHandler.OPEIntersectionFinalStep(peerData, schemeHandler.getPaillier(), id, myData, results);
                         break;
                     case "DamgardJurik OPE":
                     case "Damgard-Jurik_OPE":
-                        intersectionHandler.OPEIntersectionFinalStep(peerData, intersectionHandler.getDamgardJurik(), id, myData, results);
+                        schemeHandler.OPEIntersectionFinalStep(peerData, schemeHandler.getDamgardJurik(), id, myData, results);
                         break;
                     case "Paillier PSI-CA OPE":
-                        intersectionHandler.CAOPEIntersectionFinalStep(peerData, intersectionHandler.getPaillier(), id, results);
+                        schemeHandler.CAOPEIntersectionFinalStep(peerData, schemeHandler.getPaillier(), id, results);
                         break;
                     case "Damgard-Jurik PSI-CA OPE":
                     case "DamgardJurik PSI-CA OPE":
-                        intersectionHandler.CAOPEIntersectionFinalStep(peerData, intersectionHandler.getDamgardJurik(), id, results);
+                        schemeHandler.CAOPEIntersectionFinalStep(peerData, schemeHandler.getDamgardJurik(), id, results);
                         break;
                 }
             } catch (JsonSyntaxException e) {
@@ -264,7 +264,7 @@ public class Node {
     public String intersectionFirstStep(String deviceId, CryptoSystem cs) {
         Device device = devices.get(deviceId);
         if (device != null) {
-            return intersectionHandler.intersectionFirstStep(device, cs, id, myData, deviceId, domain);
+            return schemeHandler.intersectionFirstStep(device, cs, id, myData, deviceId, domain);
         } else {
             return "Intersection with " + deviceId + " - " + cs.getClass().getSimpleName() + " - Device not found";
         }
@@ -273,34 +273,34 @@ public class Node {
     public String OPEIntersectionFirstStep(String deviceId, CryptoSystem cs, String type) {
         Device device = devices.get(deviceId);
         if (device != null) {
-            return intersectionHandler.OPEIntersectionFirstStep(device, cs, id, myData, deviceId, type);
+            return schemeHandler.OPEIntersectionFirstStep(device, cs, id, myData, deviceId, type);
         } else {
             return "Intersection with " + deviceId + " - " + cs.getClass().getSimpleName() + " " + type + " OPE - Device not found";
         }
     }
 
     public String intPaillierOPE(String device) {
-        return OPEIntersectionFirstStep(device, intersectionHandler.getPaillier(), "PSI");
+        return OPEIntersectionFirstStep(device, schemeHandler.getPaillier(), "PSI");
     }
 
     public String intDamgardJurikOPE(String device) {
-        return OPEIntersectionFirstStep(device, intersectionHandler.getDamgardJurik(), "PSI");
+        return OPEIntersectionFirstStep(device, schemeHandler.getDamgardJurik(), "PSI");
     }
 
     public String intPaillierOPECA(String device) {
-        return OPEIntersectionFirstStep(device, intersectionHandler.getPaillier(), "PSI-CA");
+        return OPEIntersectionFirstStep(device, schemeHandler.getPaillier(), "PSI-CA");
     }
 
     public String intDamgardJurikOPECA(String device) {
-        return OPEIntersectionFirstStep(device, intersectionHandler.getDamgardJurik(), "PSI-CA");
+        return OPEIntersectionFirstStep(device, schemeHandler.getDamgardJurik(), "PSI-CA");
     }
 
     public String intPaillier(String device) {
-        return intersectionFirstStep(device, intersectionHandler.getPaillier());
+        return intersectionFirstStep(device, schemeHandler.getPaillier());
     }
 
     public String intDamgardJurik(String device) {
-        return intersectionFirstStep(device, intersectionHandler.getDamgardJurik());
+        return intersectionFirstStep(device, schemeHandler.getDamgardJurik());
     }
 
     public List<String> getDevices() {
@@ -346,13 +346,6 @@ public class Node {
         // Close all sockets
         Thread.sleep(1000);
         for (ZMQ.Socket socket : sockets) context.destroySocket(socket);
-    }
-
-    public void generatePaillierKeys() {
-        intersectionHandler.keygen(intersectionHandler.getPaillier());}
-
-    public void generateDJKeys() {
-        intersectionHandler.keygen(intersectionHandler.getDamgardJurik());
     }
 
     public void modifySetup(int domainSize, int setSize) {
@@ -403,7 +396,7 @@ public class Node {
 
     public void launchTest(@NotNull String device) {
         if (devices.containsKey(device)) {
-            new Thread(() -> intersectionHandler.launchTest(devices.get(device), id, myData, domain, device)).start();
+            new Thread(() -> schemeHandler.launchTest(devices.get(device), id, myData, domain, device)).start();
         } else {
             System.out.println("Device not found");
         }
@@ -411,5 +404,9 @@ public class Node {
 
     public HashMap<String, Object> getResults() {
         return results;
+    }
+
+    public SchemeHandler getIntersectionHandler() {
+        return schemeHandler;
     }
 }
