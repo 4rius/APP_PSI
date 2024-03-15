@@ -2,6 +2,15 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="DamgardJurikTest">
+        <State />
+      </entry>
+      <entry key="PaillierTest">
+        <State />
+      </entry>
+      <entry key="SchemeHandlerTest">
+        <State />
+      </entry>
       <entry key="app">
         <State>
           <targetSelectedWithDropDown>
@@ -17,15 +26,6 @@
           </targetSelectedWithDropDown>
           <timeTargetWasSelectedWithDropDown value="2024-02-18T14:27:51.419362Z" />
         </State>
-      </entry>
-      <entry key="testope()">
-        <State />
-      </entry>
-      <entry key="testopedj">
-        <State />
-      </entry>
-      <entry key="testopepaillier">
-        <State />
       </entry>
     </value>
   </component>

@@ -1,5 +1,7 @@
 package com.example.app_psi.implementations;
 
+import androidx.annotation.NonNull;
+
 import com.google.gson.internal.LinkedTreeMap;
 
 import java.math.BigInteger;
@@ -10,6 +12,7 @@ import java.util.Set;
 public interface CryptoSystem {
     BigInteger multiplyEncryptedByScalar(BigInteger encryptedNumber, BigInteger scalar);
     BigInteger addEncryptedNumbers(BigInteger encryptedNumber1, BigInteger encryptedNumber2);
+    BigInteger addEncryptedAndScalar(@NonNull BigInteger a, BigInteger b);
 
     ArrayList<BigInteger> encryptMySet(Set<Integer> mySet);
 

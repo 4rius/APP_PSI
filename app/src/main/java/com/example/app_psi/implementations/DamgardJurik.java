@@ -82,17 +82,18 @@ public class DamgardJurik implements CryptoSystem {
         return n;
     }
 
-    public BigInteger getG() {
-        return g;
-    }
-
     // Suma homomórfica de dos textos cifrados
-    public BigInteger addEncryptedNumbers(BigInteger ciphertext1, BigInteger ciphertext2) {
+    public BigInteger addEncryptedNumbers(@NonNull BigInteger ciphertext1, BigInteger ciphertext2) {
         return ciphertext1.multiply(ciphertext2).mod(nPowSPlusOne);
     }
 
+    // Suma homomórfica de un texto cifrado y un escalar
+    public BigInteger addEncryptedAndScalar(@NonNull BigInteger ciphertext, BigInteger scalar) {
+        return ciphertext.multiply(g.modPow(scalar, nPowSPlusOne)).mod(nPowSPlusOne);
+    }
+
     // Multiplicación homomórfica de un texto cifrado por un escalar
-    public BigInteger multiplyEncryptedByScalar(BigInteger ciphertext, BigInteger scalar) {
+    public BigInteger multiplyEncryptedByScalar(@NonNull BigInteger ciphertext, BigInteger scalar) {
         return ciphertext.modPow(scalar, nPowSPlusOne);
     }
 
@@ -192,4 +193,6 @@ public class DamgardJurik implements CryptoSystem {
         Collections.shuffle(evaluations, new SecureRandom());
         return evaluations;
     }
+
+
 }

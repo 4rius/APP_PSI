@@ -16,9 +16,9 @@ import java.security.SecureRandom;
 import java.util.Set;
 
 public class Paillier implements CryptoSystem {
-    public BigInteger p, q, lambda; // Variables para almacenar los números primos y lambda
-    public BigInteger n; // Clave pública
-    public BigInteger nsquare; // n al cuadrado, se usa en el cifrado y descifrado
+    private BigInteger p, q, lambda; // Variables para almacenar los números primos y lambda
+    private BigInteger n; // Clave pública
+    private BigInteger nsquare; // n al cuadrado, se usa en el cifrado y descifrado
     private BigInteger g; // Número que se usa en el cifrado y descifrado
 
     // Constructor que genera las claves
@@ -188,5 +188,9 @@ public class Paillier implements CryptoSystem {
         }
         Collections.shuffle(evaluations, new SecureRandom());
         return evaluations;
+    }
+
+    public BigInteger getN() {
+        return n;
     }
 }
