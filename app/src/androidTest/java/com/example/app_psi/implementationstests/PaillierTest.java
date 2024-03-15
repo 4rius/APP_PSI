@@ -6,14 +6,20 @@ import static org.junit.Assert.assertNotEquals;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.example.app_psi.implementations.Paillier;
+import com.example.app_psi.implementations.Polynomials;
+import com.google.gson.internal.LinkedTreeMap;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RunWith(AndroidJUnit4.class)
 public class PaillierTest {
@@ -95,5 +101,56 @@ public class PaillierTest {
             BigInteger decryptedRoot = paillier.Decrypt(encryptedRoots.get(i));
             assertEquals(roots.get(i), decryptedRoot);
         }
+    }
+
+    @Test
+    public void intersectionDomainReturnsCorrectIntersection() {
+        Set<Integer> aliceSet = new HashSet<>(Arrays.asList(1, 2, 3, 4, 5, 6));
+        Set<Integer> bobSet = new HashSet<>(Arrays.asList(3, 4, 5, 6, 7, 8));
+        LinkedTreeMap<String, BigInteger> aliceEncryptedSet = paillier.encryptMyData(aliceSet, 10);
+
+        // Bob receives and multiplies by 0 or 1
+        LinkedTreeMap<String, BigInteger> multEncSet = paillier.getMultipliedSet(aliceEncryptedSet, bobSet, paillier.getN());
+
+        // Alice decrypts the intersection, 1 if the element is in the intersection, 0 otherwise
+        for (Map.Entry<String, BigInteger> entry : multEncSet.entrySet()) {
+            BigInteger decryptedValue = paillier.Decrypt(entry.getValue());
+            entry.setValue(decryptedValue);
+        }
+        // Cogemos solo los valores que sean 1, que representan la intersección
+        List<Integer> intersection = new ArrayList<>();
+        for (Map.Entry<String, BigInteger> entry : multEncSet.entrySet()) {
+            if (entry.getValue().equals(BigInteger.ONE)) {
+                intersection.add(Integer.parseInt(entry.getKey()));
+            }
+        }
+
+        assertEquals(intersection, Arrays.asList(3, 4, 5, 6));
+    }
+
+    @Test
+    public void intersectionOPEReturnsCorrectIntersection() {
+        List<Integer> aliceSet = Arrays.asList(1, 2, 3, 4, 5, 6);
+        List<Integer> bobSet = Arrays.asList(3, 4, 5, 6, 7, 8);
+        List<BigInteger> aliceRoots = Polynomials.polyFromRoots(aliceSet, BigInteger.valueOf(-1), BigInteger.ONE);
+        ArrayList<BigInteger> aliceEncRoots = paillier.encryptRoots(aliceRoots);
+
+        // Bob receives and evaluates
+        ArrayList<BigInteger> bobEval = new ArrayList<>();
+        bobEval = paillier.handleOPESecondStep(aliceEncRoots, bobSet, paillier.getN());
+
+        // Alice decrypts and figures out the intersection
+        ArrayList<BigInteger> decEval = new ArrayList<>();
+        for (BigInteger eval : bobEval) {
+            decEval.add(paillier.Decrypt(eval));
+        }
+        List<Integer> intersection = new ArrayList<>();
+        for (BigInteger element : decEval) {
+            if (aliceSet.contains(element.intValue())) {
+                intersection.add(element.intValue());
+            }
+        }
+
+        assertEquals(intersection, Arrays.asList(3, 4, 5, 6));
     }
 }

@@ -27,6 +27,12 @@
           <timeTargetWasSelectedWithDropDown value="2024-02-18T14:27:51.419362Z" />
         </State>
       </entry>
+      <entry key="intersectionDomainReturnsCorrectIntersection()">
+        <State />
+      </entry>
+      <entry key="intersectionOPEReturnsCorrectIntersection()">
+        <State />
+      </entry>
     </value>
   </component>
 </project>
