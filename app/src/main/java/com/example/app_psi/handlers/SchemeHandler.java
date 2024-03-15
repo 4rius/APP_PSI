@@ -13,50 +13,87 @@ import com.google.gson.internal.LinkedTreeMap;
 
 import java.math.BigInteger;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static com.example.app_psi.DbConstants.*;
 
 import androidx.annotation.NonNull;
 
+import org.jetbrains.annotations.Contract;
+
 public class SchemeHandler {
 
     private final CryptoSystem paillier; // Objeto Paillier con los métodos de claves, cifrado e intersecciones
     private final CryptoSystem damgardJurik; // Objeto DamgardJurik con los métodos de claves, cifrado e intersecciones
+    private final ThreadPoolExecutor executor; // Executor para lanzar hilos
 
     public SchemeHandler() {
         this.paillier = new Paillier(DFL_BIT_LENGTH);
         this.damgardJurik = new DamgardJurik(DFL_BIT_LENGTH, DFL_EXPANSION_FACTOR);
+        this.executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+    }
+
+    private void logStart() {
+        LogService.Companion.startLogging();
+    }
+
+    private void logStop() {
+        LogService.Companion.stopLogging();
+    }
+
+    private void logActivity(String tag, double duration, String peerId, long cpuTime) {
+        LogService.Companion.logActivity(tag, duration, com.example.app_psi.DbConstants.VERSION, peerId, cpuTime);
+    }
+
+    private void logResult(List<Integer> result, int size, String version, String peerId, String cryptoScheme) {
+        LogService.Companion.logResult(result, size, version, peerId, cryptoScheme);
+    }
+
+    private void sendJsonMessage(@NonNull Device device, Object message) {
+        Gson gson = new Gson();
+        device.socket.send(gson.toJson(message));
+    }
+
+    private void runInBackground(Runnable task) {
+        executor.execute(task);
+    }
+
+    private void logIntersectionStart(String id, String peerId, String schemeName, String type) {
+        Log.d("Node", id + " (You) - Intersection with " + peerId + " - " + schemeName + " " + type + " OPE");
+    }
+
+    @NonNull
+    @Contract(pure = true)
+    private String getImplementationLabel(String schemeName, @NonNull String type) {
+        if (type.equals("PSI-CA")) {
+            return schemeName + " PSI-CA OPE";
+        } else {
+            return schemeName + " OPE";
+        }
     }
 
     public String OPEIntersectionFirstStep(Device device, @NonNull CryptoSystem cs, String id, Set<Integer> myData, String peerId, String type) {
-        new Thread(() -> {
-            LogService.Companion.startLogging();
-            Long start_time = System.currentTimeMillis();
-            System.out.println("Node " + id + " (You) - Intersection with " + peerId + " - " + cs.getClass().getSimpleName() + " OPE");
-            // Obtenemos las raíces del polinomio
+        runInBackground(() -> {
+            logStart();
+            long startTime = System.currentTimeMillis();
+            logIntersectionStart(id, peerId, cs.getClass().getSimpleName(), type);
             List<Integer> myDataList = new ArrayList<>(myData);
             List<BigInteger> roots = Polynomials.polyFromRoots(myDataList, BigInteger.valueOf(-1), BigInteger.ONE);
-            // Ciframos las raíces
             ArrayList<BigInteger> encryptedRoots = cs.encryptRoots(roots);
-            // Serializamos la clave pública
             LinkedTreeMap<String, String> publicKeyDict = cs.serializePublicKey();
-            // Creamos con Gson un objeto que contenga el conjunto cifrado, la clave pública y la implementacion
-            Gson gson = new Gson();
             HashMap<String, Object> message = new HashMap<>();
             message.put("data", encryptedRoots);
             message.put("pubkey", publicKeyDict);
-            if (type.equals("PSI-CA")) message.put("implementation", cs.getClass().getSimpleName() + " PSI-CA OPE");
-            else message.put("implementation", cs.getClass().getSimpleName() + " OPE");
+            message.put("implementation", getImplementationLabel(cs.getClass().getSimpleName(), type));
             message.put("peer", id);
-            String jsonMessage = gson.toJson(message);
-            // Enviamos el mensaje
-            device.socket.send(jsonMessage);
+            sendJsonMessage(device, message);
             long cpuTime = Debug.threadCpuTimeNanos();
-            Long end_time = System.currentTimeMillis();
-            LogService.Companion.stopLogging();
-            LogService.Companion.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_OPE_1", (end_time - start_time) / 1000.0, VERSION, peerId, cpuTime);
-        }).start();
-        return "Intersection with " + device + " - " + cs.getClass().getSimpleName() + " " + type + " OPE - Waiting for response...";
+            long endTime = System.currentTimeMillis();
+            logStop();
+            logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_OPE_1", (endTime - startTime) / 1000.0, peerId, cpuTime);
+        });
+        return "Intersection with " + peerId + " - " + cs.getClass().getSimpleName() + " " + type + " OPE - Waiting for response...";
     }
 
     public void OPEIntersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, ArrayList<String> data, CryptoSystem cs, String id, Set<Integer> myData) {
