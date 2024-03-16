@@ -136,7 +136,7 @@ public class DamgardJurikTest {
         ArrayList<BigInteger> aliceEncRoots = damgardJurik.encryptRoots(aliceRoots);
 
         // Bob receives and evaluates
-        ArrayList<BigInteger> bobEval = new ArrayList<>();
+        ArrayList<BigInteger> bobEval;
         bobEval = damgardJurik.handleOPESecondStep(aliceEncRoots, bobSet, damgardJurik.getN());
 
         // Alice decrypts and figures out the intersection
