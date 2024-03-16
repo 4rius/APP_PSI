@@ -122,7 +122,7 @@ class NetworkService: Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        node.join()
+        node.stop()
     }
 
     override fun onBind(intent: Intent?): IBinder? {

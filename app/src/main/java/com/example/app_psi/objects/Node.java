@@ -40,8 +40,8 @@ public class Node {
     public Node(String id, int port, ArrayList<String> peers) {
         this.myData = new HashSet<>();
         Random random = new Random();
-        for (int i = 0; i < DFL_SET_SIZE; i++) {
-            myData.add(random.nextInt(domain));
+        while (myData.size() < DFL_SET_SIZE) {
+            myData.add(random.nextInt(DFL_DOMAIN));
         }
         this.results = new HashMap<>();
         this.id = id;
@@ -75,11 +75,12 @@ public class Node {
 
     private void startRouterSocket() {
         while (running) {
+            String sender = routerSocket.recvStr();
             String message = routerSocket.recvStr();
             System.out.println("Node " + id + " (You) received: " + message);
             String dayTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
             if (message.endsWith("is pinging you!")) {
-                handlePing(message, dayTime);
+                handlePing(sender, message, dayTime);
             } else if (message.startsWith("DISCOVER:")) {
                 handleDiscovery(message, dayTime);
             } else if (message.startsWith("DISCOVER_ACK:")) {
@@ -96,14 +97,16 @@ public class Node {
         context.close();
     }
 
-    private void handlePing(@NonNull String message, String dayTime) {
+    private void handlePing(@NonNull String sender, @NonNull String message, String dayTime) {
         String peer = message.split(" ")[0];
         Device device = devices.get(peer);
         if (device != null) {
             device.lastSeen = dayTime;
             String msg = id + " is up and running!";
-            routerSocket.sendMore(peer);
+            routerSocket.sendMore(sender);
             routerSocket.send(msg);
+        } else {
+            this.addNewDevice(peer, dayTime);
         }
     }
 
@@ -145,12 +148,11 @@ public class Node {
         peers.add(peer);
     }
 
-    public void join() {
-        running = false;
+    public void stop() {
         for (Device device : devices.values()) {
             device.socket.close();
         }
-        devices.clear();
+        running = false;
     }
 
     public boolean pingDevice(@NotNull String device) {
@@ -322,7 +324,7 @@ public class Node {
         if (!devices.containsKey(peer)) {
             System.out.println("Node " + id + " (You) connecting to Node " + peer);
             ZMQ.Socket dealerSocket = context.createSocket(SocketType.DEALER);
-            dealerSocket.connect("tcp://" + peer);
+            dealerSocket.connect("tcp://" + peer + ":" + port);
             dealerSocket.send("DISCOVER: Node " + id + " is looking for peers");
             String peerId = extractId(peer);
             devices.put(peerId, new Device(dealerSocket, "Not seen yet"));
@@ -352,8 +354,8 @@ public class Node {
         domain = domainSize;
         myData.clear();
         Random random = new Random();
-        for (int i = 0; i < setSize; i++) {
-            myData.add(random.nextInt(domain));
+        while (myData.size() < setSize) {
+            myData.add(random.nextInt(domainSize));
         }
         LogService.Companion.logSetup(domainSize, setSize);
     }

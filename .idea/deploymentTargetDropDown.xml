@@ -2,10 +2,13 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="DamgardJurikTest">
+      <entry key="NodeTest">
         <State />
       </entry>
-      <entry key="PaillierTest">
+      <entry key="Tests in 'com.example.app_psi'">
+        <State />
+      </entry>
+      <entry key="Tests in 'com.example.app_psi.implementationstests'">
         <State />
       </entry>
       <entry key="app">
@@ -23,6 +26,12 @@
           </targetSelectedWithDropDown>
           <timeTargetWasSelectedWithDropDown value="2024-03-16T10:45:33.820011Z" />
         </State>
+      </entry>
+      <entry key="shouldExtractIdFromIPv6()">
+        <State />
+      </entry>
+      <entry key="shouldModifySetup()">
+        <State />
       </entry>
     </value>
   </component>
