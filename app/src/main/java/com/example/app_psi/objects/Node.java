@@ -121,6 +121,11 @@ public class Node {
     private void handleDiscoverAck(@NonNull String message, String dayTime) {
         String peer = message.split(" ")[2];
         if (!devices.containsKey(peer)) addNewDevice(peer, dayTime);
+        else {
+            Device device = devices.get(peer);
+            assert device != null;
+            device.lastSeen = dayTime;
+        }
     }
 
     private void handleAdded(@NonNull String message, String dayTime) {
