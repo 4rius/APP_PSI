@@ -3,25 +3,9 @@
   <component name="deploymentTargetDropDown">
     <value>
       <entry key="DamgardJurikTest">
-        <State>
-          <targetSelectedWithDropDown>
-            <Target>
-              <type value="QUICK_BOOT_TARGET" />
-              <deviceKey>
-                <Key>
-                  <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="$PROJECT_DIR$/../.android/avd/Pixel_7_Pro_API_34.avd" />
-                </Key>
-              </deviceKey>
-            </Target>
-          </targetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-03-16T00:56:26.558689Z" />
-        </State>
-      </entry>
-      <entry key="PaillierTest">
         <State />
       </entry>
-      <entry key="SchemeHandlerTest">
+      <entry key="PaillierTest">
         <State />
       </entry>
       <entry key="app">
@@ -32,19 +16,13 @@
               <deviceKey>
                 <Key>
                   <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="$PROJECT_DIR$/../.android/avd/Pixel_7_Pro_API_34.avd" />
+                  <value value="$USER_HOME$/.android/avd/Pixel_7_Pro_API_34.avd" />
                 </Key>
               </deviceKey>
             </Target>
           </targetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-02-18T14:27:51.419362Z" />
+          <timeTargetWasSelectedWithDropDown value="2024-03-16T10:45:33.820011Z" />
         </State>
-      </entry>
-      <entry key="intersectionDomainReturnsCorrectIntersection()">
-        <State />
-      </entry>
-      <entry key="intersectionOPEReturnsCorrectIntersection()">
-        <State />
       </entry>
     </value>
   </component>

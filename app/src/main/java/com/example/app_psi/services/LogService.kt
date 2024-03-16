@@ -59,7 +59,7 @@ class LogService: Service() {
                 isRunning = if (isRunning == "true") "Running"
                 else "Stopped"
                 val message = "[$dateFormatted] - ID: $fullId - Port: $port - Devices: $devices - Status: $isRunning"
-                Log.d(ContentValues.TAG, message)
+                Log.d("Node", message)
                 handler.postDelayed(this, LOG_INTERVAL)
             }
         }
@@ -94,7 +94,7 @@ class LogService: Service() {
                 "Set_size" to setSize
             )
             ref?.push()?.setValue(log)
-            Log.d(ContentValues.TAG, "Setup log sent to Firebase")
+            Log.d("FirebaseRTDB", "Setup log sent to Firebase")
         }
         @SuppressLint("SimpleDateFormat")
         fun logActivity(acitvityCode: String, time: Any, version: String, peer: String?= null, cpuTime: Long) {
@@ -137,7 +137,7 @@ class LogService: Service() {
             }
 
             ref?.push()?.setValue(log)
-            Log.d(ContentValues.TAG, "Activity log sent to Firebase - Thread: ${Thread.currentThread().name}")
+            Log.d("FirebaseRTDB", "Activity log sent to Firebase - Thread: ${Thread.currentThread().name}")
             broadcaster(acitvityCode)
         }
 
@@ -179,7 +179,7 @@ class LogService: Service() {
                 broadcaster("CARDINALITY_DONE")
             }
             ref?.push()?.setValue(log)
-            Log.d(ContentValues.TAG, "Result log sent to Firebase")
+            Log.d("FirebaseRTDB", "Result log sent to Firebase")
         }
         private suspend fun getRamUsage(): Int? = withContext(Dispatchers.IO) {
             val activityManager = instance?.getSystemService(ACTIVITY_SERVICE) as? ActivityManager
@@ -225,15 +225,15 @@ class LogService: Service() {
                     delay(100)
                 }
             }
-            Log.d(ContentValues.TAG, "Logging started for thread ${Thread.currentThread().name}")
-            Log.d(ContentValues.TAG, "LoggingObj: $loggingObj")
+            Log.d("Threading", "Logging started for thread ${Thread.currentThread().name}")
+            Log.d("LogService", "LoggingObj: $loggingObj")
             jobs[Thread.currentThread()] = job
         }
 
         private fun stopLoggingRam() {
             jobs[Thread.currentThread()]?.cancel()
             jobs.remove(Thread.currentThread())
-            Log.d(ContentValues.TAG, "Logging stopped for thread ${Thread.currentThread().name}")
+            Log.d("Threading", "Logging stopped for thread ${Thread.currentThread().name}")
         }
 
 

@@ -44,6 +44,7 @@ public class SchemeHandler {
 
     private void logActivity(String tag, double duration, String peerId, long cpuTime) {
         LogService.Companion.logActivity(tag, duration, com.example.app_psi.DbConstants.VERSION, peerId, cpuTime);
+        Log.d("Node", "Activity " + tag + " took " + duration + " seconds");
     }
 
     private void logResult(List<Integer> result, int size, String peerId, String cryptoScheme) {
@@ -112,8 +113,7 @@ public class SchemeHandler {
             messageToSend.put("data", encryptedEval);
             messageToSend.put("peer", id);
             messageToSend.put("cryptpscheme", cs.getClass().getSimpleName() + " OPE");
-            Gson gson = new Gson();
-            sendJsonMessage(device, gson.toJson(messageToSend));
+            sendJsonMessage(device, messageToSend);
             long cpuTime = Debug.threadCpuTimeNanos();
             long endTime = System.currentTimeMillis();
             logStop();
