@@ -1,14 +1,21 @@
 package com.example.app_psi.objects;
 
 
+import static com.example.app_psi.DbConstants.DFL_DOMAIN;
+import static com.example.app_psi.DbConstants.DFL_SET_SIZE;
+import static com.example.app_psi.DbConstants.NODE_INIT;
+
 import android.annotation.SuppressLint;
+
 import androidx.annotation.NonNull;
+
 import com.example.app_psi.handlers.SchemeHandler;
 import com.example.app_psi.implementations.CryptoSystem;
 import com.example.app_psi.services.LogService;
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
+
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.zeromq.SocketType;
@@ -16,15 +23,20 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.example.app_psi.DbConstants.DFL_DOMAIN;
-import static com.example.app_psi.DbConstants.DFL_SET_SIZE;
-
 @SuppressLint("SimpleDateFormat")
-public class Node {
+public final class Node {
+    private static Node instance = null;
     private boolean running = true;
     private final String id;
     private final int port;
@@ -37,7 +49,7 @@ public class Node {
     private final HashMap<String, Object> results;  // Resultados de las intersecciones
     private final SchemeHandler schemeHandler = new SchemeHandler();
     private final Logger logger = Logger.getLogger(Node.class.getName());
-    public Node(String id, int port, ArrayList<String> peers) {
+    private Node(String id, int port, ArrayList<String> peers) {
         this.myData = new HashSet<>();
         Random random = new Random();
         while (myData.size() < DFL_SET_SIZE) {
@@ -51,6 +63,24 @@ public class Node {
         this.routerSocket = context.createSocket(SocketType.ROUTER);
         this.routerSocket.bind("tcp://*:" + port);
         System.out.println("Node " + id + " (You) listening on port " + port);
+    }
+
+    @NonNull
+    @Contract("_, _, _ -> new")
+    public static Node createNode(String id, int port, ArrayList<String> peers) {
+        if (instance == null) {
+            instance = new Node(id, port, peers);
+        } else {
+            throw new IllegalStateException(NODE_INIT);
+        }
+        return instance;
+    }
+
+    public static Node getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("Node not initialized");
+        }
+        return instance;
     }
 
     public void start() {
@@ -195,83 +225,43 @@ public class Node {
         Gson gson = new Gson();
         LinkedTreeMap<String, Object> peerData = gson.fromJson(message, LinkedTreeMap.class);
 
-        if (peerData.containsKey("implementation") && peerData.containsKey("peer")) {  // El mensaje que viene queriendo buscar la intersección
-            try {
-                String peer = (String) peerData.remove("peer");
-                Device device = devices.get(peer);
-                if (device == null) {
-                    throw new Exception("Device not found");
-                }
-                String implementation = (String) peerData.remove("implementation");
+        if (peerData.containsKey("implementation") && peerData.containsKey("peer")) {
+            String peer = (String) peerData.remove("peer");
+            Device device = devices.get(peer);
+            if (device == null) {
+                logger.log(Level.SEVERE, "Device not found for peer: " + peer);
+                return;
+            }
+            String implementation = (String) peerData.remove("implementation");
+            LinkedTreeMap<String, String> peerPubKey = (LinkedTreeMap<String, String>) peerData.remove("pubkey");
 
-                LinkedTreeMap<String, String> peerPubKey = (LinkedTreeMap<String, String>) peerData.remove("pubkey");
-                assert peerPubKey != null;
-                switch (Objects.requireNonNull(implementation)) {
-                    case "Paillier":
-                        schemeHandler.intersectionSecondStep(device, peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), schemeHandler.getPaillier(), id, myData);
-                        break;
-                    case "DamgardJurik":
-                    case "Damgard-Jurik":
-                        schemeHandler.intersectionSecondStep(device, peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), schemeHandler.getDamgardJurik(), id, myData);
-                        break;
-                    case "Paillier OPE":
-                    case "Paillier_OPE":
-                        schemeHandler.OPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), schemeHandler.getPaillier(), id, myData);
-                        break;
-                    case "DamgardJurik OPE":
-                    case "Damgard-Jurik_OPE":
-                        schemeHandler.OPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), schemeHandler.getDamgardJurik(), id, myData);
-                        break;
-                    case "Paillier PSI-CA OPE":
-                        schemeHandler.CAOPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), schemeHandler.getPaillier(), id, myData);
-                        break;
-                    case "Damgard-Jurik PSI-CA OPE":
-                    case "DamgardJurik PSI-CA OPE":
-                        schemeHandler.CAOPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), schemeHandler.getDamgardJurik(), id, myData);
-                        break;
-                }
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "Error while processing message", e);
+            switch (implementation) {
+                case "Paillier":
+                case "DamgardJurik":
+                case "Damgard-Jurik":
+                case "Paillier OPE":
+                case "Paillier_OPE":
+                case "DamgardJurik OPE":
+                case "Damgard-Jurik_OPE":
+                case "Paillier PSI-CA OPE":
+                case "Damgard-Jurik PSI-CA OPE":
+                case "DamgardJurik PSI-CA OPE":
+                    schemeHandler.handleIntersectionSecondStep(device, peer, implementation, peerPubKey, peerData);
+                    break;
+                default:
+                    logger.log(Level.SEVERE, "Unknown implementation: " + implementation);
             }
-        }
-        else if (message.startsWith("{")) {  // El mensaje que viene de vuelta del otro nodo
-            try {
-                String cryptoScheme = (String) peerData.remove("cryptpscheme");
-                assert cryptoScheme != null;
-                switch (cryptoScheme) {
-                    case "Paillier":
-                        schemeHandler.intersectionFinalStep(peerData, schemeHandler.getPaillier(), id, results);
-                        break;
-                    case "DamgardJurik":
-                    case "Damgard-Jurik":
-                        schemeHandler.intersectionFinalStep(peerData, schemeHandler.getDamgardJurik(), id, results);
-                        break;
-                    case "Paillier OPE":
-                    case "Paillier_OPE":
-                        schemeHandler.OPEIntersectionFinalStep(peerData, schemeHandler.getPaillier(), id, myData, results);
-                        break;
-                    case "DamgardJurik OPE":
-                    case "Damgard-Jurik_OPE":
-                        schemeHandler.OPEIntersectionFinalStep(peerData, schemeHandler.getDamgardJurik(), id, myData, results);
-                        break;
-                    case "Paillier PSI-CA OPE":
-                        schemeHandler.CAOPEIntersectionFinalStep(peerData, schemeHandler.getPaillier(), id, results);
-                        break;
-                    case "Damgard-Jurik PSI-CA OPE":
-                    case "DamgardJurik PSI-CA OPE":
-                        schemeHandler.CAOPEIntersectionFinalStep(peerData, schemeHandler.getDamgardJurik(), id, results);
-                        break;
-                }
-            } catch (JsonSyntaxException e) {
-                System.out.println("Received message is not a valid JSON.");
-            }
+        } else if (message.startsWith("{")) {
+            schemeHandler.handleFinalStep(peerData);
+        } else {
+            logger.log(Level.SEVERE, "Invalid message format: " + message);
         }
     }
 
     public String intersectionFirstStep(String deviceId, CryptoSystem cs) {
         Device device = devices.get(deviceId);
         if (device != null) {
-            return schemeHandler.intersectionFirstStep(device, cs, id, myData, deviceId, domain);
+            return schemeHandler.intersectionFirstStep(device, cs, deviceId);
         } else {
             return "Intersection with " + deviceId + " - " + cs.getClass().getSimpleName() + " - Device not found";
         }
@@ -280,7 +270,7 @@ public class Node {
     public String OPEIntersectionFirstStep(String deviceId, CryptoSystem cs, String type) {
         Device device = devices.get(deviceId);
         if (device != null) {
-            return schemeHandler.OPEIntersectionFirstStep(device, cs, id, myData, deviceId, type);
+            return schemeHandler.OPEIntersectionFirstStep(device, cs, deviceId, type);
         } else {
             return "Intersection with " + deviceId + " - " + cs.getClass().getSimpleName() + " " + type + " OPE - Device not found";
         }
@@ -403,7 +393,7 @@ public class Node {
 
     public void launchTest(@NotNull String device) {
         if (devices.containsKey(device)) {
-            new Thread(() -> schemeHandler.launchTest(devices.get(device), id, myData, domain, device)).start();
+            new Thread(() -> schemeHandler.launchTest(devices.get(device), device)).start();
         } else {
             System.out.println("Device not found");
         }
@@ -415,5 +405,13 @@ public class Node {
 
     public SchemeHandler getIntersectionHandler() {
         return schemeHandler;
+    }
+
+    public Logger getLogger() {
+        return logger;
+    }
+
+    public int getDomain() {
+        return domain;
     }
 }

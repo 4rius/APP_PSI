@@ -23,7 +23,7 @@ public class NodeTest {
     @BeforeClass
     public static void setup() throws InterruptedException {
         ArrayList<String> peers = new ArrayList<>(Arrays.asList("192.168.1.2", "192.168.1.3"));
-        node = new Node("192.168.1.1", 5555, peers);
+        node = Node.createNode("192.168.1.1", 5555, peers);
         Thread.sleep(3000);  // Wait for the node to fully start
     }
 

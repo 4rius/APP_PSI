@@ -85,7 +85,7 @@ class NetworkService: Service() {
         val peers = ArrayList<String>()
         peers.add("192.168.1.155:5001")
         peers.add("192.168.1.2:5001")
-        node = Node(id, DFL_PORT, peers)
+        node = Node.createNode(id, DFL_PORT, peers)
         node.start()
         // Mandar un broadcast para que la MainActivity sepa que el servicio se ha creado
         val intent = Intent(ACTION_SERVICE_CREATED)
@@ -134,7 +134,7 @@ class NetworkService: Service() {
         private var instance: NetworkService? = null
 
         fun getNode(): Node? {
-            return instance?.node
+            return Node.getInstance()
         }
 
         fun getIntersectionHandler(): SchemeHandler {

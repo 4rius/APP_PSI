@@ -7,6 +7,7 @@ import com.example.app_psi.implementations.DamgardJurik;
 import com.example.app_psi.implementations.Paillier;
 import com.example.app_psi.implementations.Polynomials;
 import com.example.app_psi.objects.Device;
+import com.example.app_psi.objects.Node;
 import com.example.app_psi.proxies.ActivityLogger;
 import com.example.app_psi.proxies.LogActivityProxy;
 import com.example.app_psi.services.LogService;
@@ -18,6 +19,7 @@ import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.logging.Level;
 
 import static com.example.app_psi.DbConstants.*;
 
@@ -35,7 +37,7 @@ public class SchemeHandler {
     public SchemeHandler() {
         this.paillier = new Paillier(DFL_BIT_LENGTH);
         this.damgardJurik = new DamgardJurik(DFL_BIT_LENGTH, DFL_EXPANSION_FACTOR);
-        this.executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+        this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
         this.logger = new LogActivityProxy(new RealActivityLogger());
     }
 
@@ -62,12 +64,13 @@ public class SchemeHandler {
         }
     }
 
-    public String OPEIntersectionFirstStep(Device device, @NonNull CryptoSystem cs, String id, Set<Integer> myData, String peerId, String type) {
+    public String OPEIntersectionFirstStep(Device device, @NonNull CryptoSystem cs, String peerId, String type) {
         runInBackground(() -> {
             logger.logStart();
             long startTime = System.currentTimeMillis();
-            logIntersectionStart(id, peerId, cs.getClass().getSimpleName(), type);
-            List<Integer> myDataList = new ArrayList<>(myData);
+            long startCpuTime = Debug.threadCpuTimeNanos(); // Tiempo de CPU al inicio de la operación
+            logIntersectionStart(Node.getInstance().getId(), peerId, cs.getClass().getSimpleName(), type);
+            List<Integer> myDataList = new ArrayList<>(Node.getInstance().getMyData());
             List<BigInteger> roots = Polynomials.polyFromRoots(myDataList, BigInteger.valueOf(-1), BigInteger.ONE);
             ArrayList<BigInteger> encryptedRoots = cs.encryptRoots(roots);
             LinkedTreeMap<String, String> publicKeyDict = cs.serializePublicKey();
@@ -75,9 +78,9 @@ public class SchemeHandler {
             message.put("data", encryptedRoots);
             message.put("pubkey", publicKeyDict);
             message.put("implementation", getImplementationLabel(cs.getClass().getSimpleName(), type));
-            message.put("peer", id);
+            message.put("peer", Node.getInstance().getId());
             sendJsonMessage(device, message);
-            long cpuTime = Debug.threadCpuTimeNanos();
+            long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime; // Tiempo de CPU utilizado por la operación
             long endTime = System.currentTimeMillis();
             logger.logStop();
             logger.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_OPE_1", (endTime - startTime) / 1000.0, peerId, cpuTime);
@@ -85,7 +88,7 @@ public class SchemeHandler {
         return "Intersection with " + peerId + " - " + cs.getClass().getSimpleName() + " " + type + " OPE - Waiting for response...";
     }
 
-    public void OPEIntersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, ArrayList<String> data, CryptoSystem cs, String id, Set<Integer> myData) {
+    public void OPEIntersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, ArrayList<String> data, CryptoSystem cs) {
         runInBackground(() -> {
             logger.logStart();
             long startTime = System.currentTimeMillis();
@@ -94,12 +97,12 @@ public class SchemeHandler {
             for (String element : data) {
                 coefs.add(new BigInteger(element));
             }
-            List<Integer> myDataList = new ArrayList<>(myData);
+            List<Integer> myDataList = new ArrayList<>(Node.getInstance().getMyData());
             ArrayList<BigInteger> encryptedEval = cs.handleOPESecondStep(coefs, myDataList, peerPubKeyReconstructed.get("n"));
-            Log.d("Node", id + " (You) - Intersection with " + peer + " - Encrypted evaluation: " + encryptedEval);
+            Log.d("Node", Node.getInstance().getId() + " (You) - Intersection with " + peer + " - Encrypted evaluation: " + encryptedEval);
             LinkedTreeMap<String, Object> messageToSend = new LinkedTreeMap<>();
             messageToSend.put("data", encryptedEval);
-            messageToSend.put("peer", id);
+            messageToSend.put("peer", Node.getInstance().getId());
             messageToSend.put("cryptpscheme", cs.getClass().getSimpleName() + " OPE");
             sendJsonMessage(device, messageToSend);
             long cpuTime = Debug.threadCpuTimeNanos();
@@ -110,10 +113,11 @@ public class SchemeHandler {
     }
 
     /** @noinspection unchecked*/
-    public void OPEIntersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs, String id, Set<Integer> myData, HashMap<String, Object> results) {
+    public void OPEIntersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs) {
         runInBackground(() -> {
             logger.logStart();
-            Long start_time = System.currentTimeMillis();
+            long start_time = System.currentTimeMillis();
+            long startCpuTime = Debug.threadCpuTimeNanos();
             ArrayList<String> stringData = (ArrayList<String>) peerData.remove("data");
             ArrayList<BigInteger> encryptedEval = new ArrayList<>();
             assert stringData != null;
@@ -127,39 +131,40 @@ public class SchemeHandler {
             }
             List<Integer> intersection = new ArrayList<>();
             for (BigInteger element : decryptedEval) {
-                if (myData.contains(element.intValue())) {
+                if (Node.getInstance().getMyData().contains(element.intValue())) {
                     intersection.add(element.intValue());
                 }
             }
             // Guardamos el resultado, sincronizada por si se hace un broadcast, que no se vayan a perder resultados
-            synchronized (results) {
-                results.put(peer + " " + cs.getClass().getSimpleName() + " OPE", intersection);
+            synchronized (Node.getInstance().getResults()) {
+                Node.getInstance().getResults().put(peer + " " + cs.getClass().getSimpleName() + " OPE", intersection);
             }
-            long cpuTime = Debug.threadCpuTimeNanos();
-            Long end_time = System.currentTimeMillis();
+            long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
+            long end_time = System.currentTimeMillis();
             logger.logStop();
             logger.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_OPE_F", (end_time - start_time) / 1000.0, peer, cpuTime);
             int size = intersection.size();
             assert peer != null;
             logger.logResult(intersection, size, peer, cs.getClass().getSimpleName() + " OPE");
-            System.out.println("Node " + id + " (You) - Intersection with " + peer + " - Result: " + intersection);
+            System.out.println("Node " + Node.getInstance().getId() + " (You) - Intersection with " + peer + " - Result: " + intersection);
         });
     }
 
-    public String intersectionFirstStep(Device device, @NonNull CryptoSystem cs, String id, Set<Integer> myData, String peerId, int domain) {
+    public String intersectionFirstStep(Device device, @NonNull CryptoSystem cs, String peerId) {
         runInBackground(() -> {
             logger.logStart();
             long startTime = System.currentTimeMillis();
-            Log.d("Node", id + " (You) - Intersection with " + peerId + " - " + cs.getClass().getSimpleName());
-            LinkedTreeMap<String, BigInteger> encryptedSet = cs.encryptMyData(myData, domain);
+            long startCpuTime = Debug.threadCpuTimeNanos();
+            Log.d("Node", Node.getInstance().getId() + " (You) - Intersection with " + peerId + " - " + cs.getClass().getSimpleName());
+            LinkedTreeMap<String, BigInteger> encryptedSet = cs.encryptMyData(Node.getInstance().getMyData(), Node.getInstance().getDomain());
             LinkedTreeMap<String, String> publicKeyDict = cs.serializePublicKey();
             HashMap<String, Object> message = new HashMap<>();
             message.put("data", encryptedSet);
             message.put("pubkey", publicKeyDict);
             message.put("implementation", cs.getClass().getSimpleName());
-            message.put("peer", id);
+            message.put("peer", Node.getInstance().getId());
             sendJsonMessage(device, message);
-            long cpuTime = Debug.threadCpuTimeNanos();
+            long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
             long endTime = System.currentTimeMillis();
             logger.logStop();
             logger.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_1", (endTime - startTime) / 1000.0, peerId, cpuTime);
@@ -167,38 +172,40 @@ public class SchemeHandler {
         return "Intersection with " + peerId + " - " + cs.getClass().getSimpleName() + " - Waiting for response...";
     }
 
-    public void intersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, LinkedTreeMap<String, String> data, CryptoSystem cs, String id, Set<Integer> myData) {
+    public void intersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, LinkedTreeMap<String, String> data, CryptoSystem cs) {
         runInBackground(() -> {
             logger.logStart();
-            Long start_time = System.currentTimeMillis();
+            long start_time = System.currentTimeMillis();
+            long startCpuTime = Debug.threadCpuTimeNanos();
             LinkedTreeMap<String, BigInteger> peerPubKeyReconstructed = cs.reconstructPublicKey(peerPubKey);
             BigInteger n = peerPubKeyReconstructed.get("n");
             LinkedTreeMap<String, BigInteger> encryptedSet = cs.getEncryptedSet(data);
-            LinkedTreeMap<String, BigInteger> multipliedSet = cs.getMultipliedSet(encryptedSet, myData, n);
+            LinkedTreeMap<String, BigInteger> multipliedSet = cs.getMultipliedSet(encryptedSet, Node.getInstance().getMyData(), n);
             // Serializamos y mandamos de vuelta el resultado
             LinkedTreeMap<String, String> serializedMultipliedSet = new LinkedTreeMap<>();
             for (Map.Entry<String, BigInteger> entry : multipliedSet.entrySet()) {
                 serializedMultipliedSet.put(entry.getKey(), entry.getValue().toString());
             }
-            System.out.println("Node " + id + " (You) - Intersection with " + peer + " - Multiplied set: " + serializedMultipliedSet);
+            System.out.println("Node " + Node.getInstance().getId() + " (You) - Intersection with " + peer + " - Multiplied set: " + serializedMultipliedSet);
             LinkedTreeMap<String, Object> messageToSend = new LinkedTreeMap<>();
             messageToSend.put("data", serializedMultipliedSet);
-            messageToSend.put("peer", id);
+            messageToSend.put("peer", Node.getInstance().getId());
             messageToSend.put("cryptpscheme", cs.getClass().getSimpleName());
             Gson gson = new Gson();
             device.socket.send(gson.toJson(messageToSend));
-            long cpuTime = Debug.threadCpuTimeNanos();
-            Long end_time = System.currentTimeMillis();
+            long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
+            long end_time = System.currentTimeMillis();
             logger.logStop();
             logger.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_2", (end_time - start_time) / 1000.0, peer, cpuTime);
         });
     }
 
     /** @noinspection unchecked*/
-    public void intersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs, String id, HashMap<String, Object> results) {
+    public void intersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs) {
         runInBackground(() -> {
             logger.logStart();
-            Long start_time = System.currentTimeMillis();
+            long start_time = System.currentTimeMillis();
+            long startCpuTime = Debug.threadCpuTimeNanos();
             LinkedTreeMap<String, String> multipliedSet = (LinkedTreeMap<String, String>) peerData.remove("data");
             LinkedTreeMap<String, BigInteger> encMultipliedSet = cs.recvMultipliedSet(multipliedSet);
             String peer = (String) peerData.remove("peer");
@@ -215,24 +222,25 @@ public class SchemeHandler {
                 }
             }
             // Guardamos el resultado
-            synchronized (results) {
-                results.put(peer + " " + cs.getClass().getSimpleName(), intersection);
+            synchronized (Node.getInstance().getResults()) {
+                Node.getInstance().getResults().put(peer + " " + cs.getClass().getSimpleName(), intersection);
             }
-            long cpuTime = Debug.threadCpuTimeNanos();
-            Long end_time = System.currentTimeMillis();
+            long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
+            long end_time = System.currentTimeMillis();
             logger.logStop();
             logger.logActivity("INTERSECTION_" + cs.getClass().getSimpleName() + "_F", (end_time - start_time) / 1000.0, peer, cpuTime);
             int size = intersection.size();
             assert peer != null;
             logger.logResult(intersection, size, peer, cs.getClass().getSimpleName());
-            System.out.println("Node " + id + " (You) - Intersection with " + peer + " - Result: " + intersection);
+            System.out.println("Node " + Node.getInstance().getId() + " (You) - Intersection with " + peer + " - Result: " + intersection);
         });
     }
 
-    public void CAOPEIntersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, ArrayList<String> data, CryptoSystem cs, String id, Set<Integer> myData) {
+    public void CAOPEIntersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, ArrayList<String> data, CryptoSystem cs) {
         runInBackground(() -> {
             logger.logStart();
-            Long start_time = System.currentTimeMillis();
+            long start_time = System.currentTimeMillis();
+            long startCpuTime = Debug.threadCpuTimeNanos();
             LinkedTreeMap<String, BigInteger> peerPubKeyReconstructed = cs.reconstructPublicKey(peerPubKey);
             // Obtenemos las raíces cifradas del peer
             ArrayList<BigInteger> coefs = new ArrayList<>();
@@ -240,29 +248,30 @@ public class SchemeHandler {
                 coefs.add(new BigInteger(element));
             }
             // Evaluamos el polinomio con las raíces del peer
-            List<Integer> myDataList = new ArrayList<>(myData);
+            List<Integer> myDataList = new ArrayList<>(Node.getInstance().getMyData());
             ArrayList<BigInteger> encryptedEval = cs.getEvaluationSet(coefs, myDataList, peerPubKeyReconstructed.get("n"));
-            System.out.println("Node " + id + " (You) - PSI-CA with " + peer + " - Encrypted evalutaion: " + encryptedEval);
+            System.out.println("Node " + Node.getInstance().getId() + " (You) - PSI-CA with " + peer + " - Encrypted evalutaion: " + encryptedEval);
             LinkedTreeMap<String, Object> messageToSend = new LinkedTreeMap<>();
             // Shuffle the encrypted evaluation to not reveal positional information
             //Collections.shuffle(encryptedEval); Causes exception
             messageToSend.put("data", encryptedEval);
-            messageToSend.put("peer", id);
+            messageToSend.put("peer", Node.getInstance().getId());
             messageToSend.put("cryptpscheme", cs.getClass().getSimpleName() + " PSI-CA OPE");
             Gson gson = new Gson();
             device.socket.send(gson.toJson(messageToSend));
-            long cpuTime = Debug.threadCpuTimeNanos();
-            Long end_time = System.currentTimeMillis();
+            long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
+            long end_time = System.currentTimeMillis();
             logger.logStop();
             logger.logActivity("CARDINALITY_" + cs.getClass().getSimpleName() + "_OPE_2", (end_time - start_time) / 1000.0, peer, cpuTime);
         });
     }
 
     /** @noinspection unchecked*/
-    public void CAOPEIntersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs, String id, HashMap<String, Object> results) {
+    public void CAOPEIntersectionFinalStep(LinkedTreeMap<String, Object> peerData, CryptoSystem cs) {
         runInBackground(() -> {
             logger.logStart();
-            Long start_time = System.currentTimeMillis();
+            long start_time = System.currentTimeMillis();
+            long startCpuTime = Debug.threadCpuTimeNanos();
             ArrayList<String> stringData = (ArrayList<String>) peerData.remove("data");
             ArrayList<BigInteger> encryptedEval = new ArrayList<>();
             assert stringData != null;
@@ -280,11 +289,12 @@ public class SchemeHandler {
                     result++;
                 }
             }
-            synchronized (results) {
-                results.put(id + " " + cs.getClass().getSimpleName() + " PSI-CA OPE", result);
+            String id = Node.getInstance().getId();
+            synchronized (Node.getInstance().getResults()) {
+                Node.getInstance().getResults().put(id + " " + cs.getClass().getSimpleName() + " PSI-CA OPE", result);
             }
-            long cpuTime = Debug.threadCpuTimeNanos();
-            Long end_time = System.currentTimeMillis();
+            long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
+            long end_time = System.currentTimeMillis();
             logger.logStop();
             logger.logActivity("CARDINALITY_" + cs.getClass().getSimpleName() + "_F", (end_time - start_time) / 1000.0, id, cpuTime);
             logger.logResult(null, result, id, cs.getClass().getSimpleName() + "_PSI-CA_OPE");
@@ -292,14 +302,14 @@ public class SchemeHandler {
         });
     }
 
-    public void launchTest(Device device, String id, Set<Integer> myData, int domain, String peerId) {
+    public void launchTest(Device device, String peerId) {
         for (int i = 0; i < TEST_ROUNDS; i++) {
-            intersectionFirstStep(device, paillier, id, myData, peerId, domain);
-            intersectionFirstStep(device, damgardJurik, id, myData, peerId, domain);
-            OPEIntersectionFirstStep(device, paillier, id, myData, peerId, "PSI");
-            OPEIntersectionFirstStep(device, damgardJurik, id, myData, peerId, "PSI");
-            OPEIntersectionFirstStep(device, paillier, id, myData, peerId, "PSI-CA");
-            OPEIntersectionFirstStep(device, damgardJurik, id, myData, peerId, "PSI-CA");
+            intersectionFirstStep(device, paillier, peerId);
+            intersectionFirstStep(device, damgardJurik, peerId);
+            OPEIntersectionFirstStep(device, paillier, peerId, "PSI");
+            OPEIntersectionFirstStep(device, damgardJurik, peerId, "PSI");
+            OPEIntersectionFirstStep(device, paillier, peerId, "PSI-CA");
+            OPEIntersectionFirstStep(device, damgardJurik, peerId, "PSI-CA");
         }
     }
 
@@ -307,16 +317,77 @@ public class SchemeHandler {
         runInBackground(() -> {
             logger.logStart();
             long startTime = System.currentTimeMillis();
+            long startCpuTime = Debug.threadCpuTimeNanos();
             Debug.startMethodTracing();
             cs.keyGeneration(DFL_BIT_LENGTH);
             Debug.stopMethodTracing();
-            long cpuTime = Debug.threadCpuTimeNanos();
+            long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
             long endTime = System.currentTimeMillis();
             long duration = endTime - startTime;
             logger.logStop();
             LogService.Companion.logActivity("KEYGEN_" + cs.getClass().getSimpleName(), duration / 1000.0, VERSION, null, cpuTime);
             Log.d(cs.getClass().getSimpleName(), "Key generation time: " + duration / 1000.0 + " seconds");
         });
+    }
+
+    /** @noinspection unchecked*/
+    public void handleIntersectionSecondStep(Device device, String peer, String implementation, LinkedTreeMap<String, String> peerPubKey, LinkedTreeMap<String, Object> peerData) {
+        switch (implementation) {
+            case "Paillier":
+            case "DamgardJurik":
+            case "Damgard-Jurik":
+                intersectionSecondStep(device, peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), getCryptoScheme(implementation));
+                break;
+            case "Paillier OPE":
+            case "Paillier_OPE":
+            case "DamgardJurik OPE":
+            case "Damgard-Jurik_OPE":
+                OPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), getCryptoScheme(implementation));
+                break;
+            case "Paillier PSI-CA OPE":
+            case "Damgard-Jurik PSI-CA OPE":
+            case "DamgardJurik PSI-CA OPE":
+                CAOPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), getCryptoScheme(implementation));
+                break;
+        }
+    }
+
+    public void handleFinalStep(LinkedTreeMap<String, Object> peerData) {
+        String cryptoScheme = (String) peerData.remove("cryptpscheme");
+        if (cryptoScheme == null) {
+            Node.getInstance().getLogger().log(Level.SEVERE, "Missing cryptpscheme field in the final step message");
+            return;
+        }
+
+        switch (cryptoScheme) {
+            case "Paillier":
+            case "DamgardJurik":
+            case "Damgard-Jurik":
+                intersectionFinalStep(peerData, getCryptoScheme(cryptoScheme));
+                break;
+            case "Paillier OPE":
+            case "Paillier_OPE":
+            case "DamgardJurik OPE":
+            case "Damgard-Jurik_OPE":
+                OPEIntersectionFinalStep(peerData, getCryptoScheme(cryptoScheme));
+                break;
+            case "Paillier PSI-CA OPE":
+            case "Damgard-Jurik PSI-CA OPE":
+            case "DamgardJurik PSI-CA OPE":
+                CAOPEIntersectionFinalStep(peerData, getCryptoScheme(cryptoScheme));
+                break;
+            default:
+                Node.getInstance().getLogger().log(Level.SEVERE, "Unknown crypto scheme: " + cryptoScheme);
+        }
+    }
+
+    private CryptoSystem getCryptoScheme(String implementation) {
+        if (implementation.startsWith("Paillier")) {
+            return paillier;
+        } else if (implementation.startsWith("DamgardJurik") || implementation.startsWith("Damgard-Jurik")) {
+            return damgardJurik;
+        }
+        return null;
     }
 
     public CryptoSystem getPaillier() {
