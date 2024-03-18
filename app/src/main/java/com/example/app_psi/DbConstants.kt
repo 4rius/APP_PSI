@@ -1,5 +1,4 @@
 package com.example.app_psi
-
 object DbConstants {
 
     // NetworkService
@@ -24,4 +23,28 @@ object DbConstants {
 
     // LogService
     const val LOG_INTERVAL = 10000L
+}
+
+
+enum class CryptoImplementation(vararg aliases: String) {
+    PAILLIER("Paillier", "Paillier OPE", "Paillier_OPE", "Paillier PSI-CA OPE"),
+    DAMGARD_JURIK("DamgardJurik", "Damgard-Jurik", "DamgardJurik OPE", "Damgard-Jurik_OPE", "DamgardJurik PSI-CA OPE", "Damgard-Jurik PSI-CA OPE");
+
+    private val aliases: List<String>
+
+    init {
+        this.aliases = listOf(*aliases)
+    }
+
+    companion object {
+        @JvmStatic
+        fun fromString(text: String): CryptoImplementation? {
+            for (ci in entries) {
+                if (ci.aliases.contains(text)) {
+                    return ci
+                }
+            }
+            return null
+        }
+    }
 }

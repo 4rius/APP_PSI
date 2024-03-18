@@ -20,12 +20,11 @@ import com.example.app_psi.DbConstants.INTERSECTION_STEP_F
 import com.example.app_psi.DbConstants.KEYGEN_DONE
 import com.example.app_psi.DbConstants.KEYGEN_ERROR
 import com.example.app_psi.R
-import com.example.app_psi.handlers.SchemeHandler
 import com.example.app_psi.objects.Node
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.SocketException
-import java.util.*
+import java.util.Enumeration
 
 
 class NetworkService: Service() {
@@ -137,10 +136,6 @@ class NetworkService: Service() {
             return Node.getInstance()
         }
 
-        fun getIntersectionHandler(): SchemeHandler {
-            return instance?.node?.intersectionHandler ?: SchemeHandler()
-        }
-
         fun getLastSeen(device: String): String {
             return instance?.node?.getLastSeen(device) ?: "Unknown"
         }
@@ -163,36 +158,40 @@ class NetworkService: Service() {
             TODO("Not yet implemented")
         }
 
-        fun findIntersection(device: String): String {
-            return instance?.node?.intPaillier(device) ?: "Error"
+        fun findIntersectionPaillierDomain(device: String): String {
+            return instance?.node?.startIntersection(device, "Paillier", "PSI-Domain") ?: "Error"
         }
 
         fun discoverPeers() {
             instance?.node?.discoverPeers()
         }
 
-        fun findIntersectionDJ(s: String) {
-            instance?.node?.intDamgardJurik(s) ?: "Error"
+        fun findIntersectionDJDomain(s: String) {
+            instance?.node?.startIntersection(s, "DamgardJurik", "PSI-Domain") ?: "Error"
         }
 
         fun findIntersectionPaillierOPE(s: String) {
-            instance?.node?.intPaillierOPE(s) ?: "Error"
+            instance?.node?.startIntersection(s, "Paillier", "OPE")
         }
 
         fun findIntersectionDJOPE(s: String) {
-            instance?.node?.intDamgardJurikOPE(s) ?: "Error"
+            instance?.node?.startIntersection(s, "DamgardJurik", "OPE")
         }
 
         fun findCardinalityPaillier(s: String) {
-            instance?.node?.intPaillierOPECA(s) ?: "Error"
+            instance?.node?.startIntersection(s, "Paillier", "PSI-CA")
         }
 
         fun findCardinalityDJ(s: String) {
-            instance?.node?.intDamgardJurikOPECA(s) ?: "Error"
+            instance?.node?.startIntersection(s, "DamgardJurik", "PSI-CA")
         }
 
         fun launchTest(s: String) {
             instance?.node?.launchTest(s)
+        }
+
+        fun keygen(s: String) {
+            instance?.node?.keygen(s)
         }
 
     }

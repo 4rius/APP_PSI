@@ -10,10 +10,7 @@ import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 
 import com.example.app_psi.handlers.SchemeHandler;
-import com.example.app_psi.implementations.CryptoSystem;
 import com.example.app_psi.services.LogService;
-import com.google.gson.Gson;
-import com.google.gson.internal.LinkedTreeMap;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -175,6 +172,7 @@ public final class Node {
         }
     }
 
+
     private void addNewDevice(String peer, String dayTime) {
         System.out.println("Added " + peer + " to my network");
         ZMQ.Socket dealerSocket = context.createSocket(SocketType.DEALER);
@@ -220,88 +218,27 @@ public final class Node {
         return false;
     }
 
-    @SuppressWarnings("unchecked")  // Todos los casteos son seguros aunque al IDE no le guste
     public void handleMessage(String message) {
-        Gson gson = new Gson();
-        LinkedTreeMap<String, Object> peerData = gson.fromJson(message, LinkedTreeMap.class);
-
-        if (peerData.containsKey("implementation") && peerData.containsKey("peer")) {
-            String peer = (String) peerData.remove("peer");
-            Device device = devices.get(peer);
-            if (device == null) {
-                logger.log(Level.SEVERE, "Device not found for peer: " + peer);
-                return;
-            }
-            String implementation = (String) peerData.remove("implementation");
-            LinkedTreeMap<String, String> peerPubKey = (LinkedTreeMap<String, String>) peerData.remove("pubkey");
-
-            switch (implementation) {
-                case "Paillier":
-                case "DamgardJurik":
-                case "Damgard-Jurik":
-                case "Paillier OPE":
-                case "Paillier_OPE":
-                case "DamgardJurik OPE":
-                case "Damgard-Jurik_OPE":
-                case "Paillier PSI-CA OPE":
-                case "Damgard-Jurik PSI-CA OPE":
-                case "DamgardJurik PSI-CA OPE":
-                    schemeHandler.handleIntersectionSecondStep(device, peer, implementation, peerPubKey, peerData);
-                    break;
-                default:
-                    logger.log(Level.SEVERE, "Unknown implementation: " + implementation);
-            }
-        } else if (message.startsWith("{")) {
-            schemeHandler.handleFinalStep(peerData);
-        } else {
-            logger.log(Level.SEVERE, "Invalid message format: " + message);
-        }
+        schemeHandler.handleMessage(message);
     }
 
-    public String intersectionFirstStep(String deviceId, CryptoSystem cs) {
+    public String startIntersection(String deviceId, String cs, String type) {
         Device device = devices.get(deviceId);
         if (device != null) {
-            return schemeHandler.intersectionFirstStep(device, cs, deviceId);
+            return schemeHandler.startIntersection(device, deviceId, cs, type);
         } else {
-            return "Intersection with " + deviceId + " - " + cs.getClass().getSimpleName() + " - Device not found";
+            return "Intersection with " + deviceId + " - " + cs + " " + type + " - Device not found";
         }
     }
 
-    public String OPEIntersectionFirstStep(String deviceId, CryptoSystem cs, String type) {
-        Device device = devices.get(deviceId);
-        if (device != null) {
-            return schemeHandler.OPEIntersectionFirstStep(device, cs, deviceId, type);
-        } else {
-            return "Intersection with " + deviceId + " - " + cs.getClass().getSimpleName() + " " + type + " OPE - Device not found";
-        }
-    }
-
-    public String intPaillierOPE(String device) {
-        return OPEIntersectionFirstStep(device, schemeHandler.getPaillier(), "PSI");
-    }
-
-    public String intDamgardJurikOPE(String device) {
-        return OPEIntersectionFirstStep(device, schemeHandler.getDamgardJurik(), "PSI");
-    }
-
-    public String intPaillierOPECA(String device) {
-        return OPEIntersectionFirstStep(device, schemeHandler.getPaillier(), "PSI-CA");
-    }
-
-    public String intDamgardJurikOPECA(String device) {
-        return OPEIntersectionFirstStep(device, schemeHandler.getDamgardJurik(), "PSI-CA");
-    }
-
-    public String intPaillier(String device) {
-        return intersectionFirstStep(device, schemeHandler.getPaillier());
-    }
-
-    public String intDamgardJurik(String device) {
-        return intersectionFirstStep(device, schemeHandler.getDamgardJurik());
-    }
-
+    @NonNull
+    @Contract(" -> new")
     public List<String> getDevices() {
         return new ArrayList<>(devices.keySet());
+    }
+
+    public Map<String, Device> getDevicesMap() {
+        return devices;
     }
 
     @Nullable
@@ -403,15 +340,15 @@ public final class Node {
         return results;
     }
 
-    public SchemeHandler getIntersectionHandler() {
-        return schemeHandler;
-    }
-
     public Logger getLogger() {
         return logger;
     }
 
     public int getDomain() {
         return domain;
+    }
+
+    public void keygen(@NotNull String s) {
+        schemeHandler.keygen(s);
     }
 }

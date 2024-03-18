@@ -1,13 +1,9 @@
 package com.example.app_psi.implementations;
 
 import androidx.annotation.NonNull;
-import com.google.gson.internal.LinkedTreeMap;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.*;
-
-import static com.example.app_psi.implementations.Polynomials.hornerEvalCrypt;
 
 public class DamgardJurik implements CryptoSystem {
 
@@ -82,6 +78,10 @@ public class DamgardJurik implements CryptoSystem {
         return n;
     }
 
+    public int getS() {
+        return s;
+    }
+
     // Suma homomórfica de dos textos cifrados
     public BigInteger addEncryptedNumbers(@NonNull BigInteger ciphertext1, BigInteger ciphertext2) {
         return ciphertext1.multiply(ciphertext2).mod(nPowSPlusOne);
@@ -96,103 +96,5 @@ public class DamgardJurik implements CryptoSystem {
     public BigInteger multiplyEncryptedByScalar(@NonNull BigInteger ciphertext, BigInteger scalar) {
         return ciphertext.modPow(scalar, nPowSPlusOne);
     }
-
-
-
-    // Operaciones de serialización, deserialización, cifrado de sets y cálculo de intersecciones
-    // Serialización clave pública
-    public LinkedTreeMap<String, String> serializePublicKey() {
-        LinkedTreeMap<String, String> publicKeyDict = new LinkedTreeMap<>();
-        publicKeyDict.put("n", n.toString());
-        publicKeyDict.put("s", String.valueOf(s));
-        return publicKeyDict;
-    }
-
-    // Reconstruir clave pública
-    public LinkedTreeMap<String, BigInteger> reconstructPublicKey(LinkedTreeMap<String, String> publicKeyDict) {
-        BigInteger newN = new BigInteger(publicKeyDict.get("n"));
-        BigInteger newS = new BigInteger(publicKeyDict.get("s"));
-        LinkedTreeMap<String, BigInteger> pubkey = new LinkedTreeMap<>();
-        pubkey.put("n", newN);
-        pubkey.put("s", newS);
-        return pubkey;
-    }
-
-    public LinkedTreeMap<String, BigInteger> getEncryptedSet(LinkedTreeMap<String, String> serializedEncryptedSet) {
-        LinkedTreeMap<String, BigInteger> encryptedSet = new LinkedTreeMap<>();
-        for (Map.Entry<String, String> entry : serializedEncryptedSet.entrySet()) {
-            encryptedSet.put(entry.getKey(), new BigInteger(entry.getValue()));
-        }
-        return encryptedSet;
-    }
-
-    public ArrayList<BigInteger> encryptMySet(Set<Integer> mySet) {
-        ArrayList<BigInteger> result = new ArrayList<>();
-        for (int element : mySet) {
-            result.add(Encrypt(BigInteger.valueOf(element)));
-        }
-        return result;
-    }
-
-    public ArrayList<BigInteger> encryptRoots(List<BigInteger> mySet) {
-        ArrayList<BigInteger> result = new ArrayList<>();
-        for (BigInteger element : mySet) {
-            result.add(Encrypt(element));
-        }
-        return result;
-    }
-
-    public LinkedTreeMap<String, BigInteger> recvMultipliedSet(LinkedTreeMap<String, String> serializedMultipliedSet) {
-        return getEncryptedSet(serializedMultipliedSet);
-    }
-
-    // Sacar el conjunto multiplicado
-    public LinkedTreeMap<String, BigInteger> getMultipliedSet(@NonNull LinkedTreeMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n) {
-        LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();
-        DamgardJurik djsender = new DamgardJurik(n, 2);
-        for (Map.Entry<String, BigInteger> entry : encSet.entrySet()) {
-            int element = Integer.parseInt(entry.getKey());
-            if (!nodeSet.contains(element)) {
-                BigInteger encryptedZero = djsender.Encrypt(BigInteger.ZERO);
-                result.put(entry.getKey(), encryptedZero);
-                // Sale 1... result.put(entry.getKey(), paillierSender.homomorphicMultiply(entry.getValue(), BigInteger.ZERO, paillierSender.nsquare));
-            } else {
-                result.put(entry.getKey(), djsender.multiplyEncryptedByScalar(entry.getValue(), BigInteger.ONE));
-            }
-        }
-        return result;
-    }
-
-    public ArrayList<BigInteger> handleOPESecondStep(ArrayList<BigInteger> encryptedCoeff, @NonNull List<Integer> mySet, BigInteger n) {
-        ArrayList<BigInteger> encryptedResult = new ArrayList<>();
-        SecureRandom rand = new SecureRandom();
-        DamgardJurik PeerPubKey = new DamgardJurik(n, 2);
-        for (Integer element : mySet) {
-            BigInteger rb = new BigInteger(1000, rand).add(BigInteger.ONE);
-            BigInteger Epbj = hornerEvalCrypt(encryptedCoeff, BigInteger.valueOf(element), PeerPubKey);
-            BigInteger result = PeerPubKey.Encrypt(BigInteger.valueOf(element));
-            BigInteger mult = PeerPubKey.multiplyEncryptedByScalar(Epbj, rb);
-            result = PeerPubKey.addEncryptedNumbers(result, mult);
-            encryptedResult.add(result);
-        }
-        return encryptedResult;
-    }
-
-    public ArrayList<BigInteger> getEvaluationSet(List<BigInteger> encryptedCoeff, @NonNull List<Integer> mySet, BigInteger n) {
-        ArrayList<BigInteger> evaluations = new ArrayList<>();
-        DamgardJurik PeerPubKey = new DamgardJurik(n, 2);
-        SecureRandom rand = new SecureRandom();
-        for (Integer element : mySet) {
-            BigInteger rb = new BigInteger(1000, rand).add(BigInteger.ONE);
-            BigInteger Epbj = hornerEvalCrypt(encryptedCoeff, BigInteger.valueOf(element), PeerPubKey);
-            BigInteger mult = PeerPubKey.multiplyEncryptedByScalar(Epbj, rb);
-            BigInteger result = PeerPubKey.addEncryptedNumbers(PeerPubKey.Encrypt(BigInteger.ZERO), mult);
-            evaluations.add(result);
-        }
-        // Shuffle the evaluations
-        Collections.shuffle(evaluations, new SecureRandom());
-        return evaluations;
-    }
-
 
 }

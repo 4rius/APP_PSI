@@ -101,12 +101,12 @@ class MainActivity : AppCompatActivity() {
 
             // Configuración de los detalles
             textViewDetails.text = buildString {
-            append("Full network identifier: ")
-            append(NetworkService.getNode()?.fullId)
-            append(":")
-            append(NetworkService.getNode()?.port)
-            append("\nNetwork status: ")
-            append(NetworkService.getStatus())
+                append("Full network identifier: ")
+                append(NetworkService.getNode()?.fullId)
+                append(":")
+                append(NetworkService.getNode()?.port)
+                append("\nNetwork status: ")
+                append(NetworkService.getStatus())
             }
 
             // Configuración de los botones
@@ -236,10 +236,10 @@ class MainActivity : AppCompatActivity() {
     private fun newKeys(scheme: String) {
         when (scheme) {
             "Paillier" -> {
-                NetworkService.getIntersectionHandler().keygen(NetworkService.getIntersectionHandler().paillier)
+                NetworkService.keygen("Paillier")
             }
             "Damgard Jurik" -> {
-                NetworkService.getIntersectionHandler().keygen(NetworkService.getIntersectionHandler().damgardJurik)
+                NetworkService.keygen("DamgardJurik")
             }
         }
         Snackbar.make(binding.root, "New $scheme keys are being generated", Snackbar.LENGTH_SHORT)
