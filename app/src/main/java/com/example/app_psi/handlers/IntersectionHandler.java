@@ -1,21 +1,16 @@
 package com.example.app_psi.handlers;
 
-import static com.example.app_psi.DbConstants.DFL_BIT_LENGTH;
-import static com.example.app_psi.DbConstants.VERSION;
-
 import android.os.Debug;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.example.app_psi.implementations.CryptoSystem;
 import com.example.app_psi.implementations.Polynomials;
 import com.example.app_psi.objects.Device;
 import com.example.app_psi.objects.Node;
 import com.example.app_psi.proxies.ActivityLogger;
 import com.example.app_psi.proxies.LogActivityProxy;
 import com.example.app_psi.proxies.RealActivityLogger;
-import com.example.app_psi.services.LogService;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 
@@ -294,23 +289,6 @@ public class IntersectionHandler {
             logger.logActivity("CARDINALITY_" + impName + "_F", (end_time - start_time) / 1000.0, id, cpuTime);
             logger.logResult(null, result, id, impName + "_PSI-CA_OPE");
             System.out.println("Node " + id + " (You) - " + impName + " PSI-CA with " + id + " - Result: " + result);
-        });
-    }
-
-    public void keygen(CryptoSystem cs) {
-        runInBackground(() -> {
-            logger.logStart();
-            long startTime = System.currentTimeMillis();
-            long startCpuTime = Debug.threadCpuTimeNanos();
-            Debug.startMethodTracing();
-            cs.keyGeneration(DFL_BIT_LENGTH);
-            Debug.stopMethodTracing();
-            long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
-            long endTime = System.currentTimeMillis();
-            long duration = endTime - startTime;
-            logger.logStop();
-            LogService.Companion.logActivity("KEYGEN_" + cs.getClass().getSimpleName(), duration / 1000.0, VERSION, null, cpuTime);
-            Log.d(cs.getClass().getSimpleName(), "Key generation time: " + duration / 1000.0 + " seconds");
         });
     }
 }

@@ -1,5 +1,7 @@
 package com.example.app_psi.proxies;
 
+import android.util.Log;
+
 import java.util.List;
 
 public class LogActivityProxy implements ActivityLogger {
@@ -22,12 +24,13 @@ public class LogActivityProxy implements ActivityLogger {
     @Override
     public void logActivity(String tag, double duration, String peerId, long cpuTime) {
         target.logActivity(tag, duration, peerId, cpuTime);
-        System.out.println("Activity " + tag + " took " + duration + " seconds");
+        Log.d("LogActivityProxy",  tag + " - " + duration + " s");
     }
 
     @Override
     public void logResult(List<Integer> result, int size, String peerId, String cryptoScheme) {
         target.logResult(result, size, peerId, cryptoScheme);
+        Log.d("LogActivityProxy", "logResult: " + result + " - " + size + " - " + peerId + " - " + cryptoScheme);
     }
 
 }

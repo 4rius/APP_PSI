@@ -1,8 +1,12 @@
 package com.example.app_psi.handlers;
 
-import com.example.app_psi.CryptoImplementation;
+import com.example.app_psi.implementations.CryptoImplementation;
+import com.example.app_psi.implementations.CryptoSystem;
 import com.example.app_psi.objects.Device;
 import com.example.app_psi.objects.Node;
+import com.example.app_psi.proxies.ActivityLogger;
+import com.example.app_psi.proxies.LogActivityProxy;
+import com.example.app_psi.proxies.RealActivityLogger;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 
@@ -10,6 +14,8 @@ import java.util.*;
 import java.util.logging.Level;
 
 import static com.example.app_psi.DbConstants.*;
+
+import android.os.Debug;
 
 import androidx.annotation.NonNull;
 
@@ -42,7 +48,6 @@ public class SchemeHandler {
                 throw new IllegalArgumentException("Invalid operation type: " + operationType);
             }
         } else {
-            // Handle invalid cryptoSystem
             throw new IllegalArgumentException("Invalid cryptoSystem: " + cryptoSystem);
         }
     }
@@ -123,15 +128,26 @@ public class SchemeHandler {
 
     // Para aprovehcar el logging que tiene IntersectioHandler
     public void keygen(@NonNull String s) {
-        switch (s) {
-            case "Paillier":
-                intersectionHandler.keygen(Objects.requireNonNull(CSHandlers.get(CryptoImplementation.PAILLIER)).getCryptoSystem());
-                break;
-            case "Damgard-Jurik":
-                intersectionHandler.keygen(Objects.requireNonNull(CSHandlers.get(CryptoImplementation.DAMGARD_JURIK)).getCryptoSystem());
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid cryptoSystem: " + s);
-        }
+        new Thread(() -> {
+            ActivityLogger logger = new LogActivityProxy(new RealActivityLogger());
+            CryptoSystem cs;
+            try {
+                cs = Objects.requireNonNull(CSHandlers.get(CryptoImplementation.fromString(s))).getCryptoSystem();
+            } catch (NullPointerException e) {
+                Node.getInstance().getLogger().log(Level.SEVERE, "Unknown implementation: " + s);
+                return;
+            }
+            logger.logStart();
+            long startTime = System.currentTimeMillis();
+            long startCpuTime = Debug.threadCpuTimeNanos();
+            Debug.startMethodTracing();
+            cs.keyGeneration(DFL_BIT_LENGTH);
+            Debug.stopMethodTracing();
+            long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
+            long endTime = System.currentTimeMillis();
+            long duration = endTime - startTime;
+            logger.logStop();
+            logger.logActivity("KEYGEN_" + cs.getClass().getSimpleName(), duration / 1000.0, null, cpuTime);
+        }).start();
     }
 }

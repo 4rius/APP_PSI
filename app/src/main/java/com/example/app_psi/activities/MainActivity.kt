@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    @SuppressLint("InflateParams")
+    @SuppressLint("InflateParams", "StringFormatMatches")
     private fun setupFloatingActionButton() {
         // Launch the bottom sheet when the FAB is clicked
         binding.fabButton.setOnClickListener {
@@ -101,11 +101,11 @@ class MainActivity : AppCompatActivity() {
 
             // Configuración de los detalles
             textViewDetails.text = buildString {
-                append("Full network identifier: ")
+                append(getString(R.string.full_network_identifier))
                 append(NetworkService.getNode()?.fullId)
                 append(":")
                 append(NetworkService.getNode()?.port)
-                append("\nNetwork status: ")
+                append(getString(R.string.network_status_str))
                 append(NetworkService.getStatus())
             }
 
@@ -113,13 +113,15 @@ class MainActivity : AppCompatActivity() {
             buttonConnect.setOnClickListener {
                 NetworkService.findNetwork()
                 bottomSheetDialog.dismiss()
-                Snackbar.make(binding.root, "Finding and connecting to the peers", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root,
+                    getString(R.string.finding_and_connecting_to_the_peers), Snackbar.LENGTH_SHORT).show()
             }
 
             buttonDisconnect.setOnClickListener {
                 NetworkService.disconnect()
                 bottomSheetDialog.dismiss()
-                Snackbar.make(binding.root, "Disconnecting from the peers", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root,
+                    getString(R.string.disconnecting_from_the_peers), Snackbar.LENGTH_SHORT).show()
             }
 
             buttonMyKeys.setOnClickListener {
@@ -149,17 +151,18 @@ class MainActivity : AppCompatActivity() {
                 editText.inputType = InputType.TYPE_CLASS_TEXT
                 builder.setView(editText)
 
-                builder.setTitle("Add a specific peer")
+                builder.setTitle(getString(R.string.add_specific_peer))
 
-                builder.setPositiveButton("Add") { _, _ ->
+                builder.setPositiveButton(getString(R.string.add)) { _, _ ->
                     val peer = editText.text.toString()
                     NetworkService.getNode()?.addPeer(peer)
                     setupRecyclerView()
                     bottomSheetDialog.dismiss()
-                    Snackbar.make(binding.root, "Added peer $peer", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(binding.root,
+                        getString(R.string.added_peer, peer), Snackbar.LENGTH_SHORT).show()
                 }
 
-                builder.setNegativeButton("Cancel") { dialog, _ ->
+                builder.setNegativeButton(getString(R.string.cancel_str)) { dialog, _ ->
                     dialog.cancel()
                     bottomSheetDialog.dismiss()
                 }
@@ -171,7 +174,7 @@ class MainActivity : AppCompatActivity() {
                 bottomSheetDialog.dismiss()
 
                 val progressDialog = ProgressDialog(this)
-                progressDialog.setMessage("Discovering peers...")
+                progressDialog.setMessage(getString(R.string.discovering_peers))
                 progressDialog.setCancelable(false)
                 progressDialog.show()
 
@@ -182,7 +185,8 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread {
                         progressDialog.dismiss()
                         setupRecyclerView()
-                        Snackbar.make(binding.root, "Peer list updated", Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(binding.root,
+                            getString(R.string.peer_list_updated), Snackbar.LENGTH_SHORT).show()
                     }
                 }.start()
             }
@@ -190,17 +194,17 @@ class MainActivity : AppCompatActivity() {
             buttonGenerateKeys.setOnClickListener {
                 // Alert box asking if Paillier or ElGamal
                 val builder = AlertDialog.Builder(this)
-                builder.setTitle("Choose encryption scheme")
-                builder.setMessage("Choose the encryption scheme you need new keys for")
-                builder.setPositiveButton("Paillier") { _, _ ->
+                builder.setTitle(getString(R.string.choose_encryption_scheme))
+                builder.setMessage(getString(R.string.selection_scheme_str))
+                builder.setPositiveButton(getString(R.string.paillier)) { _, _ ->
                     bottomSheetDialog.dismiss()
                     newKeys("Paillier")
                 }
-                builder.setNegativeButton("Damgard Jurik") { _, _ ->
+                builder.setNegativeButton(getString(R.string.damgard_jurik)) { _, _ ->
                     bottomSheetDialog.dismiss()
                     newKeys("Damgard Jurik")
                 }
-                builder.setNeutralButton("Cancel") { dialog, _ ->
+                builder.setNeutralButton(getString(R.string.cancel_str)) { dialog, _ ->
                     dialog.cancel()
                     bottomSheetDialog.dismiss()
                 }
@@ -210,7 +214,7 @@ class MainActivity : AppCompatActivity() {
             buttonChangeSetup.setOnClickListener {
                 val builder = AlertDialog.Builder(this)
                 val inflater = layoutInflater
-                builder.setTitle("Configuración de Red")
+                builder.setTitle(getString(R.string.network_settings))
 
                 val dialogLayout = inflater.inflate(R.layout.custom_alert_dialog, null)
                 val editTextDomainSize  = dialogLayout.findViewById<EditText>(R.id.editTextDomainSize)
@@ -221,7 +225,8 @@ class MainActivity : AppCompatActivity() {
                     val domainSize = editTextDomainSize.text.toString().toInt()
                     val setSize = editTextSetSize.text.toString().toInt()
                     NetworkService.getNode()?.modifySetup(domainSize, setSize)
-                    Snackbar.make(binding.root, "New setup: domain size $domainSize, set size $setSize", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(binding.root,
+                        getString(R.string.new_setup_domain_size_set_size, domainSize, setSize), Snackbar.LENGTH_SHORT).show()
                     bottomSheetDialog.dismiss()
                 }
                 builder.show()
@@ -242,7 +247,8 @@ class MainActivity : AppCompatActivity() {
                 NetworkService.keygen("DamgardJurik")
             }
         }
-        Snackbar.make(binding.root, "New $scheme keys are being generated", Snackbar.LENGTH_SHORT)
+        Snackbar.make(binding.root,
+            getString(R.string.new_keys_are_being_generated, scheme), Snackbar.LENGTH_SHORT)
             .show()
     }
 
@@ -279,7 +285,7 @@ class MainActivity : AppCompatActivity() {
             binding.textViewNetworkStatus.setTextColor(Color.RED)
             binding.textViewNetworkStatus.animate().alpha(1f).setDuration(500).start()
         }
-        Snackbar.make(binding.root, "Couldn't find or connect to a network", Snackbar.LENGTH_SHORT).show()
+        Snackbar.make(binding.root, getString(R.string.no_netowrk), Snackbar.LENGTH_SHORT).show()
     }
 
     private fun connected() {
@@ -289,7 +295,7 @@ class MainActivity : AppCompatActivity() {
             binding.textViewNetworkStatus.setTextColor(Color.GREEN)
             binding.textViewNetworkStatus.animate().alpha(1f).setDuration(500).start()
         }
-        Snackbar.make(binding.root, "Node started", Snackbar.LENGTH_SHORT).show()
+        Snackbar.make(binding.root, getString(R.string.node_started), Snackbar.LENGTH_SHORT).show()
         setupRecyclerView()
     }
 

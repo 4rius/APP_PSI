@@ -31,7 +31,6 @@ import java.util.Date
 
 class LogService: Service() {
 
-    private lateinit var node: Node
     lateinit var id: String
     lateinit var realtimeDatabase: FirebaseDatabase
 
@@ -39,8 +38,7 @@ class LogService: Service() {
         super.onCreate()
         instance = this
         realtimeDatabase = FirebaseDatabase.getInstance()
-        node = NetworkService.getNode()!!
-        id = node.id
+        id = Node.getInstance().id
         generalLog()
         logSetup(DFL_DOMAIN, DFL_SET_SIZE)
     }
@@ -96,7 +94,7 @@ class LogService: Service() {
             Log.d("FirebaseRTDB", "Setup log sent to Firebase")
         }
         @SuppressLint("SimpleDateFormat")
-        fun logActivity(acitvityCode: String, time: Any, version: String, peer: String?= null, cpuTime: Long) {
+        fun logActivity(acitvityCode: String, time: Any, peer: String?= null, cpuTime: Long) {
             val formattedId = NetworkService.getNode()?.id?.replace(".", "-")
             val timestamp = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date())
             val ref = instance?.realtimeDatabase?.getReference("logs/$formattedId/activities")
@@ -120,7 +118,7 @@ class LogService: Service() {
             val log = hashMapOf(
                 "id" to instance?.id,
                 "timestamp" to timestamp,
-                "version" to version,
+                "version" to VERSION,
                 "type" to "Android " + android.os.Build.VERSION.RELEASE,
                 "activity_code" to acitvityCode,
                 "time" to time,
@@ -158,14 +156,14 @@ class LogService: Service() {
         }
 
         @SuppressLint("SimpleDateFormat")
-        fun logResult(result: List<Int>?, size: Int, version: String, peer: String, implementation: String) {
+        fun logResult(result: List<Int>?, size: Int, peer: String, implementation: String) {
             val formattedId = NetworkService.getNode()?.id?.replace(".", "-")
             val timestamp = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date())
             val ref = instance?.realtimeDatabase?.getReference("logs/$formattedId/intersection_results")
             val log: HashMap<String, Any?> = hashMapOf(
                 "id" to instance?.id,
                 "timestamp" to timestamp,
-                "version" to version,
+                "version" to VERSION,
                 "type" to "Android " + android.os.Build.VERSION.RELEASE,
                 "peer" to peer,
                 "implementation" to implementation,

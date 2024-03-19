@@ -54,7 +54,7 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
 
 
         holder.deviceName.text = devices[position]
-        holder.deviceDetails.text = "Last seen: " + NetworkService.getLastSeen(devices[position])
+        holder.deviceDetails.text = context.getString(R.string.last_seen) + NetworkService.getLastSeen(devices[position])
 
 
         holder.itemView.setOnClickListener {
@@ -84,9 +84,10 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
                 holder.buttonPing.post {
                     if (pingSuccessful) {
                         Snackbar.make(parentView, "${devices[position]} - Ping OK", Snackbar.LENGTH_SHORT).show()
-                        holder.deviceDetails.text = "Last seen: " + NetworkService.getLastSeen(devices[position])
+                        holder.deviceDetails.text = context.getString(R.string.last_seen) + NetworkService.getLastSeen(devices[position])
                     } else {
-                        Snackbar.make(parentView, "${devices[position]} - Ping FAIL - Device likely disconnected", Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(parentView,
+                            context.getString(R.string.ping_fail_str, devices[position]), Snackbar.LENGTH_SHORT).show()
                     }
                     holder.buttonPing.isClickable = true
                     holder.buttonPing.isEnabled = true
@@ -97,7 +98,7 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
 
 
 
-        holder.imageViewTypeNew.visibility = View.GONE // TODO: This and device type
+        holder.imageViewTypeNew.visibility = View.GONE // TODO: This
 
     }
 
@@ -114,43 +115,50 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
         bottomSheetDialog.findViewById<Button>(R.id.buttonSendLargeMsg)?.setOnClickListener {
             NetworkService.findIntersectionPaillierDomain(devices[position])
             bottomSheetDialog.dismiss()
-            Snackbar.make(parentView, "Finding intersection with ${devices[position]} using Paillier", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(parentView,
+                context.getString(R.string.finding_intersection_paillier, devices[position]), Snackbar.LENGTH_SHORT).show()
         }
 
         bottomSheetDialog.findViewById<Button>(R.id.buttonFindIntersectionDJ)?.setOnClickListener {
             NetworkService.findIntersectionDJDomain(devices[position])
             bottomSheetDialog.dismiss()
-            Snackbar.make(parentView, "Finding intersection with ${devices[position]} using DamgardJurik", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(parentView,
+                context.getString(R.string.finding_intersection_damgardjurik, devices[position]), Snackbar.LENGTH_SHORT).show()
         }
 
         bottomSheetDialog.findViewById<Button>(R.id.findIntersectionPaillierOPE)?.setOnClickListener {
             NetworkService.findIntersectionPaillierOPE(devices[position])
             bottomSheetDialog.dismiss()
-            Snackbar.make(parentView, "Finding intersection with ${devices[position]} using Paillier OPE", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(parentView,
+                context.getString(R.string.finding_intersection_paillier_ope, devices[position]), Snackbar.LENGTH_SHORT).show()
         }
 
         bottomSheetDialog.findViewById<Button>(R.id.findIntersectionDJOPE)?.setOnClickListener {
             NetworkService.findIntersectionDJOPE(devices[position])
             bottomSheetDialog.dismiss()
-            Snackbar.make(parentView, "Finding intersection with ${devices[position]} using Paillier OPE", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(parentView,
+                context.getString(R.string.finding_intersection_damgardjurik_ope, devices[position]), Snackbar.LENGTH_SHORT).show()
         }
 
         bottomSheetDialog.findViewById<Button>(R.id.buttonfindCardinalityPaillier)?.setOnClickListener {
             NetworkService.findCardinalityPaillier(devices[position])
             bottomSheetDialog.dismiss()
-            Snackbar.make(parentView, "Finding cardinality of the intersection with ${devices[position]} using Paillier", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(parentView,
+                context.getString(R.string.cadinality_paillier, devices[position]), Snackbar.LENGTH_SHORT).show()
         }
 
         bottomSheetDialog.findViewById<Button>(R.id.buttonfindCardinalityDJ)?.setOnClickListener {
             NetworkService.findCardinalityDJ(devices[position])
             bottomSheetDialog.dismiss()
-            Snackbar.make(parentView, "Finding cardinality of the intersection with ${devices[position]} using DamgardJurik", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(parentView,
+                context.getString(R.string.cardinality_dj, devices[position]), Snackbar.LENGTH_SHORT).show()
         }
 
         bottomSheetDialog.findViewById<Button>(R.id.buttonlaunchTest)?.setOnClickListener {
             NetworkService.launchTest(devices[position])
             bottomSheetDialog.dismiss()
-            Snackbar.make(parentView, "A thread is launching a massive test with ${devices[position]} - Check logs", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(parentView,
+                context.getString(R.string.test_launch_str, devices[position]), Snackbar.LENGTH_SHORT).show()
         }
 
         bottomSheetDialog.show()
