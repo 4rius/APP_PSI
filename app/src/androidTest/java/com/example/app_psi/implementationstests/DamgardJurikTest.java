@@ -5,6 +5,8 @@ import static org.junit.Assert.assertNotEquals;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.example.app_psi.handlers.CSHandler;
+import com.example.app_psi.handlers.DamgardJurikHandler;
 import com.example.app_psi.implementations.DamgardJurik;
 import com.example.app_psi.implementations.Polynomials;
 import com.google.gson.internal.LinkedTreeMap;
@@ -24,11 +26,13 @@ import java.util.Set;
 @RunWith(AndroidJUnit4.class)
 public class DamgardJurikTest {
 
+    private CSHandler damgardJurikHandler;
     private DamgardJurik damgardJurik;
 
     @Before
     public void setup() {
         damgardJurik = new DamgardJurik(128, 2);
+        damgardJurikHandler = new DamgardJurikHandler(128, 2);
     }
 
     @Test
@@ -95,7 +99,7 @@ public class DamgardJurikTest {
     @Test
     public void encryptRootsReturnsCorrectlyEncryptedRoots() {
         List<BigInteger> roots = Arrays.asList(BigInteger.valueOf(1), BigInteger.valueOf(2), BigInteger.valueOf(3));
-        List<BigInteger> encryptedRoots = damgardJurik.encryptRoots(roots);
+        List<BigInteger> encryptedRoots = damgardJurikHandler.encryptRoots(roots, damgardJurik);
 
         for (int i = 0; i < roots.size(); i++) {
             BigInteger decryptedRoot = damgardJurik.Decrypt(encryptedRoots.get(i));
@@ -107,10 +111,10 @@ public class DamgardJurikTest {
     public void intersectionDomainReturnsCorrectIntersection() {
         Set<Integer> aliceSet = new HashSet<>(Arrays.asList(1, 2, 3, 4, 5, 6));
         Set<Integer> bobSet = new HashSet<>(Arrays.asList(3, 4, 5, 6, 7, 8));
-        LinkedTreeMap<String, BigInteger> aliceEncryptedSet = damgardJurik.encryptMyData(aliceSet, 10);
+        LinkedTreeMap<String, BigInteger> aliceEncryptedSet = damgardJurikHandler.encryptMyData(aliceSet, 10);
 
         // Bob receives and multiplies by 0 or 1
-        LinkedTreeMap<String, BigInteger> multEncSet = damgardJurik.getMultipliedSet(aliceEncryptedSet, bobSet, damgardJurik.getN());
+        LinkedTreeMap<String, BigInteger> multEncSet = damgardJurikHandler.getMultipliedSet(aliceEncryptedSet, bobSet, damgardJurik.getN());
 
         // Alice decrypts the intersection, 1 if the element is in the intersection, 0 otherwise
         for (Map.Entry<String, BigInteger> entry : multEncSet.entrySet()) {
@@ -133,11 +137,11 @@ public class DamgardJurikTest {
         List<Integer> aliceSet = Arrays.asList(1, 2, 3, 4, 5, 6);
         List<Integer> bobSet = Arrays.asList(3, 4, 5, 6, 7, 8);
         List<BigInteger> aliceRoots = Polynomials.polyFromRoots(aliceSet, BigInteger.valueOf(-1), BigInteger.ONE);
-        ArrayList<BigInteger> aliceEncRoots = damgardJurik.encryptRoots(aliceRoots);
+        ArrayList<BigInteger> aliceEncRoots = damgardJurikHandler.encryptRoots(aliceRoots, damgardJurik);
 
         // Bob receives and evaluates
         ArrayList<BigInteger> bobEval;
-        bobEval = damgardJurik.handleOPESecondStep(aliceEncRoots, bobSet, damgardJurik.getN());
+        bobEval = damgardJurikHandler.handleOPESecondStep(aliceEncRoots, bobSet, damgardJurik.getN());
 
         // Alice decrypts and figures out the intersection
         ArrayList<BigInteger> decEval = new ArrayList<>();

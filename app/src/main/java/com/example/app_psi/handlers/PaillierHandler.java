@@ -25,10 +25,6 @@ public class PaillierHandler implements CSHandler {
         paillier = new Paillier(bitLengthVal);
     }
 
-    public Paillier getPaillier() {
-        return paillier;
-    }
-
     // Serializar clave pública
     public LinkedTreeMap<String, String> serializePublicKey() {
         LinkedTreeMap<String, String> publicKeyDict = new LinkedTreeMap<>();
