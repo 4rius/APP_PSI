@@ -218,8 +218,12 @@ public final class Node {
         return false;
     }
 
-    public void handleMessage(String message) {
-        schemeHandler.handleMessage(message);
+    public void handleMessage(@NonNull String message) {
+        if (message.startsWith("{") && message.contains("peer")) {
+            schemeHandler.handleMessage(message);
+        }
+        // Podría haber otras operaciones con JSON
+
     }
 
     public String startIntersection(String deviceId, String cs, String type) {

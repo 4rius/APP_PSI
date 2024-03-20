@@ -133,7 +133,7 @@ class NetworkService: Service() {
         private var instance: NetworkService? = null
 
         fun getNode(): Node? {
-            return Node.getInstance()
+            return instance?.node
         }
 
         fun getLastSeen(device: String): String {

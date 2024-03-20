@@ -88,6 +88,7 @@ public class SchemeHandler {
         CSHandler handler;
         CryptoImplementation cryptoImpl = CryptoImplementation.fromString(cryptoScheme);
         handler = CSHandlers.get(cryptoImpl);
+        assert handler != null;
 
         if (cryptoScheme.contains("PSI-CA")) {
             intersectionHandler.CAOPEIntersectionFinalStep(peerData, handler);
@@ -104,25 +105,29 @@ public class SchemeHandler {
         LinkedTreeMap<String, Object> peerData = gson.fromJson(message, LinkedTreeMap.class);
 
         if (peerData.containsKey("implementation") && peerData.containsKey("peer")) {
-            String peer = (String) peerData.remove("peer");
-            Device device = Node.getInstance().getDevicesMap().get(peer);
-            if (device == null) {
-                Node.getInstance().getLogger().log(Level.SEVERE, "Device not found for peer: " + peer);
-                return;
-            }
-            String implementation = (String) peerData.remove("implementation");
-
-            assert implementation != null;
-            CryptoImplementation cryptoImpl = CryptoImplementation.fromString(implementation);
-            if (cryptoImpl != null) {
-                handleIntersectionSecondStep(device, peer, implementation, peerData);
-            } else {
-                Node.getInstance().getLogger().log(Level.SEVERE, "Unknown implementation: " + implementation);
-            }
-        } else if (message.startsWith("{")) {
+            handleSecondStep(peerData);
+        } else if (peerData.containsKey("cryptpscheme")) {
             handleFinalStep(peerData);
         } else {
             Node.getInstance().getLogger().log(Level.SEVERE, "Invalid message format: " + message);
+        }
+    }
+
+    private void handleSecondStep(@NonNull LinkedTreeMap<String, Object> peerData) {
+        String peer = (String) peerData.remove("peer");
+        Device device = Node.getInstance().getDevicesMap().get(peer);
+        if (device == null) {
+            Node.getInstance().getLogger().log(Level.SEVERE, "Device not found for peer: " + peer);
+            return;
+        }
+        String implementation = (String) peerData.remove("implementation");
+
+        assert implementation != null;
+        CryptoImplementation cryptoImpl = CryptoImplementation.fromString(implementation);
+        if (cryptoImpl != null) {
+            handleIntersectionSecondStep(device, peer, implementation, peerData);
+        } else {
+            Node.getInstance().getLogger().log(Level.SEVERE, "Unknown implementation: " + implementation);
         }
     }
 
