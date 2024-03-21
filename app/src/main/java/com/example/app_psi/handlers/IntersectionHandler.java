@@ -58,8 +58,8 @@ public class IntersectionHandler {
     }
 
     public String OPEIntersectionFirstStep(Device device, String peerId, String type, CSHandler handler) {
-        String impName = handler.getImplementationName();
         runInBackground(() -> {
+            String impName = handler.getImplementationName();
             logger.logStart();
             long startTime = System.currentTimeMillis();
             long startCpuTime = Debug.threadCpuTimeNanos(); // Tiempo de CPU al inicio de la operación
@@ -79,7 +79,7 @@ public class IntersectionHandler {
             logger.logStop();
             logger.logActivity("INTERSECTION_" + impName + "_OPE_1", (endTime - startTime) / 1000.0, peerId, cpuTime);
         });
-        return "Intersection with " + peerId + " - " + impName + " " + type + " OPE - Waiting for response...";
+        return "Intersection with " + peerId + " - " + handler.getImplementationName() + " " + type + " OPE - Waiting for response...";
     }
 
     public void OPEIntersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, ArrayList<String> data, CSHandler handler) {

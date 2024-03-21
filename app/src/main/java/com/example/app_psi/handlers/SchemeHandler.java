@@ -19,6 +19,8 @@ import android.os.Debug;
 
 import androidx.annotation.NonNull;
 
+import org.jetbrains.annotations.Nullable;
+
 public class SchemeHandler {
 
     private final Map<CryptoImplementation, CSHandler> CSHandlers = new HashMap<>();
@@ -39,6 +41,10 @@ public class SchemeHandler {
             Node.getInstance().getLogger().log(Level.SEVERE, "Unknown implementation: " + cryptoSystem);
         }
 
+        return intersectionStarter(device, peerId, cryptoSystem, operationType, handler);
+    }
+
+    private String intersectionStarter(Device device, String peerId, @NonNull String cryptoSystem, String operationType, CSHandler handler) {
         if (handler != null) {
             if (operationType.equals("PSI-Domain")) {
                 return intersectionHandler.intersectionFirstStep(device, peerId, handler);
@@ -52,14 +58,24 @@ public class SchemeHandler {
         }
     }
 
-    public void launchTest(Device device, String peerId) {
-        for (int i = 0; i < TEST_ROUNDS; i++) {
-            intersectionHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.PAILLIER)));
-            intersectionHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.DAMGARD_JURIK)));
-            intersectionHandler.OPEIntersectionFirstStep(device, peerId, "PSI", Objects.requireNonNull(CSHandlers.get(CryptoImplementation.PAILLIER)));
-            intersectionHandler.OPEIntersectionFirstStep(device, peerId, "PSI", Objects.requireNonNull(CSHandlers.get(CryptoImplementation.DAMGARD_JURIK)));
-            intersectionHandler.OPEIntersectionFirstStep(device, peerId, "PSI-CA", Objects.requireNonNull(CSHandlers.get(CryptoImplementation.PAILLIER)));
-            intersectionHandler.OPEIntersectionFirstStep(device, peerId, "PSI-CA", Objects.requireNonNull(CSHandlers.get(CryptoImplementation.DAMGARD_JURIK)));
+    public void launchTest(Device device, String peerId, @Nullable Integer tr, @Nullable String impl, @Nullable String type) {
+        if (impl != null) {
+            assert tr != null;
+            assert type != null;
+            CryptoImplementation cryptoImpl = CryptoImplementation.fromString(impl);
+            CSHandler handler = CSHandlers.get(cryptoImpl);
+            for (int i = 0; i < tr; i++) {
+                intersectionStarter(device, peerId, impl, type, handler);
+            }
+        } else {
+            for (int i = 0; i < TEST_ROUNDS; i++) {
+                intersectionHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.PAILLIER)));
+                intersectionHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.DAMGARD_JURIK)));
+                intersectionHandler.OPEIntersectionFirstStep(device, peerId, "PSI", Objects.requireNonNull(CSHandlers.get(CryptoImplementation.PAILLIER)));
+                intersectionHandler.OPEIntersectionFirstStep(device, peerId, "PSI", Objects.requireNonNull(CSHandlers.get(CryptoImplementation.DAMGARD_JURIK)));
+                intersectionHandler.OPEIntersectionFirstStep(device, peerId, "PSI-CA", Objects.requireNonNull(CSHandlers.get(CryptoImplementation.PAILLIER)));
+                intersectionHandler.OPEIntersectionFirstStep(device, peerId, "PSI-CA", Objects.requireNonNull(CSHandlers.get(CryptoImplementation.DAMGARD_JURIK)));
+            }
         }
     }
 

@@ -332,9 +332,9 @@ public final class Node {
     }
 
 
-    public void launchTest(@NotNull String device) {
+    public void launchTest(@NotNull String device, @Nullable Integer tr, @Nullable String impl, @Nullable String type) {
         if (devices.containsKey(device)) {
-            new Thread(() -> schemeHandler.launchTest(devices.get(device), device)).start();
+            new Thread(() -> schemeHandler.launchTest(devices.get(device), device, tr, impl, type)).start();
         } else {
             System.out.println("Device not found");
         }

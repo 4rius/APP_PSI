@@ -1,11 +1,14 @@
 package com.example.app_psi.adapters
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
+import android.widget.Spinner
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.app_psi.R
@@ -112,7 +115,7 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
         bottomSheetDialog.behavior.isDraggable = true
         bottomSheetDialog.findViewById<TextView>(R.id.textViewTitleOptions)?.text = context.getString(R.string.actions_for_device, devices[position])
 
-        bottomSheetDialog.findViewById<Button>(R.id.buttonSendLargeMsg)?.setOnClickListener {
+        bottomSheetDialog.findViewById<Button>(R.id.buttonFindIntersectionPaillier)?.setOnClickListener {
             NetworkService.findIntersectionPaillierDomain(devices[position])
             bottomSheetDialog.dismiss()
             Snackbar.make(parentView,
@@ -155,10 +158,36 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
         }
 
         bottomSheetDialog.findViewById<Button>(R.id.buttonlaunchTest)?.setOnClickListener {
-            NetworkService.launchTest(devices[position])
-            bottomSheetDialog.dismiss()
-            Snackbar.make(parentView,
-                context.getString(R.string.test_launch_str, devices[position]), Snackbar.LENGTH_SHORT).show()
+            val builder = AlertDialog.Builder(context)
+            val inflater = LayoutInflater.from(context)
+            builder.setTitle("Select implementation and test rounds")
+
+            val dialogLayout = inflater.inflate(R.layout.test_dialog, null)
+            val editTextTestRounds  = dialogLayout.findViewById<EditText>(R.id.editTextTestRounds)
+            val spinnerImplementation = dialogLayout.findViewById<Spinner>(R.id.spinnerImplementation)
+            val spinnerType = dialogLayout.findViewById<Spinner>(R.id.spinnerType)
+
+            builder.setView(dialogLayout)
+            builder.setPositiveButton("OK") { _, _ ->
+                val test_rounds = editTextTestRounds.text.toString().toInt()
+                val implementation = spinnerImplementation.selectedItem.toString().trim()
+                val type = spinnerType.selectedItem.toString().trim()
+                NetworkService.launchTest(devices[position], test_rounds, implementation, type)
+                Snackbar.make(parentView,
+                    context.getString(R.string.test_launch_str, devices[position]), Snackbar.LENGTH_SHORT).show()
+                bottomSheetDialog.dismiss()
+            }
+            builder.setNegativeButton("Cancel") { dialog, _ ->
+                dialog.cancel()
+            }
+            builder.setNeutralButton("Default test") { _, _ ->
+                NetworkService.launchTest(devices[position])
+                Snackbar.make(parentView,
+                    context.getString(R.string.test_launch_str, devices[position]), Snackbar.LENGTH_SHORT).show()
+                bottomSheetDialog.dismiss()
+            }
+            builder.show()
+
         }
 
         bottomSheetDialog.show()

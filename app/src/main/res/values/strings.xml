@@ -121,5 +121,10 @@
     <string name="finding_intersection_damgardjurik_ope">Finding intersection with %1$s using DamgardJurik OPE</string>
     <string name="cadinality_paillier">Finding cardinality of the intersection with %1$s using Paillier</string>
     <string name="cardinality_dj">Finding cardinality of the intersection with %1$s using DamgardJurik</string>
-    <string name="test_launch_str">A thread is launching a massive test with %1$s - Check logs</string>
+    <string name="test_launch_str">A thread is launching test with %1$s - Check logs</string>
+    <string name="implementation">Implementation</string>
+    <string name="choose_implementation">Select an available implementation</string>
+    <string name="test_rounds">Test rounds</string>
+    <string name="choose_type">Select the type of method to use</string>
+    <string name="default_test">Launch default test</string>
 </resources>

@@ -186,8 +186,8 @@ class NetworkService: Service() {
             instance?.node?.startIntersection(s, "DamgardJurik", "PSI-CA")
         }
 
-        fun launchTest(s: String) {
-            instance?.node?.launchTest(s)
+        fun launchTest(s: String, tr: Int? = null, impl: String? = null, type: String? = null) {
+            instance?.node?.launchTest(s, tr, impl, type)
         }
 
         fun keygen(s: String) {

@@ -30,7 +30,7 @@
             android:importantForAccessibility="no" />
 
         <Button
-            android:id="@+id/buttonSendLargeMsg"
+            android:id="@+id/buttonFindIntersectionPaillier"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
@@ -157,7 +157,7 @@
             android:id="@+id/logo7"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/baseline_numbers_48"
+            android:src="@drawable/test_vec_48"
             android:layout_gravity="center"
             android:importantForAccessibility="no" />
 

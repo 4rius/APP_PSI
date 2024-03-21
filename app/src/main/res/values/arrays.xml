@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="implementations">
+        <item>Paillier</item>
+        <item>DamgardJurik</item>
+    </string-array>
+    <string-array name="types">
+        <item>PSI-Domain</item>
+        <item>OPE</item>
+        <item>PSI-CA</item>
+    </string-array>
+</resources>
