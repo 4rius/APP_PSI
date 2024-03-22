@@ -222,7 +222,7 @@ public final class Node {
         if (message.startsWith("{") && message.contains("peer")) {
             schemeHandler.handleMessage(message);
         }
-        // Podría haber otras operaciones con JSON
+        // Podría haber otras operaciones con JSON usando más condiciones
 
     }
 

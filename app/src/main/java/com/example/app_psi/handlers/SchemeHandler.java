@@ -96,7 +96,7 @@ public class SchemeHandler {
     }
 
     public void handleFinalStep(@NonNull LinkedTreeMap<String, Object> peerData) {
-        String cryptoScheme = (String) peerData.remove("cryptpscheme");
+        String cryptoScheme = (String) peerData.remove("implementation");
         if (cryptoScheme == null) {
             Node.getInstance().getLogger().log(Level.SEVERE, "Missing cryptpscheme field in the final step message");
             return;
@@ -120,9 +120,9 @@ public class SchemeHandler {
         Gson gson = new Gson();
         LinkedTreeMap<String, Object> peerData = gson.fromJson(message, LinkedTreeMap.class);
 
-        if (peerData.containsKey("implementation") && peerData.containsKey("peer")) {
+        if (peerData.get("step").equals("2")) {
             handleSecondStep(peerData);
-        } else if (peerData.containsKey("cryptpscheme")) {
+        } else if (peerData.get("step").equals("F")) {
             handleFinalStep(peerData);
         } else {
             Node.getInstance().getLogger().log(Level.SEVERE, "Invalid message format: " + message);

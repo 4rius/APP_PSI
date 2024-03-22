@@ -15,9 +15,11 @@ import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +36,13 @@ public class IntersectionHandler {
         this.logger = new LogActivityProxy(new RealActivityLogger());
     }
 
-    private void sendJsonMessage(@NonNull Device device, Object message) {
+    private void sendJsonMessage(@NonNull Device device, Object resSet, String impName, String step, @Nullable LinkedTreeMap<String, String> publicKeyDict) {
+        HashMap<String, Object> message = new HashMap<>();
+        message.put("data", resSet);
+        if (publicKeyDict != null) message.put("pubkey", publicKeyDict);
+        message.put("implementation", impName);
+        message.put("peer", Node.getInstance().getId());
+        message.put("step", step);
         Gson gson = new Gson();
         device.socket.send(gson.toJson(message));
     }
@@ -68,12 +76,7 @@ public class IntersectionHandler {
             List<BigInteger> roots = Polynomials.polyFromRoots(myDataList, BigInteger.valueOf(-1), BigInteger.ONE);
             ArrayList<BigInteger> encryptedRoots = handler.encryptRoots(roots, handler.getCryptoSystem());
             LinkedTreeMap<String, String> publicKeyDict = handler.serializePublicKey();
-            HashMap<String, Object> message = new HashMap<>();
-            message.put("data", encryptedRoots);
-            message.put("pubkey", publicKeyDict);
-            message.put("implementation", getImplementationLabel(impName, type));
-            message.put("peer", Node.getInstance().getId());
-            sendJsonMessage(device, message);
+            sendJsonMessage(device, encryptedRoots, getImplementationLabel(impName, type), "2", publicKeyDict);
             long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime; // Tiempo de CPU utilizado por la operación
             long endTime = System.currentTimeMillis();
             logger.logStop();
@@ -95,11 +98,7 @@ public class IntersectionHandler {
             List<Integer> myDataList = new ArrayList<>(Node.getInstance().getMyData());
             ArrayList<BigInteger> encryptedEval = handler.handleOPESecondStep(coefs, myDataList, peerPubKeyReconstructed.get("n"));
             Log.d("Node", Node.getInstance().getId() + " (You) - Intersection with " + peer + " - Encrypted evaluation: " + encryptedEval);
-            LinkedTreeMap<String, Object> messageToSend = new LinkedTreeMap<>();
-            messageToSend.put("data", encryptedEval);
-            messageToSend.put("peer", Node.getInstance().getId());
-            messageToSend.put("cryptpscheme", impName + " OPE");
-            sendJsonMessage(device, messageToSend);
+            sendJsonMessage(device, encryptedEval, impName + " OPE", "F", null);
             long cpuTime = Debug.threadCpuTimeNanos();
             long endTime = System.currentTimeMillis();
             logger.logStop();
@@ -152,12 +151,7 @@ public class IntersectionHandler {
             Log.d("Node", Node.getInstance().getId() + " (You) - Intersection with " + peerId + " - " + impName);
             LinkedTreeMap<String, BigInteger> encryptedSet = handler.encryptMyData(Node.getInstance().getMyData(), Node.getInstance().getDomain());
             LinkedTreeMap<String, String> publicKeyDict = handler.serializePublicKey();
-            HashMap<String, Object> message = new HashMap<>();
-            message.put("data", encryptedSet);
-            message.put("pubkey", publicKeyDict);
-            message.put("implementation", impName);
-            message.put("peer", Node.getInstance().getId());
-            sendJsonMessage(device, message);
+            sendJsonMessage(device, encryptedSet, impName, "2", publicKeyDict);
             long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
             long endTime = System.currentTimeMillis();
             logger.logStop();
@@ -176,18 +170,8 @@ public class IntersectionHandler {
             BigInteger n = peerPubKeyReconstructed.get("n");
             LinkedTreeMap<String, BigInteger> encryptedSet = handler.getEncryptedSet(data);
             LinkedTreeMap<String, BigInteger> multipliedSet = handler.getMultipliedSet(encryptedSet, Node.getInstance().getMyData(), n);
-            // Serializamos y mandamos de vuelta el resultado
-            LinkedTreeMap<String, String> serializedMultipliedSet = new LinkedTreeMap<>();
-            for (Map.Entry<String, BigInteger> entry : multipliedSet.entrySet()) {
-                serializedMultipliedSet.put(entry.getKey(), entry.getValue().toString());
-            }
-            System.out.println("Node " + Node.getInstance().getId() + " (You) - Intersection with " + peer + " - Multiplied set: " + serializedMultipliedSet);
-            LinkedTreeMap<String, Object> messageToSend = new LinkedTreeMap<>();
-            messageToSend.put("data", serializedMultipliedSet);
-            messageToSend.put("peer", Node.getInstance().getId());
-            messageToSend.put("cryptpscheme", impName);
-            Gson gson = new Gson();
-            device.socket.send(gson.toJson(messageToSend));
+            System.out.println("Node " + Node.getInstance().getId() + " (You) - Intersection with " + peer + " - Multiplied set: " + multipliedSet);
+            sendJsonMessage(device, multipliedSet, impName, "F", null);
             long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
             long end_time = System.currentTimeMillis();
             logger.logStop();
@@ -245,12 +229,8 @@ public class IntersectionHandler {
             System.out.println("Node " + Node.getInstance().getId() + " (You) - PSI-CA with " + peer + " - Encrypted evalutaion: " + encryptedEval);
             LinkedTreeMap<String, Object> messageToSend = new LinkedTreeMap<>();
             // Shuffle the encrypted evaluation to not reveal positional information
-            //Collections.shuffle(encryptedEval); Causes exception
-            messageToSend.put("data", encryptedEval);
-            messageToSend.put("peer", Node.getInstance().getId());
-            messageToSend.put("cryptpscheme", impName + " PSI-CA OPE");
-            Gson gson = new Gson();
-            device.socket.send(gson.toJson(messageToSend));
+            Collections.shuffle(encryptedEval);
+            sendJsonMessage(device, encryptedEval, impName + " PSI-CA OPE", "F", null);
             long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
             long end_time = System.currentTimeMillis();
             logger.logStop();
