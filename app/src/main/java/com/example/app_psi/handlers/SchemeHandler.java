@@ -80,7 +80,7 @@ public class SchemeHandler {
     }
 
     /** @noinspection unchecked*/
-    public void handleIntersectionSecondStep(Device device, String peer, String implementation, @NonNull LinkedTreeMap<String, Object> peerData) {
+    private void handleIntersectionSecondStep(Device device, String peer, String implementation, @NonNull LinkedTreeMap<String, Object> peerData) {
         LinkedTreeMap<String, String> peerPubKey = (LinkedTreeMap<String, String>) peerData.remove("pubkey");
         CSHandler handler;
         CryptoImplementation cryptoImpl = CryptoImplementation.fromString(implementation);

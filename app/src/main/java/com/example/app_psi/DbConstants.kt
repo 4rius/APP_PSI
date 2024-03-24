@@ -13,7 +13,7 @@ object DbConstants {
     const val CARDINALITY_DONE = "com.example.app_psi.receivers.CARDINALITY_DONE"
 
     // Node
-    const val VERSION = "1.1 - DEV"
+    const val VERSION = "1.2 - DEV"
     const val DFL_BIT_LENGTH = 1024
     const val DFL_DOMAIN = 500
     const val DFL_SET_SIZE = 50

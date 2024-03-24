@@ -218,7 +218,7 @@ public final class Node {
         return false;
     }
 
-    public void handleMessage(@NonNull String message) {
+    private void handleMessage(@NonNull String message) {
         if (message.startsWith("{") && message.contains("peer")) {
             schemeHandler.handleMessage(message);
         }

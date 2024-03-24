@@ -39,22 +39,6 @@ public class PaillierHandler implements CSHandler {
         return publicKey;
     }
 
-    public LinkedTreeMap<String, BigInteger> getEncryptedSet(@NonNull LinkedTreeMap<String, String> serializedEncryptedSet) {
-        LinkedTreeMap<String, BigInteger> encryptedSet = new LinkedTreeMap<>();
-        for (Map.Entry<String, String> entry : serializedEncryptedSet.entrySet()) {
-            encryptedSet.put(entry.getKey(), new BigInteger(entry.getValue()));
-        }
-        return encryptedSet;
-    }
-
-    public ArrayList<BigInteger> encryptRoots(@NonNull List<BigInteger> mySet) {
-        ArrayList<BigInteger> result = new ArrayList<>();
-        for (BigInteger element : mySet) {
-            result.add(paillier.Encrypt(element));
-        }
-        return result;
-    }
-
     // Sacar el conjunto multiplicado
     public LinkedTreeMap<String, BigInteger> getMultipliedSet(@NonNull LinkedTreeMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n) {
         LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();

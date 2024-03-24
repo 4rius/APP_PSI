@@ -160,7 +160,7 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
         bottomSheetDialog.findViewById<Button>(R.id.buttonlaunchTest)?.setOnClickListener {
             val builder = AlertDialog.Builder(context)
             val inflater = LayoutInflater.from(context)
-            builder.setTitle("Select implementation and test rounds")
+            builder.setTitle(context.getString(R.string.select_implementation_and_test_rounds))
 
             val dialogLayout = inflater.inflate(R.layout.test_dialog, null)
             val editTextTestRounds  = dialogLayout.findViewById<EditText>(R.id.editTextTestRounds)

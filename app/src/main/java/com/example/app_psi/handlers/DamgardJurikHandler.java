@@ -44,14 +44,6 @@ public class DamgardJurikHandler implements CSHandler {
         return pubkey;
     }
 
-    public ArrayList<BigInteger> encryptRoots(List<BigInteger> mySet) {
-        ArrayList<BigInteger> result = new ArrayList<>();
-        for (BigInteger element : mySet) {
-            result.add(dj.Encrypt(element));
-        }
-        return result;
-    }
-
     // Sacar el conjunto multiplicado
     public LinkedTreeMap<String, BigInteger> getMultipliedSet(@NonNull LinkedTreeMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n) {
         LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();

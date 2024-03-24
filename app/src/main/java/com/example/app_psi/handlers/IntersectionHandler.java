@@ -227,7 +227,6 @@ public class IntersectionHandler {
             List<Integer> myDataList = new ArrayList<>(Node.getInstance().getMyData());
             ArrayList<BigInteger> encryptedEval = handler.getEvaluationSet(coefs, myDataList, peerPubKeyReconstructed.get("n"));
             System.out.println("Node " + Node.getInstance().getId() + " (You) - PSI-CA with " + peer + " - Encrypted evalutaion: " + encryptedEval);
-            LinkedTreeMap<String, Object> messageToSend = new LinkedTreeMap<>();
             // Shuffle the encrypted evaluation to not reveal positional information
             Collections.shuffle(encryptedEval);
             sendJsonMessage(device, encryptedEval, impName + " PSI-CA OPE", "F", null);

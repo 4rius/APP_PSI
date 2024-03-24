@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">APP_PSI</string>
+    <string name="app_name">PSI-Suite</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
@@ -127,4 +127,5 @@
     <string name="test_rounds">Test rounds</string>
     <string name="choose_type">Select the type of method to use</string>
     <string name="default_test">Launch default test</string>
+    <string name="select_implementation_and_test_rounds">Select implementation and test rounds</string>
 </resources>
