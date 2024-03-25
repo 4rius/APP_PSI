@@ -28,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class JSONHandler {
 
-    private final Map<CryptoImplementation, CSHelper> CSHandlers = new HashMap<>();
+    private final Map<CryptoImplementation, CSHelper> CSHelpers = new HashMap<>();
 
     private final OPEHandler OPEHandler = new OPEHandler();
 
@@ -39,8 +39,8 @@ public class JSONHandler {
     private final ThreadPoolExecutor executor; // Executor para lanzar hilos
 
     public JSONHandler() {
-        CSHandlers.put(CryptoImplementation.PAILLIER, new PaillierHelper(DFL_BIT_LENGTH));
-        CSHandlers.put(CryptoImplementation.DAMGARD_JURIK, new DamgardJurikHelper(DFL_BIT_LENGTH, DFL_EXPANSION_FACTOR));
+        CSHelpers.put(CryptoImplementation.PAILLIER, new PaillierHelper(DFL_BIT_LENGTH));
+        CSHelpers.put(CryptoImplementation.DAMGARD_JURIK, new DamgardJurikHelper(DFL_BIT_LENGTH, DFL_EXPANSION_FACTOR));
         this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
     }
 
@@ -52,7 +52,7 @@ public class JSONHandler {
         CSHelper handler = null;
         CryptoImplementation cryptoImpl = CryptoImplementation.fromString(cryptoSystem);
         if (cryptoImpl != null) {
-            handler = CSHandlers.get(cryptoImpl);
+            handler = CSHelpers.get(cryptoImpl);
         } else {
             Node.getInstance().getLogger().log(Level.SEVERE, "Unknown implementation: " + cryptoSystem);
         }
@@ -85,19 +85,19 @@ public class JSONHandler {
             assert tr != null;
             assert type != null;
             CryptoImplementation cryptoImpl = CryptoImplementation.fromString(impl);
-            CSHelper handler = CSHandlers.get(cryptoImpl);
+            CSHelper handler = CSHelpers.get(cryptoImpl);
             for (int i = 0; i < tr; i++) {
                 intersectionStarter(device, peerId, impl, type, handler);
             }
         } else {
             for (int i = 0; i < TEST_ROUNDS; i++) {
                 runInBackground(() -> {
-                    runInBackground(() -> domainPSIHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.PAILLIER))));
-                    runInBackground(() -> domainPSIHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.DAMGARD_JURIK))));
-                    runInBackground(() -> OPECAHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.PAILLIER))));
-                    runInBackground(() -> OPECAHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.DAMGARD_JURIK))));
-                    runInBackground(() -> OPEHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.PAILLIER))));
-                    runInBackground(() -> OPEHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.DAMGARD_JURIK))));
+                    runInBackground(() -> domainPSIHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.PAILLIER))));
+                    runInBackground(() -> domainPSIHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.DAMGARD_JURIK))));
+                    runInBackground(() -> OPECAHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.PAILLIER))));
+                    runInBackground(() -> OPECAHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.DAMGARD_JURIK))));
+                    runInBackground(() -> OPEHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.PAILLIER))));
+                    runInBackground(() -> OPEHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.DAMGARD_JURIK))));
                 });
             }
         }
@@ -108,7 +108,7 @@ public class JSONHandler {
         LinkedTreeMap<String, String> peerPubKey = (LinkedTreeMap<String, String>) peerData.remove("pubkey");
         CSHelper handler;
         CryptoImplementation cryptoImpl = CryptoImplementation.fromString(implementation);
-        handler = CSHandlers.get(cryptoImpl);
+        handler = CSHelpers.get(cryptoImpl);
 
         assert handler != null;
         if (implementation.contains("PSI-CA")) {
@@ -128,7 +128,7 @@ public class JSONHandler {
         }
         CSHelper handler;
         CryptoImplementation cryptoImpl = CryptoImplementation.fromString(cryptoScheme);
-        handler = CSHandlers.get(cryptoImpl);
+        handler = CSHelpers.get(cryptoImpl);
         assert handler != null;
 
         if (cryptoScheme.contains("PSI-CA")) {
@@ -178,7 +178,7 @@ public class JSONHandler {
             ActivityLogger logger = new LogActivityProxy(new RealActivityLogger());
             CryptoSystem cs;
             try {
-                cs = Objects.requireNonNull(CSHandlers.get(CryptoImplementation.fromString(s))).getCryptoSystem();
+                cs = Objects.requireNonNull(CSHelpers.get(CryptoImplementation.fromString(s))).getCryptoSystem();
             } catch (NullPointerException e) {
                 Node.getInstance().getLogger().log(Level.SEVERE, "Unknown implementation: " + s);
                 return;

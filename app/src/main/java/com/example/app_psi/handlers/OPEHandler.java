@@ -6,7 +6,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.example.app_psi.helpers.CSHelper;
-import com.example.app_psi.helpers.IntersectionHelper;
 import com.example.app_psi.collections.Polynomials;
 import com.example.app_psi.objects.Device;
 import com.example.app_psi.objects.Node;
@@ -16,7 +15,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OPEHandler extends IntersectionHelper {
+public class OPEHandler extends IntersectionHandler {
 
     public OPEHandler() {
         super();

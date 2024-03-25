@@ -5,7 +5,6 @@ import android.os.Debug;
 import androidx.annotation.NonNull;
 
 import com.example.app_psi.helpers.CSHelper;
-import com.example.app_psi.helpers.IntersectionHelper;
 import com.example.app_psi.collections.Polynomials;
 import com.example.app_psi.objects.Device;
 import com.example.app_psi.objects.Node;
@@ -16,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class OPECAHandler extends IntersectionHelper {
+public class OPECAHandler extends IntersectionHandler {
 
     public OPECAHandler() {
         super();
