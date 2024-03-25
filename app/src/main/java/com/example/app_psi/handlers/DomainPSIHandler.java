@@ -5,6 +5,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.example.app_psi.helpers.IntersectionHelper;
 import com.example.app_psi.objects.Device;
 import com.example.app_psi.objects.Node;
 import com.google.gson.internal.LinkedTreeMap;
@@ -14,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class DomainPSIHandler extends IntersectionHandler{
+public class DomainPSIHandler extends IntersectionHelper {
 
     public DomainPSIHandler() {
         super();

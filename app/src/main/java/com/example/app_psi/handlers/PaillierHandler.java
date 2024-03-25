@@ -1,6 +1,6 @@
 package com.example.app_psi.handlers;
 
-import static com.example.app_psi.implementations.Polynomials.hornerEvalCrypt;
+import static com.example.app_psi.helpers.Polynomials.hornerEvalCrypt;
 
 import androidx.annotation.NonNull;
 

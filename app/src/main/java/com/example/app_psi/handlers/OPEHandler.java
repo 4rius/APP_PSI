@@ -5,7 +5,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.example.app_psi.implementations.Polynomials;
+import com.example.app_psi.helpers.IntersectionHelper;
+import com.example.app_psi.helpers.Polynomials;
 import com.example.app_psi.objects.Device;
 import com.example.app_psi.objects.Node;
 import com.google.gson.internal.LinkedTreeMap;
@@ -14,7 +15,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OPEHandler extends IntersectionHandler {
+public class OPEHandler extends IntersectionHelper {
 
     public OPEHandler() {
         super();

@@ -8,7 +8,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.example.app_psi.handlers.CSHandler;
 import com.example.app_psi.handlers.PaillierHandler;
 import com.example.app_psi.implementations.Paillier;
-import com.example.app_psi.implementations.Polynomials;
+import com.example.app_psi.helpers.Polynomials;
 import com.google.gson.internal.LinkedTreeMap;
 
 import org.junit.Before;

@@ -1,9 +1,10 @@
-package com.example.app_psi.handlers;
+package com.example.app_psi.helpers;
 
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.example.app_psi.handlers.CSHandler;
 import com.example.app_psi.objects.Device;
 import com.example.app_psi.objects.Node;
 import com.example.app_psi.proxies.ActivityLogger;
@@ -17,11 +18,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public abstract class IntersectionHandler {
+public abstract class IntersectionHelper {
 
     private static ActivityLogger logger;
 
-    public IntersectionHandler() {
+    public IntersectionHelper() {
         logger = new LogActivityProxy(new RealActivityLogger());
     }
 

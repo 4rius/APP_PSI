@@ -1,6 +1,6 @@
 package com.example.app_psi.handlers;
 
-import com.example.app_psi.implementations.CryptoImplementation;
+import com.example.app_psi.helpers.CryptoImplementation;
 import com.example.app_psi.implementations.CryptoSystem;
 import com.example.app_psi.objects.Device;
 import com.example.app_psi.objects.Node;
@@ -23,7 +23,7 @@ import androidx.annotation.NonNull;
 
 import org.jetbrains.annotations.Nullable;
 
-public class SchemeHandler {
+public class JSONHandler {
 
     private final Map<CryptoImplementation, CSHandler> CSHandlers = new HashMap<>();
 
@@ -35,7 +35,7 @@ public class SchemeHandler {
 
     private final ThreadPoolExecutor executor; // Executor para lanzar hilos
 
-    public SchemeHandler() {
+    public JSONHandler() {
         CSHandlers.put(CryptoImplementation.PAILLIER, new PaillierHandler(DFL_BIT_LENGTH));
         CSHandlers.put(CryptoImplementation.DAMGARD_JURIK, new DamgardJurikHandler(DFL_BIT_LENGTH, DFL_EXPANSION_FACTOR));
         this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);

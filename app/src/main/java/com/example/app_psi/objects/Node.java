@@ -9,7 +9,7 @@ import android.annotation.SuppressLint;
 
 import androidx.annotation.NonNull;
 
-import com.example.app_psi.handlers.SchemeHandler;
+import com.example.app_psi.handlers.JSONHandler;
 import com.example.app_psi.services.LogService;
 
 import org.jetbrains.annotations.Contract;
@@ -44,7 +44,7 @@ public final class Node {
     private final Set<Integer> myData; // Conjunto de datos del nodo (set de 10 números aleatorios)
     private int domain = DFL_DOMAIN;  // Dominio de los números aleatorios sobre los que se trabaja
     private final HashMap<String, Object> results;  // Resultados de las intersecciones
-    private final SchemeHandler schemeHandler = new SchemeHandler();
+    private final JSONHandler jsonHandler = new JSONHandler();
     private final Logger logger = Logger.getLogger(Node.class.getName());
     private Node(String id, int port, ArrayList<String> peers) {
         this.myData = new HashSet<>();
@@ -221,7 +221,7 @@ public final class Node {
 
     private void handleMessage(@NonNull String message) {
         if (message.startsWith("{") && message.contains("peer")) {
-            schemeHandler.handleMessage(message);
+            jsonHandler.handleMessage(message);
         }
         // Podría haber otras operaciones con JSON usando más condiciones
 
@@ -230,7 +230,7 @@ public final class Node {
     public String startIntersection(String deviceId, String cs, String type) {
         Device device = devices.get(deviceId);
         if (device != null) {
-            return schemeHandler.startIntersection(device, deviceId, cs, type);
+            return jsonHandler.startIntersection(device, deviceId, cs, type);
         } else {
             return "Intersection with " + deviceId + " - " + cs + " " + type + " - Device not found";
         }
@@ -335,7 +335,7 @@ public final class Node {
 
     public void launchTest(@NotNull String device, @Nullable Integer tr, @Nullable String impl, @Nullable String type) {
         if (devices.containsKey(device)) {
-            new Thread(() -> schemeHandler.launchTest(devices.get(device), device, tr, impl, type)).start();
+            new Thread(() -> jsonHandler.launchTest(devices.get(device), device, tr, impl, type)).start();
         } else {
             System.out.println("Device not found");
         }
@@ -354,6 +354,6 @@ public final class Node {
     }
 
     public void keygen(@NotNull String s) {
-        schemeHandler.keygen(s);
+        jsonHandler.keygen(s);
     }
 }
