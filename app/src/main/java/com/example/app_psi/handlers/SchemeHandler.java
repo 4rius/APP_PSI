@@ -11,6 +11,8 @@ import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Level;
 
 import static com.example.app_psi.DbConstants.*;
@@ -25,11 +27,22 @@ public class SchemeHandler {
 
     private final Map<CryptoImplementation, CSHandler> CSHandlers = new HashMap<>();
 
-    private final IntersectionHandler intersectionHandler = new IntersectionHandler();
+    private final OPEHandler OPEHandler = new OPEHandler();
+
+    private final DomainPSIHandler domainPSIHandler = new DomainPSIHandler();
+
+    private final OPECAHandler OPECAHandler = new OPECAHandler();
+
+    private final ThreadPoolExecutor executor; // Executor para lanzar hilos
 
     public SchemeHandler() {
         CSHandlers.put(CryptoImplementation.PAILLIER, new PaillierHandler(DFL_BIT_LENGTH));
         CSHandlers.put(CryptoImplementation.DAMGARD_JURIK, new DamgardJurikHandler(DFL_BIT_LENGTH, DFL_EXPANSION_FACTOR));
+        this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+    }
+
+    private void runInBackground(Runnable task) {
+        executor.execute(task);
     }
 
     public String startIntersection(Device device, String peerId, @NonNull String cryptoSystem, String operationType) {
@@ -44,18 +57,24 @@ public class SchemeHandler {
         return intersectionStarter(device, peerId, cryptoSystem, operationType, handler);
     }
 
+    @NonNull
     private String intersectionStarter(Device device, String peerId, @NonNull String cryptoSystem, String operationType, CSHandler handler) {
         if (handler != null) {
-            if (operationType.equals("PSI-Domain")) {
-                return intersectionHandler.intersectionFirstStep(device, peerId, handler);
-            } else if (operationType.equals("PSI-CA") || operationType.equals("OPE")) {
-                return intersectionHandler.OPEIntersectionFirstStep(device, peerId, operationType, handler);
-            } else {
-                throw new IllegalArgumentException("Invalid operation type: " + operationType);
+            switch (operationType) {
+                case "PSI-Domain":
+                    runInBackground(() -> domainPSIHandler.intersectionFirstStep(device, peerId, handler));
+                    break;
+                case "PSI-CA":
+                    runInBackground(() -> OPECAHandler.intersectionFirstStep(device, peerId, handler));
+                    break;
+                case "OPE":
+                    runInBackground(() -> OPEHandler.intersectionFirstStep(device, peerId, handler));
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid operation type: " + operationType);
             }
-        } else {
-            throw new IllegalArgumentException("Invalid cryptoSystem: " + cryptoSystem);
         }
+        return "Intersection started - " + cryptoSystem + " - " + operationType + " - " + peerId;
     }
 
     public void launchTest(Device device, String peerId, @Nullable Integer tr, @Nullable String impl, @Nullable String type) {
@@ -69,12 +88,14 @@ public class SchemeHandler {
             }
         } else {
             for (int i = 0; i < TEST_ROUNDS; i++) {
-                intersectionHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.PAILLIER)));
-                intersectionHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.DAMGARD_JURIK)));
-                intersectionHandler.OPEIntersectionFirstStep(device, peerId, "PSI", Objects.requireNonNull(CSHandlers.get(CryptoImplementation.PAILLIER)));
-                intersectionHandler.OPEIntersectionFirstStep(device, peerId, "PSI", Objects.requireNonNull(CSHandlers.get(CryptoImplementation.DAMGARD_JURIK)));
-                intersectionHandler.OPEIntersectionFirstStep(device, peerId, "PSI-CA", Objects.requireNonNull(CSHandlers.get(CryptoImplementation.PAILLIER)));
-                intersectionHandler.OPEIntersectionFirstStep(device, peerId, "PSI-CA", Objects.requireNonNull(CSHandlers.get(CryptoImplementation.DAMGARD_JURIK)));
+                runInBackground(() -> {
+                    runInBackground(() -> domainPSIHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.PAILLIER))));
+                    runInBackground(() -> domainPSIHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.DAMGARD_JURIK))));
+                    runInBackground(() -> OPECAHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.PAILLIER))));
+                    runInBackground(() -> OPECAHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.DAMGARD_JURIK))));
+                    runInBackground(() -> OPEHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.PAILLIER))));
+                    runInBackground(() -> OPEHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHandlers.get(CryptoImplementation.DAMGARD_JURIK))));
+                });
             }
         }
     }
@@ -86,12 +107,13 @@ public class SchemeHandler {
         CryptoImplementation cryptoImpl = CryptoImplementation.fromString(implementation);
         handler = CSHandlers.get(cryptoImpl);
 
+        assert handler != null;
         if (implementation.contains("PSI-CA")) {
-            intersectionHandler.CAOPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), handler);
+            runInBackground(() -> OPECAHandler.intersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), handler));
         } else if (implementation.contains("OPE")) {
-            intersectionHandler.OPEIntersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), handler);
+            runInBackground(() -> OPEHandler.intersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), handler));
         } else {
-            intersectionHandler.intersectionSecondStep(device, peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), handler);
+            runInBackground(() -> domainPSIHandler.intersectionSecondStep(device, peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), handler));
         }
     }
 
@@ -107,11 +129,11 @@ public class SchemeHandler {
         assert handler != null;
 
         if (cryptoScheme.contains("PSI-CA")) {
-            intersectionHandler.CAOPEIntersectionFinalStep(peerData, handler);
+            runInBackground(() -> OPECAHandler.intersectionFinalStep(peerData, handler));
         } else if (cryptoScheme.contains("OPE")) {
-            intersectionHandler.OPEIntersectionFinalStep(peerData, handler);
+            runInBackground(() -> OPEHandler.intersectionFinalStep(peerData, handler));
         } else {
-            intersectionHandler.intersectionFinalStep(peerData, handler);
+            runInBackground(() -> domainPSIHandler.intersectionFinalStep(peerData, handler));
         }
     }
 

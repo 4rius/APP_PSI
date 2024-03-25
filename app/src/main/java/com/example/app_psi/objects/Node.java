@@ -58,6 +58,7 @@ public final class Node {
         this.peers = peers;
         this.context = new ZContext();
         this.routerSocket = context.createSocket(SocketType.ROUTER);
+        if (id.startsWith("[")) this.routerSocket.setIPv6(true);
         this.routerSocket.bind("tcp://" + id + ":" + port);
         System.out.println("Node " + id + " (You) listening on port " + port);
     }
