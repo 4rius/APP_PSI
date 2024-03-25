@@ -1,5 +1,7 @@
 package com.example.app_psi.implementations;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import java.math.BigInteger;
@@ -31,21 +33,22 @@ public class DamgardJurik implements CryptoSystem {
 
     // Generación de claves
     public void keyGeneration(int bitLength) {
+        int certainty = 64;
         SecureRandom random = new SecureRandom();
         BigInteger p, q;
         do {
-            p = BigInteger.probablePrime(bitLength / 2, random);
-            q = BigInteger.probablePrime(bitLength / 2, random);
+            p = new BigInteger(bitLength / 2, certainty, random);
+            q = new BigInteger(bitLength / 2, certainty, random);
         } while (p.equals(q));
 
         n = p.multiply(q);
-        ns = n.pow(s);
-        nPowSPlusOne = n.pow(s + 1);
+        ns = n.pow(s);  // n^s
+        nPowSPlusOne = n.pow(s + 1);  // n^s+1
         lambda = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE)).divide(p.subtract(BigInteger.ONE).gcd(q.subtract(BigInteger.ONE)));
 
         g = n.add(BigInteger.ONE);
         while (isValidGenerator(g)) {
-            System.out.println("g is not good enough. Trying again...");
+            Log.d("DamgardJurik", "g is not good enough. Trying again...");
             g = g.add(BigInteger.ONE);
         }
     }

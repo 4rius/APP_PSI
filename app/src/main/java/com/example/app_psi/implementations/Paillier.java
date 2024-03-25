@@ -1,12 +1,14 @@
 package com.example.app_psi.implementations;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
 public class Paillier implements CryptoSystem {
-    private BigInteger p, q, lambda; // Variables para almacenar los números primos y lambda
+    private BigInteger lambda; // Variables para almacenar los números primos y lambda
     private BigInteger n; // Clave pública
     private BigInteger nsquare; // n al cuadrado, se usa en el cifrado y descifrado
     private BigInteger g; // Número que se usa en el cifrado y descifrado
@@ -28,25 +30,30 @@ public class Paillier implements CryptoSystem {
     public void keyGeneration(int bitLengthVal) {
         int certainty = 64;
         // Longitud de los números primos
-        SecureRandom r = new SecureRandom();
-        p = new BigInteger(bitLengthVal / 2, certainty, r); // Genera un número primo p
-        q = new BigInteger(bitLengthVal / 2, certainty, r); // Genera un número primo q
-        // Asegurar que p y q son diferentes, sino, n sería primo y se rompería la seguridad del esquema
-        while (q.compareTo(p) == 0) {
-            q = new BigInteger(bitLengthVal / 2, certainty, r);
-        }
+        SecureRandom random = new SecureRandom();
+        BigInteger p, q;
+        do {
+            p = new BigInteger(bitLengthVal / 2, certainty, random);  // Genera un número primo p
+            q = new BigInteger(bitLengthVal / 2, certainty, random);  // Genera un número primo q
+        } while (p.equals(q));  // Asegura que p y q son diferentes, sino, n sería primo y se rompería la seguridad del esquema
+
+
         n = p.multiply(q); // Calcula n = p * q, que se usa como la clave pública
         nsquare = n.multiply(n); // Calcula n al cuadrado
         // Cogemos g como n + 1 para asegurar que g es un número aleatorio en [1, n^2] y para optimizar el cálculo del cifrado y descifrado
         g = n.add(BigInteger.ONE);
         lambda = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE)).divide(
                 p.subtract(BigInteger.ONE).gcd(q.subtract(BigInteger.ONE))); // Calcula lambda
-        // Comprueba si g es válido, si no lo es, termina el programa
+
         // n tiene que poder dividir el orden de g
-        if (g.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).gcd(n).intValue() != 1) {
-            System.out.println("g is not good enough. Trying again...");
-            System.exit(1);
+        while (isValidGenerator(g)) {
+            Log.d("Paillier", "g is not good enough. Trying again...");
+            g = g.add(BigInteger.ONE);
         }
+    }
+
+    private boolean isValidGenerator(BigInteger g) {
+        return !g.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).gcd(n).equals(BigInteger.ONE);
     }
 
     // Cifrado de un número
