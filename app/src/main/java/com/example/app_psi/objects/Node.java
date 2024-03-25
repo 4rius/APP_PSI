@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,6 +48,7 @@ public final class Node {
     private final HashMap<String, Object> results;  // Resultados de las intersecciones
     private final JSONHandler jsonHandler = new JSONHandler();
     private final Logger logger = Logger.getLogger(Node.class.getName());
+    private final ExecutorService executor;
     private Node(String id, int port, ArrayList<String> peers) {
         this.myData = new HashSet<>();
         Random random = new Random();
@@ -60,6 +63,7 @@ public final class Node {
         this.routerSocket = context.createSocket(SocketType.ROUTER);
         if (id.startsWith("[")) this.routerSocket.setIPv6(true);
         this.routerSocket.bind("tcp://" + id + ":" + port);
+        this.executor = Executors.newFixedThreadPool(10);
         System.out.println("Node " + id + " (You) listening on port " + port);
     }
 
@@ -105,24 +109,28 @@ public final class Node {
         while (running) {
             String sender = routerSocket.recvStr();
             String message = routerSocket.recvStr();
-            System.out.println("Node " + id + " (You) received: " + message);
-            String dayTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-            if (message.endsWith("is pinging you!")) {
-                handlePing(sender, message, dayTime);
-            } else if (message.startsWith("DISCOVER:")) {
-                handleDiscovery(message, dayTime);
-            } else if (message.startsWith("DISCOVER_ACK:")) {
-                handleDiscoverAck(message, dayTime);
-            } else if (message.startsWith("{")) {
-                handleMessage(message);
-            } else if (message.startsWith("Added ")) {
-                handleAdded(message, dayTime);
-            } else {
-                handleUnknownMessage(message, dayTime);
-            }
+            executor.submit(() -> handleReceived(sender, message));
         }
         routerSocket.close();
         context.close();
+    }
+
+    private void handleReceived(String sender, @NonNull String message) {
+        System.out.println("Node " + id + " (You) received: " + message);
+        String dayTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        if (message.endsWith("is pinging you!")) {
+            handlePing(sender, message, dayTime);
+        } else if (message.startsWith("DISCOVER:")) {
+            handleDiscovery(message, dayTime);
+        } else if (message.startsWith("DISCOVER_ACK:")) {
+            handleDiscoverAck(message, dayTime);
+        } else if (message.startsWith("{")) {
+            handleMessage(message);
+        } else if (message.startsWith("Added ")) {
+            handleAdded(message, dayTime);
+        } else {
+            handleUnknownMessage(message, dayTime);
+        }
     }
 
     private void handlePing(@NonNull String sender, @NonNull String message, String dayTime) {
