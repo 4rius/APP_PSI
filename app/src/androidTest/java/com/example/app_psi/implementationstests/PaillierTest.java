@@ -5,10 +5,10 @@ import static org.junit.Assert.assertNotEquals;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.example.app_psi.handlers.CSHandler;
-import com.example.app_psi.handlers.PaillierHandler;
+import com.example.app_psi.helpers.CSHelper;
+import com.example.app_psi.helpers.PaillierHelper;
 import com.example.app_psi.implementations.Paillier;
-import com.example.app_psi.helpers.Polynomials;
+import com.example.app_psi.collections.Polynomials;
 import com.google.gson.internal.LinkedTreeMap;
 
 import org.junit.Before;
@@ -27,12 +27,12 @@ import java.util.Set;
 public class PaillierTest {
 
     private Paillier paillier;
-    private CSHandler paillierHandler;
+    private CSHelper paillierHandler;
 
     @Before
     public void setup() {
         paillier = new Paillier(128);
-        paillierHandler = new PaillierHandler(128);
+        paillierHandler = new PaillierHelper(128);
     }
 
     @Test

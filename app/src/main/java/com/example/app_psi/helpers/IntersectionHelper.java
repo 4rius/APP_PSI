@@ -4,7 +4,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.example.app_psi.handlers.CSHandler;
 import com.example.app_psi.objects.Device;
 import com.example.app_psi.objects.Node;
 import com.example.app_psi.proxies.ActivityLogger;
@@ -46,8 +45,8 @@ public abstract class IntersectionHelper {
         return logger;
     }
 
-    public abstract void intersectionFirstStep(Device device, String peerId, @NonNull CSHandler handler);
-    public abstract void intersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, ArrayList<String> data, CSHandler handler);
-    public abstract void intersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, LinkedTreeMap<String, String> data, CSHandler handler);
-    public abstract void intersectionFinalStep(@NonNull LinkedTreeMap<String, Object> peerData, @NonNull CSHandler handler);
+    public abstract void intersectionFirstStep(Device device, String peerId, @NonNull CSHelper handler);
+    public abstract void intersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, ArrayList<String> data, CSHelper handler);
+    public abstract void intersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, LinkedTreeMap<String, String> data, CSHelper handler);
+    public abstract void intersectionFinalStep(@NonNull LinkedTreeMap<String, Object> peerData, @NonNull CSHelper handler);
 }

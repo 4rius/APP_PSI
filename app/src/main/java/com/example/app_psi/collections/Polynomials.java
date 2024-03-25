@@ -1,4 +1,4 @@
-package com.example.app_psi.helpers;
+package com.example.app_psi.collections;
 
 import com.example.app_psi.implementations.CryptoSystem;
 

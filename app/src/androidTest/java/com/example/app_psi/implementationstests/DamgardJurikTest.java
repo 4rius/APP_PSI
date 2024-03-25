@@ -5,10 +5,10 @@ import static org.junit.Assert.assertNotEquals;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.example.app_psi.handlers.CSHandler;
-import com.example.app_psi.handlers.DamgardJurikHandler;
+import com.example.app_psi.helpers.CSHelper;
+import com.example.app_psi.helpers.DamgardJurikHelper;
 import com.example.app_psi.implementations.DamgardJurik;
-import com.example.app_psi.helpers.Polynomials;
+import com.example.app_psi.collections.Polynomials;
 import com.google.gson.internal.LinkedTreeMap;
 
 import org.junit.Before;
@@ -26,13 +26,13 @@ import java.util.Set;
 @RunWith(AndroidJUnit4.class)
 public class DamgardJurikTest {
 
-    private CSHandler damgardJurikHandler;
+    private CSHelper damgardJurikHandler;
     private DamgardJurik damgardJurik;
 
     @Before
     public void setup() {
         damgardJurik = new DamgardJurik(128, 2);
-        damgardJurikHandler = new DamgardJurikHandler(128, 2);
+        damgardJurikHandler = new DamgardJurikHelper(128, 2);
     }
 
     @Test

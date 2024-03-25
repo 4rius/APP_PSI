@@ -1,4 +1,4 @@
-package com.example.app_psi.helpers
+package com.example.app_psi.collections
 
 enum class CryptoImplementation(vararg aliases: String) {
     PAILLIER("Paillier", "Paillier OPE", "Paillier_OPE", "Paillier PSI-CA OPE"),

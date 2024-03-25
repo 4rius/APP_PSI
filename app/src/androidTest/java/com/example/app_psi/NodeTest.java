@@ -1,6 +1,6 @@
 package com.example.app_psi;
 
-import static com.example.app_psi.DbConstants.DFL_SET_SIZE;
+import static com.example.app_psi.collections.DbConstants.DFL_SET_SIZE;
 
 import org.junit.BeforeClass;
 import org.junit.Test;

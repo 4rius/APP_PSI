@@ -5,8 +5,9 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.example.app_psi.helpers.CSHelper;
 import com.example.app_psi.helpers.IntersectionHelper;
-import com.example.app_psi.helpers.Polynomials;
+import com.example.app_psi.collections.Polynomials;
 import com.example.app_psi.objects.Device;
 import com.example.app_psi.objects.Node;
 import com.google.gson.internal.LinkedTreeMap;
@@ -21,7 +22,7 @@ public class OPEHandler extends IntersectionHelper {
         super();
     }
 
-    public void intersectionFirstStep(Device device, String peerId, @NonNull CSHandler handler) {
+    public void intersectionFirstStep(Device device, String peerId, @NonNull CSHelper handler) {
         String impName = handler.getImplementationName();
         getLogger().logStart();
         long startTime = System.currentTimeMillis();
@@ -38,7 +39,7 @@ public class OPEHandler extends IntersectionHelper {
         getLogger().logActivity("INTERSECTION_" + impName + "_OPE_1", (endTime - startTime) / 1000.0, peerId, cpuTime);
     }
 
-    public void intersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, @NonNull ArrayList<String> data, @NonNull CSHandler handler) {
+    public void intersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, @NonNull ArrayList<String> data, @NonNull CSHelper handler) {
         String impName = handler.getImplementationName();
         getLogger().logStart();
         long startTime = System.currentTimeMillis();
@@ -58,12 +59,12 @@ public class OPEHandler extends IntersectionHelper {
     }
 
     @Override
-    public void intersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, LinkedTreeMap<String, String> data, CSHandler handler) {
+    public void intersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, LinkedTreeMap<String, String> data, CSHelper handler) {
         throw new UnsupportedOperationException("Not supported for this implementation");
     }
 
     /** @noinspection unchecked*/
-    public void intersectionFinalStep(@NonNull LinkedTreeMap<String, Object> peerData, @NonNull CSHandler handler) {
+    public void intersectionFinalStep(@NonNull LinkedTreeMap<String, Object> peerData, @NonNull CSHelper handler) {
         String impName = handler.getImplementationName();
         getLogger().logStart();
         long start_time = System.currentTimeMillis();

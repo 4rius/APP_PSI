@@ -1,4 +1,4 @@
-package com.example.app_psi.handlers;
+package com.example.app_psi.helpers;
 
 import androidx.annotation.NonNull;
 
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface CSHandler {
+public interface CSHelper {
 
     LinkedTreeMap<String, BigInteger> encryptMyData(Set<Integer> myData, int domain);
 

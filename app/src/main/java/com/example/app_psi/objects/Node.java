@@ -1,9 +1,9 @@
 package com.example.app_psi.objects;
 
 
-import static com.example.app_psi.DbConstants.DFL_DOMAIN;
-import static com.example.app_psi.DbConstants.DFL_SET_SIZE;
-import static com.example.app_psi.DbConstants.NODE_INIT;
+import static com.example.app_psi.collections.DbConstants.DFL_DOMAIN;
+import static com.example.app_psi.collections.DbConstants.DFL_SET_SIZE;
+import static com.example.app_psi.collections.DbConstants.NODE_INIT;
 
 import android.annotation.SuppressLint;
 

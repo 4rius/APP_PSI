@@ -1,4 +1,4 @@
-package com.example.app_psi
+package com.example.app_psi.collections
 object DbConstants {
 
     // NetworkService

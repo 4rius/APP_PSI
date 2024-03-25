@@ -1,6 +1,9 @@
 package com.example.app_psi.handlers;
 
-import com.example.app_psi.helpers.CryptoImplementation;
+import com.example.app_psi.helpers.CSHelper;
+import com.example.app_psi.collections.CryptoImplementation;
+import com.example.app_psi.helpers.DamgardJurikHelper;
+import com.example.app_psi.helpers.PaillierHelper;
 import com.example.app_psi.implementations.CryptoSystem;
 import com.example.app_psi.objects.Device;
 import com.example.app_psi.objects.Node;
@@ -15,7 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Level;
 
-import static com.example.app_psi.DbConstants.*;
+import static com.example.app_psi.collections.DbConstants.*;
 
 import android.os.Debug;
 
@@ -25,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class JSONHandler {
 
-    private final Map<CryptoImplementation, CSHandler> CSHandlers = new HashMap<>();
+    private final Map<CryptoImplementation, CSHelper> CSHandlers = new HashMap<>();
 
     private final OPEHandler OPEHandler = new OPEHandler();
 
@@ -36,8 +39,8 @@ public class JSONHandler {
     private final ThreadPoolExecutor executor; // Executor para lanzar hilos
 
     public JSONHandler() {
-        CSHandlers.put(CryptoImplementation.PAILLIER, new PaillierHandler(DFL_BIT_LENGTH));
-        CSHandlers.put(CryptoImplementation.DAMGARD_JURIK, new DamgardJurikHandler(DFL_BIT_LENGTH, DFL_EXPANSION_FACTOR));
+        CSHandlers.put(CryptoImplementation.PAILLIER, new PaillierHelper(DFL_BIT_LENGTH));
+        CSHandlers.put(CryptoImplementation.DAMGARD_JURIK, new DamgardJurikHelper(DFL_BIT_LENGTH, DFL_EXPANSION_FACTOR));
         this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
     }
 
@@ -46,7 +49,7 @@ public class JSONHandler {
     }
 
     public String startIntersection(Device device, String peerId, @NonNull String cryptoSystem, String operationType) {
-        CSHandler handler = null;
+        CSHelper handler = null;
         CryptoImplementation cryptoImpl = CryptoImplementation.fromString(cryptoSystem);
         if (cryptoImpl != null) {
             handler = CSHandlers.get(cryptoImpl);
@@ -58,7 +61,7 @@ public class JSONHandler {
     }
 
     @NonNull
-    private String intersectionStarter(Device device, String peerId, @NonNull String cryptoSystem, String operationType, CSHandler handler) {
+    private String intersectionStarter(Device device, String peerId, @NonNull String cryptoSystem, String operationType, CSHelper handler) {
         if (handler != null) {
             switch (operationType) {
                 case "PSI-Domain":
@@ -82,7 +85,7 @@ public class JSONHandler {
             assert tr != null;
             assert type != null;
             CryptoImplementation cryptoImpl = CryptoImplementation.fromString(impl);
-            CSHandler handler = CSHandlers.get(cryptoImpl);
+            CSHelper handler = CSHandlers.get(cryptoImpl);
             for (int i = 0; i < tr; i++) {
                 intersectionStarter(device, peerId, impl, type, handler);
             }
@@ -103,7 +106,7 @@ public class JSONHandler {
     /** @noinspection unchecked*/
     private void handleIntersectionSecondStep(Device device, String peer, String implementation, @NonNull LinkedTreeMap<String, Object> peerData) {
         LinkedTreeMap<String, String> peerPubKey = (LinkedTreeMap<String, String>) peerData.remove("pubkey");
-        CSHandler handler;
+        CSHelper handler;
         CryptoImplementation cryptoImpl = CryptoImplementation.fromString(implementation);
         handler = CSHandlers.get(cryptoImpl);
 
@@ -123,7 +126,7 @@ public class JSONHandler {
             Node.getInstance().getLogger().log(Level.SEVERE, "Missing cryptpscheme field in the final step message");
             return;
         }
-        CSHandler handler;
+        CSHelper handler;
         CryptoImplementation cryptoImpl = CryptoImplementation.fromString(cryptoScheme);
         handler = CSHandlers.get(cryptoImpl);
         assert handler != null;

@@ -5,6 +5,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.example.app_psi.helpers.CSHelper;
 import com.example.app_psi.helpers.IntersectionHelper;
 import com.example.app_psi.objects.Device;
 import com.example.app_psi.objects.Node;
@@ -21,7 +22,7 @@ public class DomainPSIHandler extends IntersectionHelper {
         super();
     }
 
-    public void intersectionFirstStep(Device device, String peerId, @NonNull CSHandler handler) {
+    public void intersectionFirstStep(Device device, String peerId, @NonNull CSHelper handler) {
         String impName = handler.getImplementationName();
         getLogger().logStart();
         long startTime = System.currentTimeMillis();
@@ -37,11 +38,11 @@ public class DomainPSIHandler extends IntersectionHelper {
     }
 
     @Override
-    public void intersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, ArrayList<String> data, CSHandler handler) {
+    public void intersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, ArrayList<String> data, CSHelper handler) {
         throw new UnsupportedOperationException("Not supported for this implementation");
     }
 
-    public void intersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, LinkedTreeMap<String, String> data, @NonNull CSHandler handler) {
+    public void intersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, LinkedTreeMap<String, String> data, @NonNull CSHelper handler) {
         String impName = handler.getImplementationName();
         getLogger().logStart();
         long start_time = System.currentTimeMillis();
@@ -61,7 +62,7 @@ public class DomainPSIHandler extends IntersectionHelper {
 
 
     /** @noinspection unchecked*/
-    public void intersectionFinalStep(@NonNull LinkedTreeMap<String, Object> peerData, @NonNull CSHandler handler) {
+    public void intersectionFinalStep(@NonNull LinkedTreeMap<String, Object> peerData, @NonNull CSHelper handler) {
         String impName = handler.getImplementationName();
         getLogger().logStart();
         long start_time = System.currentTimeMillis();
