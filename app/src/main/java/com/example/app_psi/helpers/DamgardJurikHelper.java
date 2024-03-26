@@ -4,7 +4,6 @@ import static com.example.app_psi.collections.Polynomials.hornerEvalCrypt;
 
 import androidx.annotation.NonNull;
 
-import com.example.app_psi.implementations.CryptoSystem;
 import com.example.app_psi.implementations.DamgardJurik;
 import com.google.gson.internal.LinkedTreeMap;
 
@@ -17,20 +16,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public class DamgardJurikHelper implements CSHelper {
-
-    private final DamgardJurik dj;
+public class DamgardJurikHelper extends CSHelper {
 
     public DamgardJurikHelper(int bitLengthVal, int expansionFactor) {
-        dj = new DamgardJurik(bitLengthVal, expansionFactor);
+        super(new DamgardJurik(bitLengthVal, expansionFactor));
     }
 
     // Operaciones de serialización, deserialización, cifrado de sets y cálculo de intersecciones
     // Serialización clave pública
     public LinkedTreeMap<String, String> serializePublicKey() {
         LinkedTreeMap<String, String> publicKeyDict = new LinkedTreeMap<>();
-        publicKeyDict.put("n", dj.getN().toString());
-        publicKeyDict.put("s", String.valueOf(dj.getS()));
+        publicKeyDict.put("n", ((DamgardJurik)super.getCryptoSystem()).getN().toString());
+        publicKeyDict.put("s", String.valueOf(((DamgardJurik)super.getCryptoSystem()).getS()));
         return publicKeyDict;
     }
 
@@ -95,9 +92,9 @@ public class DamgardJurikHelper implements CSHelper {
         LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();
         for (int element = 0; element < domain; element++) {
             if (!myData.contains(element)) {
-                result.put(Integer.toString(element), dj.Encrypt(BigInteger.ZERO));
+                result.put(Integer.toString(element), super.getCryptoSystem().Encrypt(BigInteger.ZERO));
             } else {
-                result.put(Integer.toString(element), dj.Encrypt(BigInteger.ONE));
+                result.put(Integer.toString(element), super.getCryptoSystem().Encrypt(BigInteger.ONE));
             }
         }
         return result;
@@ -105,9 +102,5 @@ public class DamgardJurikHelper implements CSHelper {
 
     public String getImplementationName() {
         return "DamgardJurik";
-    }
-
-    public CryptoSystem getCryptoSystem() {
-        return dj;
     }
 }

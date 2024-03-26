@@ -4,7 +4,6 @@ import static com.example.app_psi.collections.Polynomials.hornerEvalCrypt;
 
 import androidx.annotation.NonNull;
 
-import com.example.app_psi.implementations.CryptoSystem;
 import com.example.app_psi.implementations.Paillier;
 import com.google.gson.internal.LinkedTreeMap;
 
@@ -17,18 +16,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public class PaillierHelper implements CSHelper {
-
-    private final Paillier paillier;
+public class PaillierHelper extends CSHelper {
 
     public PaillierHelper(int bitLengthVal) {
-        paillier = new Paillier(bitLengthVal);
+        super(new Paillier(bitLengthVal));
     }
 
     // Serializar clave pública
     public LinkedTreeMap<String, String> serializePublicKey() {
         LinkedTreeMap<String, String> publicKeyDict = new LinkedTreeMap<>();
-        publicKeyDict.put("n", paillier.getN().toString());
+        publicKeyDict.put("n", ((Paillier)super.getCryptoSystem()).getN().toString());
         return publicKeyDict;
     }
 
@@ -93,9 +90,9 @@ public class PaillierHelper implements CSHelper {
         LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();
         for (int element = 0; element < domain; element++) {
             if (!myData.contains(element)) {
-                result.put(Integer.toString(element), paillier.Encrypt(BigInteger.ZERO));
+                result.put(Integer.toString(element), super.getCryptoSystem().Encrypt(BigInteger.ZERO));
             } else {
-                result.put(Integer.toString(element), paillier.Encrypt(BigInteger.ONE));
+                result.put(Integer.toString(element), super.getCryptoSystem().Encrypt(BigInteger.ONE));
             }
         }
         return result;
@@ -103,9 +100,5 @@ public class PaillierHelper implements CSHelper {
 
     public String getImplementationName() {
         return "Paillier";
-    }
-
-    public CryptoSystem getCryptoSystem() {
-        return paillier;
     }
 }

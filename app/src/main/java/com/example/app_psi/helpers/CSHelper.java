@@ -11,11 +11,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface CSHelper {
+public abstract class CSHelper {
 
-    LinkedTreeMap<String, BigInteger> encryptMyData(Set<Integer> myData, int domain);
+    private final CryptoSystem cs;
 
-    default ArrayList<BigInteger> encryptRoots(@NonNull List<BigInteger> mySet, CryptoSystem cs) {
+    public CSHelper(CryptoSystem cs) {
+        this.cs = cs;
+    }
+
+    public abstract LinkedTreeMap<String, BigInteger> encryptMyData(Set<Integer> myData, int domain);
+
+    public ArrayList<BigInteger> encryptRoots(@NonNull List<BigInteger> mySet, CryptoSystem cs) {
         ArrayList<BigInteger> result = new ArrayList<>();
         for (BigInteger element : mySet) {
             result.add(cs.Encrypt(element));
@@ -23,17 +29,17 @@ public interface CSHelper {
         return result;
     }
 
-    LinkedTreeMap<String, String> serializePublicKey();
+    public abstract LinkedTreeMap<String, String> serializePublicKey();
 
-    default LinkedTreeMap<String, BigInteger> getEncryptedSet(@NonNull LinkedTreeMap<String, String> serializedEncryptedSet) {
+    public LinkedTreeMap<String, BigInteger> getEncryptedSet(@NonNull LinkedTreeMap<String, String> serializedEncryptedSet) {
         LinkedTreeMap<String, BigInteger> encryptedSet = new LinkedTreeMap<>();
         for (Map.Entry<String, String> entry : serializedEncryptedSet.entrySet()) {
             encryptedSet.put(entry.getKey(), new BigInteger(entry.getValue()));
         }
         return encryptedSet;
     }
-    LinkedTreeMap<String, BigInteger> getMultipliedSet(LinkedTreeMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n);
-    default LinkedTreeMap<String, BigInteger> handleMultipliedSet(LinkedTreeMap<String, String> serializedMultipliedSet, CryptoSystem cs) {
+    public abstract LinkedTreeMap<String, BigInteger> getMultipliedSet(LinkedTreeMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n);
+    public LinkedTreeMap<String, BigInteger> handleMultipliedSet(LinkedTreeMap<String, String> serializedMultipliedSet, CryptoSystem cs) {
         LinkedTreeMap<String, BigInteger> evalMap = getEncryptedSet(serializedMultipliedSet);
         for (Map.Entry<String, BigInteger> entry : evalMap.entrySet()) {
             BigInteger decryptedValue = cs.Decrypt(entry.getValue());
@@ -42,12 +48,12 @@ public interface CSHelper {
         return evalMap;
     }
 
-    LinkedTreeMap<String, BigInteger> reconstructPublicKey(LinkedTreeMap<String, String> peerPubKey);
-    ArrayList<BigInteger> handleOPESecondStep(ArrayList<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n);
+    public abstract LinkedTreeMap<String, BigInteger> reconstructPublicKey(LinkedTreeMap<String, String> peerPubKey);
+    public abstract ArrayList<BigInteger> handleOPESecondStep(ArrayList<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n);
 
-    ArrayList<BigInteger> getEvaluationSet(List<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n);
+    public abstract ArrayList<BigInteger> getEvaluationSet(List<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n);
 
-    default ArrayList<BigInteger> decryptEval(@NonNull ArrayList<BigInteger> encryptedEval, CryptoSystem cs) {
+    public ArrayList<BigInteger> decryptEval(@NonNull ArrayList<BigInteger> encryptedEval, CryptoSystem cs) {
         ArrayList<BigInteger> result = new ArrayList<>();
         for (BigInteger element : encryptedEval) {
             result.add(cs.Decrypt(element));
@@ -55,7 +61,9 @@ public interface CSHelper {
         return result;
     }
 
-    String getImplementationName();
+    public abstract String getImplementationName();
 
-    CryptoSystem getCryptoSystem();
+    public CryptoSystem getCryptoSystem() {
+        return cs;
+    }
 }
