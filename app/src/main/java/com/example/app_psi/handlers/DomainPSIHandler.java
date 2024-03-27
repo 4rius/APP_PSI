@@ -14,6 +14,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class DomainPSIHandler extends IntersectionHandler {
 
@@ -26,6 +27,7 @@ public class DomainPSIHandler extends IntersectionHandler {
         getLogger().logStart();
         long startTime = System.currentTimeMillis();
         long startCpuTime = Debug.threadCpuTimeNanos();
+        assert Node.getInstance() != null;
         Log.d("Node", Node.getInstance().getId() + " (You) - Intersection with " + peerId + " - " + impName);
         LinkedTreeMap<String, BigInteger> encryptedSet = handler.encryptMyData(Node.getInstance().getMyData(), Node.getInstance().getDomain());
         LinkedTreeMap<String, String> publicKeyDict = handler.serializePublicKey();
@@ -49,6 +51,7 @@ public class DomainPSIHandler extends IntersectionHandler {
         LinkedTreeMap<String, BigInteger> peerPubKeyReconstructed = handler.reconstructPublicKey(peerPubKey);
         BigInteger n = peerPubKeyReconstructed.get("n");
         LinkedTreeMap<String, BigInteger> encryptedSet = handler.getEncryptedSet(data);
+        assert Node.getInstance() != null;
         LinkedTreeMap<String, BigInteger> multipliedSet = handler.getMultipliedSet(encryptedSet, Node.getInstance().getMyData(), n);
         System.out.println("Node " + Node.getInstance().getId() + " (You) - Intersection with " + peer + " - Multiplied set: " + multipliedSet);
         sendJsonMessage(device, multipliedSet, impName, "F", null);
@@ -77,7 +80,7 @@ public class DomainPSIHandler extends IntersectionHandler {
             }
         }
         // Guardamos el resultado
-        synchronized (Node.getInstance().getResults()) {
+        synchronized (Objects.requireNonNull(Node.getInstance()).getResults()) {
             Node.getInstance().getResults().put(peer + " " + impName, intersection);
         }
         long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;

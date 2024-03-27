@@ -54,6 +54,7 @@ public class JSONHandler {
         if (cryptoImpl != null) {
             handler = CSHelpers.get(cryptoImpl);
         } else {
+            assert Node.getInstance() != null;
             Node.getInstance().getLogger().log(Level.SEVERE, "Unknown implementation: " + cryptoSystem);
         }
 
@@ -123,6 +124,7 @@ public class JSONHandler {
     public void handleFinalStep(@NonNull LinkedTreeMap<String, Object> peerData) {
         String cryptoScheme = (String) peerData.remove("implementation");
         if (cryptoScheme == null) {
+            assert Node.getInstance() != null;
             Node.getInstance().getLogger().log(Level.SEVERE, "Missing cryptpscheme field in the final step message");
             return;
         }
@@ -150,12 +152,14 @@ public class JSONHandler {
         } else if (peerData.get("step").equals("F")) {
             handleFinalStep(peerData);
         } else {
+            assert Node.getInstance() != null;
             Node.getInstance().getLogger().log(Level.SEVERE, "Invalid message format: " + message);
         }
     }
 
     private void handleSecondStep(@NonNull LinkedTreeMap<String, Object> peerData) {
         String peer = (String) peerData.remove("peer");
+        assert Node.getInstance() != null;
         Device device = Node.getInstance().getDevicesMap().get(peer);
         if (device == null) {
             Node.getInstance().getLogger().log(Level.SEVERE, "Device not found for peer: " + peer);
@@ -180,6 +184,7 @@ public class JSONHandler {
             try {
                 cs = Objects.requireNonNull(CSHelpers.get(CryptoImplementation.fromString(s))).getCryptoSystem();
             } catch (NullPointerException e) {
+                assert Node.getInstance() != null;
                 Node.getInstance().getLogger().log(Level.SEVERE, "Unknown implementation: " + s);
                 return;
             }

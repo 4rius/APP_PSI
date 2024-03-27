@@ -26,6 +26,7 @@ public class OPECAHandler extends IntersectionHandler {
         getLogger().logStart();
         long startTime = System.currentTimeMillis();
         long startCpuTime = Debug.threadCpuTimeNanos(); // Tiempo de CPU al inicio de la operación
+        assert Node.getInstance() != null;
         logIntersectionStart(Node.getInstance().getId(), peerId, impName, "PSI-CA");
         List<Integer> myDataList = new ArrayList<>(Node.getInstance().getMyData());
         List<BigInteger> roots = Polynomials.polyFromRoots(myDataList, BigInteger.valueOf(-1), BigInteger.ONE);
@@ -50,6 +51,7 @@ public class OPECAHandler extends IntersectionHandler {
             coefs.add(new BigInteger(element));
         }
         // Evaluamos el polinomio con las raíces del peer
+        assert Node.getInstance() != null;
         List<Integer> myDataList = new ArrayList<>(Node.getInstance().getMyData());
         ArrayList<BigInteger> encryptedEval = handler.getEvaluationSet(coefs, myDataList, peerPubKeyReconstructed.get("n"));
         System.out.println("Node " + Node.getInstance().getId() + " (You) - PSI-CA with " + peer + " - Encrypted evalutaion: " + encryptedEval);
@@ -87,6 +89,7 @@ public class OPECAHandler extends IntersectionHandler {
                 result++;
             }
         }
+        assert Node.getInstance() != null;
         String id = Node.getInstance().getId();
         synchronized (Node.getInstance().getResults()) {
             Node.getInstance().getResults().put(id + " " + impName + " PSI-CA OPE", result);

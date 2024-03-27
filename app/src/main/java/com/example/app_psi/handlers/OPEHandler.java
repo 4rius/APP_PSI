@@ -14,6 +14,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class OPEHandler extends IntersectionHandler {
 
@@ -26,6 +27,7 @@ public class OPEHandler extends IntersectionHandler {
         getLogger().logStart();
         long startTime = System.currentTimeMillis();
         long startCpuTime = Debug.threadCpuTimeNanos(); // Tiempo de CPU al inicio de la operación
+        assert Node.getInstance() != null;
         logIntersectionStart(Node.getInstance().getId(), peerId, impName, null);
         List<Integer> myDataList = new ArrayList<>(Node.getInstance().getMyData());
         List<BigInteger> roots = Polynomials.polyFromRoots(myDataList, BigInteger.valueOf(-1), BigInteger.ONE);
@@ -47,6 +49,7 @@ public class OPEHandler extends IntersectionHandler {
         for (String element : data) {
             coefs.add(new BigInteger(element));
         }
+        assert Node.getInstance() != null;
         List<Integer> myDataList = new ArrayList<>(Node.getInstance().getMyData());
         ArrayList<BigInteger> encryptedEval = handler.handleOPESecondStep(coefs, myDataList, peerPubKeyReconstructed.get("n"));
         Log.d("Node", Node.getInstance().getId() + " (You) - Intersection with " + peer + " - Encrypted evaluation: " + encryptedEval);
@@ -78,12 +81,13 @@ public class OPEHandler extends IntersectionHandler {
         ArrayList<BigInteger> decryptedEval = handler.decryptEval(encryptedEval, handler.getCryptoSystem());
         List<Integer> intersection = new ArrayList<>();
         for (BigInteger element : decryptedEval) {
+            assert Node.getInstance() != null;
             if (Node.getInstance().getMyData().contains(element.intValue())) {
                 intersection.add(element.intValue());
             }
         }
         // Guardamos el resultado, sincronizada por si se hace un broadcast, que no se vayan a perder resultados
-        synchronized (Node.getInstance().getResults()) {
+        synchronized (Objects.requireNonNull(Node.getInstance()).getResults()) {
             Node.getInstance().getResults().put(peer + " " + impName + " OPE", intersection);
         }
         long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
