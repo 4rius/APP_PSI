@@ -109,7 +109,7 @@ public final class Node {
         }
     }
 
-    public void startRouterSocket() {
+    private void startRouterSocket() {
         while (running) {
             try {
                 String sender = routerSocket.recvStr();
