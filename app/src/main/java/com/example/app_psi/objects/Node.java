@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
+import org.zeromq.ZMQException;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -43,7 +45,7 @@ public final class Node {
     private final ZContext context;
     private final ZMQ.Socket routerSocket;
     private final Map<String, Device> devices = new HashMap<>();
-    private final Set<Integer> myData; // Conjunto de datos del nodo (set de 10 números aleatorios)
+    private final Set<Integer> myData; // Conjunto de datos del nodo
     private int domain = DFL_DOMAIN;  // Dominio de los números aleatorios sobre los que se trabaja
     private final HashMap<String, Object> results;  // Resultados de las intersecciones
     private final JSONHandler jsonHandler = new JSONHandler();
@@ -78,9 +80,11 @@ public final class Node {
         return instance;
     }
 
+    @androidx.annotation.Nullable
+    @Contract(pure = true)
     public static Node getInstance() {
         if (instance == null) {
-            throw new IllegalStateException("Node not initialized");
+            return null;
         }
         return instance;
     }
@@ -105,14 +109,20 @@ public final class Node {
         }
     }
 
-    private void startRouterSocket() {
+    public void startRouterSocket() {
         while (running) {
-            String sender = routerSocket.recvStr();
-            String message = routerSocket.recvStr();
-            executor.submit(() -> handleReceived(sender, message));
+            try {
+                String sender = routerSocket.recvStr();
+                String message = routerSocket.recvStr();
+                if (message == null) continue;
+                executor.submit(() -> handleReceived(sender, message));
+            } catch (ZMQException e) {
+                if (e.getErrorCode() == ZMQ.Error.ETERM.getCode()) {
+                    // Context has been terminated
+                    break;
+                }
+            }
         }
-        routerSocket.close();
-        context.close();
     }
 
     private void handleReceived(String sender, @NonNull String message) {
@@ -148,7 +158,7 @@ public final class Node {
 
     private void handleDiscovery(@NonNull String message, String dayTime) {
         String peer = message.split(" ")[2];
-        if (!devices.containsKey(peer)) addNewDevice(peer, dayTime);
+        if (!devices.containsKey(peer) && !Objects.equals(id, peer)) addNewDevice(peer, dayTime);
         Device device = devices.get(peer);
         assert device != null;
         device.socket.send("DISCOVER_ACK: Node " + id + " acknowledges node " + peer);
@@ -192,10 +202,18 @@ public final class Node {
 
     public void stop() {
         for (Device device : devices.values()) {
+            device.socket.setLinger(0);
             device.socket.close();
         }
+        routerSocket.setLinger(0);
+        routerSocket.close();
+        // Terminate the ZMQ context
+        context.close();
         running = false;
+        // Destroy the instance
+        instance = null;
     }
+
 
     public boolean pingDevice(@NotNull String device) {
         if (devices.containsKey(device)) {
@@ -290,15 +308,19 @@ public final class Node {
                 sockets.add(dealerSocket);
             }
         }
-        // Close all sockets
+        // Close all sockets, the ones that are connected will respond and we will add them then
         Thread.sleep(1000);
-        for (ZMQ.Socket socket : sockets) context.destroySocket(socket);
+        for (ZMQ.Socket socket : sockets) {
+            socket.setLinger(0);
+            socket.close();
+        }
     }
 
     public void modifySetup(int domainSize, int setSize) {
         domain = domainSize;
         myData.clear();
         Random random = new Random();
+        if (setSize > domainSize) return;
         while (myData.size() < setSize) {
             myData.add(random.nextInt(domainSize));
         }
@@ -363,5 +385,9 @@ public final class Node {
 
     public void keygen(@NotNull String s) {
         jsonHandler.keygen(s);
+    }
+
+    public String getPublicKey(@NotNull String cs) {
+        return jsonHandler.getPublicKey(cs);
     }
 }

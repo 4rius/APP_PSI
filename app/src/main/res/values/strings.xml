@@ -56,7 +56,7 @@
     <string name="ip_port_string"><b><i>Network ID: Couldn\'t fetch your ID</i></b></string>
     <string name="port_string">Network port: -</string>
     <string name="ping_string">Ping</string>
-    <string name="no_devices_string">No devices were found</string>
+    <string name="no_devices_string">No devices were found or the node is not running</string>
     <string name="find_intersection">Find intersection - Paillier</string>
     <string name="find_intersection_ElGamal">Find intersection - ElGamal</string>
     <string name="intersect_everyone_paillier">Find every intersection - Paillier</string>
@@ -92,8 +92,7 @@
     <string name="dataset_res">Dataset: %1$s</string>
     <string name="results_ac">Results</string>
     <string name="results_ac_res">Results: %1$s</string>
-    <string name="keys_ac">Keys</string>
-    <string name="keys_ac_res">Public key (n): %1$s\nPrivate key (lambda): %2$s</string>
+    <string name="keys_ac">Public Keys</string>
     <string name="finding_and_connecting_to_the_peers">Finding and connecting to the peers</string>
     <string name="disconnecting_from_the_peers">Disconnecting from the peers</string>
     <string name="added_peer">Added peer %1$s</string>
@@ -107,7 +106,7 @@
     <string name="network_settings">Network settings</string>
     <string name="new_setup_domain_size_set_size">New setup: domain size %1$s, set size %2$s</string>
     <string name="new_keys_are_being_generated">New %1$s keys are being generated</string>
-    <string name="no_netowrk">Couldn\'t find or connect to a network</string>
+    <string name="no_netowrk">Network is disconnected</string>
     <string name="node_started">Node started</string>
     <string name="full_network_identifier">"Full network identifier: "</string>
     <string name="network_status_str">"\nNetwork status: "</string>
@@ -128,4 +127,7 @@
     <string name="choose_type">Select the type of method to use</string>
     <string name="default_test">Launch default test</string>
     <string name="select_implementation_and_test_rounds">Select implementation and test rounds</string>
+    <string name="node_destroyed">Node destroyed</string>
+    <string name="starting_node">Starting node</string>
+    <string name="public_keys">Public Keys recovered:\n%1$s</string>
 </resources>

@@ -196,4 +196,10 @@ public class JSONHandler {
             logger.logActivity("KEYGEN_" + cs.getClass().getSimpleName(), duration / 1000.0, null, cpuTime);
         }).start();
     }
+
+    public String getPublicKey(String cs) {
+        CSHelper handler = CSHelpers.get(CryptoImplementation.fromString(cs));
+        assert handler != null;
+        return handler.serializePublicKey().toString();
+    }
 }

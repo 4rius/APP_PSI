@@ -68,19 +68,19 @@
                 android:importantForAccessibility="no" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/textViewNoDevices"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:visibility="gone"
-            android:text="@string/no_devices_string"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            android:importantForAccessibility="no" />
-
-
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    <!--No hay dispositivos-->
+    <TextView
+        android:id="@+id/textViewNoDevices"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/no_devices_string"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:textAlignment="center"
+        android:visibility="gone"
+        android:importantForAccessibility="no" />
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_button"
         android:layout_width="wrap_content"

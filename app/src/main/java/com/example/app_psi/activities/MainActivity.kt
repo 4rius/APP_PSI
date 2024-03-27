@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity() {
                     startService(Intent(this@MainActivity, LogService::class.java))
                     connected()
                 } else {
+                    clearRV()
                     notConnected()
                 }
                 binding.textViewNetworkId.text =
@@ -49,11 +50,20 @@ class MainActivity : AppCompatActivity() {
                 binding.textViewNetworkPort.text =
                     getString(R.string.network_port, NetworkService.getNode()?.port.toString())
             } else if (intent.action == ACTION_STATUS_UPDATED) {
-                binding.textViewNetworkStatus.text =
-                    getString(R.string.network_status, NetworkService.getStatus())
+                if (NetworkService.getStatus() == "Connected") {
+                    connected()
+                } else {
+                    clearRV()
+                    notConnected()
+                }
                 setupRecyclerView()
             }
         }
+    }
+
+    private fun clearRV() {
+        binding.recyclerView.adapter = null
+        binding.textViewNoDevices.visibility = View.VISIBLE
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -111,21 +121,40 @@ class MainActivity : AppCompatActivity() {
 
             // Configuración de los botones
             buttonConnect.setOnClickListener {
-                NetworkService.findNetwork()
                 bottomSheetDialog.dismiss()
-                Snackbar.make(binding.root,
-                    getString(R.string.finding_and_connecting_to_the_peers), Snackbar.LENGTH_SHORT).show()
+
+                val progressDialog = ProgressDialog(this)
+                progressDialog.setMessage(getString(R.string.starting_node))
+                progressDialog.setCancelable(false)
+                progressDialog.show()
+
+                // No bloquear el hilo principal
+                Thread {
+                    NetworkService.connect()
+
+                    runOnUiThread {
+                        progressDialog.dismiss()
+                        Snackbar.make(binding.root,
+                            getString(R.string.finding_and_connecting_to_the_peers), Snackbar.LENGTH_SHORT).show()
+                    }
+                }.start()
             }
 
             buttonDisconnect.setOnClickListener {
                 NetworkService.disconnect()
                 bottomSheetDialog.dismiss()
                 Snackbar.make(binding.root,
-                    getString(R.string.disconnecting_from_the_peers), Snackbar.LENGTH_SHORT).show()
+                    getString(R.string.node_destroyed), Snackbar.LENGTH_SHORT).show()
             }
 
             buttonMyKeys.setOnClickListener {
-                // TODO: Show the details of every cs
+                val intent = Intent(this, KeysActivity::class.java)
+                val publicKeyPaillier = NetworkService.getNode()?.getPublicKey("Paillier")
+                val publicKeyDamgardJurik = NetworkService.getNode()?.getPublicKey("DamgardJurik")
+                val pubkeys = "Paillier: $publicKeyPaillier\nDamgard Jurik: $publicKeyDamgardJurik"
+                intent.putExtra("publicKey", pubkeys)
+                startActivity(intent)
+                bottomSheetDialog.dismiss()
             }
 
             buttonMyData.setOnClickListener {

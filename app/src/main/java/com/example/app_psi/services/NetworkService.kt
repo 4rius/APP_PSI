@@ -9,9 +9,12 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import com.example.app_psi.R
 import com.example.app_psi.collections.DbConstants.ACTION_SERVICE_CREATED
+import com.example.app_psi.collections.DbConstants.ACTION_STATUS_UPDATED
 import com.example.app_psi.collections.DbConstants.CARDINALITY_DONE
 import com.example.app_psi.collections.DbConstants.DFL_PORT
 import com.example.app_psi.collections.DbConstants.INTERSECTION_STEP_1
@@ -19,7 +22,6 @@ import com.example.app_psi.collections.DbConstants.INTERSECTION_STEP_2
 import com.example.app_psi.collections.DbConstants.INTERSECTION_STEP_F
 import com.example.app_psi.collections.DbConstants.KEYGEN_DONE
 import com.example.app_psi.collections.DbConstants.KEYGEN_ERROR
-import com.example.app_psi.R
 import com.example.app_psi.objects.Node
 import java.net.InetAddress
 import java.net.NetworkInterface
@@ -29,7 +31,6 @@ import java.util.Enumeration
 
 class NetworkService: Service() {
 
-    lateinit var node: Node
     lateinit var id: String
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -75,17 +76,29 @@ class NetworkService: Service() {
         notificationManager.notify(notificationId, notificationBuilder.build())
     }
 
+    private fun createNode() {
+        id = getLocalIp()!!
+        val peers = ArrayList<String>()
+        peers.add("192.168.1.155:5001")
+        peers.add("192.168.1.2:5001")
+        Node.createNode(id, DFL_PORT, peers)
+        Node.getInstance()?.start()
+        val intent = Intent(ACTION_STATUS_UPDATED)
+        sendBroadcast(intent)
+    }
+
+    private fun destroyNode() {
+        Node.getInstance()?.stop()
+        val intent = Intent(ACTION_STATUS_UPDATED)
+        sendBroadcast(intent)
+    }
+
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate() {
         super.onCreate()
         instance = this
-        id = getLocalIp()!!
-        val peers = ArrayList<String>()
-        peers.add("192.168.1.155:5001")
-        peers.add("192.168.1.2:5001")
-        node = Node.createNode(id, DFL_PORT, peers)
-        node.start()
+        createNode()
         // Mandar un broadcast para que la MainActivity sepa que el servicio se ha creado
         val intent = Intent(ACTION_SERVICE_CREATED)
         sendBroadcast(intent)
@@ -121,7 +134,7 @@ class NetworkService: Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        node.stop()
+        Node.getInstance()?.stop()
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -132,66 +145,74 @@ class NetworkService: Service() {
 
         private var instance: NetworkService? = null
 
+
         fun getNode(): Node? {
-            return instance?.node
+            return Node.getInstance()
         }
 
         fun getLastSeen(device: String): String {
-            return instance?.node?.getLastSeen(device) ?: "Unknown"
+            return getNode()?.getLastSeen(device) ?: "Unknown"
         }
 
         fun pingDevice(device: String): Boolean {
-            return instance?.node?.pingDevice(device) ?: false
+            return getNode()?.pingDevice(device) ?: false
         }
 
         fun getStatus(): String {
-            return if (instance == null) "Inactive"
-            else if (instance?.node?.isRunning == true) "Connected"
+            return if (Node.getInstance() == null) "Inactive"
+            else if (getNode()?.isRunning == true) "Connected"
             else "Connecting"
         }
 
-        fun findNetwork() {
-            TODO("Not yet implemented")
+        fun connect() {
+            if (getNode() == null) {
+                instance?.createNode()
+            }
+            else {
+                getNode()?.start()
+            }
+            Log.d("Node", "Node started")
         }
 
         fun disconnect() {
-            TODO("Not yet implemented")
+            if (getNode() != null) instance?.destroyNode()
+            Log.d("Node", "Node destroyed")
         }
 
         fun findIntersectionPaillierDomain(device: String): String {
-            return instance?.node?.startIntersection(device, "Paillier", "PSI-Domain") ?: "Error"
+            return getNode()?.startIntersection(device, "Paillier", "PSI-Domain") ?: "Error"
         }
 
         fun discoverPeers() {
-            instance?.node?.discoverPeers()
+            getNode()?.discoverPeers()
         }
 
         fun findIntersectionDJDomain(s: String) {
-            instance?.node?.startIntersection(s, "DamgardJurik", "PSI-Domain") ?: "Error"
+            getNode()?.startIntersection(s, "DamgardJurik", "PSI-Domain") ?: "Error"
         }
 
         fun findIntersectionPaillierOPE(s: String) {
-            instance?.node?.startIntersection(s, "Paillier", "OPE")
+            getNode()?.startIntersection(s, "Paillier", "OPE")
         }
 
         fun findIntersectionDJOPE(s: String) {
-            instance?.node?.startIntersection(s, "DamgardJurik", "OPE")
+            getNode()?.startIntersection(s, "DamgardJurik", "OPE")
         }
 
         fun findCardinalityPaillier(s: String) {
-            instance?.node?.startIntersection(s, "Paillier", "PSI-CA")
+            getNode()?.startIntersection(s, "Paillier", "PSI-CA")
         }
 
         fun findCardinalityDJ(s: String) {
-            instance?.node?.startIntersection(s, "DamgardJurik", "PSI-CA")
+            getNode()?.startIntersection(s, "DamgardJurik", "PSI-CA")
         }
 
         fun launchTest(s: String, tr: Int? = null, impl: String? = null, type: String? = null) {
-            instance?.node?.launchTest(s, tr, impl, type)
+            getNode()?.launchTest(s, tr, impl, type)
         }
 
         fun keygen(s: String) {
-            instance?.node?.keygen(s)
+            getNode()?.keygen(s)
         }
 
     }

@@ -17,8 +17,7 @@ class KeysActivity : AppCompatActivity() {
         setContentView(R.layout.activity_keys)
         // Get the contents from the extras
         val extras = intent.extras
-        val publicKey = extras?.getString("publicKey")
-        val privateKey = extras?.getString("privateKey")
+        val publicKeys = extras?.getString("publicKey")
         val dataset = extras?.getString("dataset")
         val results = extras?.getString("results")
 
@@ -34,7 +33,7 @@ class KeysActivity : AppCompatActivity() {
             textViewKeyValue.text = getString(R.string.results_ac_res, results)
         } else {
             textViewKeys.text = getString(R.string.keys_ac)
-            textViewKeyValue.text = getString(R.string.keys_ac_res, publicKey, privateKey)
+            textViewKeyValue.text = getString(R.string.public_keys, publicKeys)
         }
 
         buttonGoBack.setOnClickListener {
