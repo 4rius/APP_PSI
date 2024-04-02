@@ -95,7 +95,7 @@
     <string name="keys_ac">Public Keys</string>
     <string name="finding_and_connecting_to_the_peers">Finding and connecting to the peers</string>
     <string name="disconnecting_from_the_peers">Disconnecting from the peers</string>
-    <string name="added_peer">Added peer %1$s</string>
+    <string name="added_peer">Trying to send a discover message to peer %1$s</string>
     <string name="cancel_str">Cancel</string>
     <string name="discovering_peers">Discovering peers...</string>
     <string name="peer_list_updated">Peer list updated</string>
@@ -130,4 +130,8 @@
     <string name="node_destroyed">Node destroyed</string>
     <string name="starting_node">Starting node</string>
     <string name="public_keys">Public Keys recovered:\n%1$s</string>
+    <string name="empty_peer">You can\'t add nothing</string>
+    <string name="cannot_add_yourself">You can\'t add yourself</string>
+    <string name="invalid_ip">Invalid IP</string>
+    <string name="node_not_initialized">Node not initialized</string>
 </resources>

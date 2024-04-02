@@ -10,6 +10,7 @@ import android.content.IntentFilter
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.app_psi.R
@@ -132,6 +133,11 @@ class NetworkService: Service() {
         return null
     }
 
+    private fun isValidIP(peer: String): Boolean {
+        // IPv4 or IPv6
+        return peer.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$".toRegex()) || peer.matches("^\\[.*]$".toRegex())
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         Node.getInstance()?.stop()
@@ -164,6 +170,29 @@ class NetworkService: Service() {
             else "Connecting"
         }
 
+        fun addPeer(peer: String) {
+            if (getNode() == null) {
+                Toast.makeText(instance, R.string.node_not_initialized, Toast.LENGTH_SHORT).show()
+                return
+            }
+            when {
+                peer.isEmpty() -> {
+                    Toast.makeText(instance, R.string.empty_peer, Toast.LENGTH_SHORT).show()
+                }
+                peer == getNode()?.id -> {
+                    Toast.makeText(instance, R.string.cannot_add_yourself, Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+                    if (instance?.isValidIP(peer) == true) {
+                        getNode()?.addPeer(peer)
+                        Toast.makeText(instance, "Added $peer", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(instance, R.string.invalid_ip, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+
         fun connect() {
             if (getNode() == null) {
                 instance?.createNode()
@@ -184,6 +213,10 @@ class NetworkService: Service() {
         }
 
         fun discoverPeers() {
+            if (getNode() == null) {
+                Toast.makeText(instance, R.string.node_not_initialized, Toast.LENGTH_SHORT).show()
+                return
+            }
             getNode()?.discoverPeers()
         }
 
@@ -212,6 +245,10 @@ class NetworkService: Service() {
         }
 
         fun keygen(s: String) {
+            if (getNode() == null) {
+                Toast.makeText(instance, R.string.node_not_initialized, Toast.LENGTH_SHORT).show()
+                return
+            }
             getNode()?.keygen(s)
         }
 

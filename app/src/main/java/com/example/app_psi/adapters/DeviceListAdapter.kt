@@ -69,7 +69,7 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
         }
 
         holder.buttonHide.setOnClickListener {
-            deletePositions.remove(position)
+            deletePositions.add(position)
             notifyItemChanged(position)
         }
 

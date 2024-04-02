@@ -115,7 +115,7 @@ public final class Node {
                 String sender = routerSocket.recvStr();
                 String message = routerSocket.recvStr();
                 if (message == null) continue;
-                executor.submit(() -> handleReceived(sender, message));
+                executor.execute(() -> handleReceived(sender, message));
             } catch (ZMQException e) {
                 if (e.getErrorCode() == ZMQ.Error.ETERM.getCode()) {
                     // Context has been terminated

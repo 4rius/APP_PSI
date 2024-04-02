@@ -11,6 +11,7 @@ import android.content.IntentFilter
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.text.InputType
 import android.view.View
 import android.widget.Button
@@ -184,7 +185,7 @@ class MainActivity : AppCompatActivity() {
 
                 builder.setPositiveButton(getString(R.string.add)) { _, _ ->
                     val peer = editText.text.toString()
-                    NetworkService.getNode()?.addPeer(peer)
+                    NetworkService.addPeer(peer)
                     setupRecyclerView()
                     bottomSheetDialog.dismiss()
                     Snackbar.make(binding.root,
@@ -209,6 +210,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Don't block the UI thread
                 Thread {
+                    Looper.prepare()
                     NetworkService.discoverPeers()
 
                     runOnUiThread {
