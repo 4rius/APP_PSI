@@ -31,7 +31,9 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -65,7 +67,14 @@ public final class Node {
         this.routerSocket = context.createSocket(SocketType.ROUTER);
         if (id.startsWith("[")) this.routerSocket.setIPv6(true);
         this.routerSocket.bind("tcp://" + id + ":" + port);
-        this.executor = Executors.newFixedThreadPool(10);
+        PriorityBlockingQueue<Runnable> queue = new PriorityBlockingQueue<>();
+        this.executor = new ThreadPoolExecutor(
+                10, // Número de hilos
+                10, // Número máximo de hilos
+                1, // Tiempo de vida de los hilos, lo que tardan en morir si están ociosos
+                TimeUnit.MINUTES,
+                queue // Cola de tareas
+        );
         System.out.println("Node " + id + " (You) listening on port " + port);
     }
 
@@ -109,13 +118,16 @@ public final class Node {
         }
     }
 
+
+
     private void startRouterSocket() {
         while (running) {
             try {
                 String sender = routerSocket.recvStr();
                 String message = routerSocket.recvStr();
                 if (message == null) continue;
-                executor.execute(() -> handleReceived(sender, message));
+                // Los JSON tienen menos prioridad que el resto, para responder cuanto antes a otras operaciones
+                executor.execute(new PriorityRunnable(message.startsWith("{") ? 0 : 1, () -> handleReceived(sender, message)));
             } catch (ZMQException e) {
                 if (e.getErrorCode() == ZMQ.Error.ETERM.getCode()) {
                     // Context has been terminated
