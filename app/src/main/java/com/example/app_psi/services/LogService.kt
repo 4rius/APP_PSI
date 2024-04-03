@@ -8,7 +8,6 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
-import com.example.app_psi.BuildConfig
 import com.example.app_psi.collections.DbConstants.DFL_DOMAIN
 import com.example.app_psi.collections.DbConstants.DFL_SET_SIZE
 import com.example.app_psi.collections.DbConstants.INTERSECTION_STEP_1
@@ -29,6 +28,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Properties
 
 
 class LogService: Service() {
@@ -42,8 +42,10 @@ class LogService: Service() {
         // Inicializar FirebaseAuth
         val auth = FirebaseAuth.getInstance()
 
-        val email = BuildConfig.FIREBASE_EMAIL // Obtiene el email desde el archivo de configuración
-        val password = BuildConfig.FIREBASE_PASSWORD // Obtiene la contraseña desde el archivo de configuración
+        // Este archivo no se sube a git, se debe añadir manualmente en la carpeta app/src/main/assets por seguridad
+        val properties = Properties().apply { load(applicationContext.assets.open("FirebaseCredentialsAndroid.properties")) }
+        val email = properties.getProperty("FIREBASE_EMAIL")
+        val password = properties.getProperty("FIREBASE_PASSWORD")
 
         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
             if (it.isSuccessful) {

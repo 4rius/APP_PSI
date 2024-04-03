@@ -17,10 +17,6 @@ android {
         versionName = "1.2 - DEV"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        // Se podrían usar flavours para tener diferentes configuraciones
-        buildConfigField("String", "FIREBASE_EMAIL", "\"s.arias.2020@alumnos.urjc.es\"")
-        buildConfigField("String", "FIREBASE_PASSWORD", "\"T3StPr1v4tE1NterS3ctIon\"")
     }
 
     buildTypes {
