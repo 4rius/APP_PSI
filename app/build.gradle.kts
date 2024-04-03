@@ -17,6 +17,10 @@ android {
         versionName = "1.2 - DEV"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Se podrían usar flavours para tener diferentes configuraciones
+        buildConfigField("String", "FIREBASE_EMAIL", "\"s.arias.2020@alumnos.urjc.es\"")
+        buildConfigField("String", "FIREBASE_PASSWORD", "\"T3StPr1v4tE1NterS3ctIon\"")
     }
 
     buildTypes {
@@ -37,6 +41,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
     packaging {
         resources.excludes.add("META-INF/LICENSE.md")
@@ -70,5 +75,6 @@ dependencies {
     implementation("com.google.firebase:firebase-config-ktx")
     implementation("com.google.firebase:firebase-crashlytics")
     implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth-ktx:22.3.1")
     androidTestImplementation("org.mockito:mockito-core:5.11.0")
 }

@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
+import com.example.app_psi.BuildConfig
 import com.example.app_psi.collections.DbConstants.DFL_DOMAIN
 import com.example.app_psi.collections.DbConstants.DFL_SET_SIZE
 import com.example.app_psi.collections.DbConstants.INTERSECTION_STEP_1
@@ -17,6 +18,7 @@ import com.example.app_psi.collections.DbConstants.KEYGEN_DONE
 import com.example.app_psi.collections.DbConstants.LOG_INTERVAL
 import com.example.app_psi.collections.DbConstants.VERSION
 import com.example.app_psi.objects.Node
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,10 +39,25 @@ class LogService: Service() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        // Inicializar FirebaseAuth
+        val auth = FirebaseAuth.getInstance()
+
+        val email = BuildConfig.FIREBASE_EMAIL // Obtiene el email desde el archivo de configuración
+        val password = BuildConfig.FIREBASE_PASSWORD // Obtiene la contraseña desde el archivo de configuración
+
+        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
+            if (it.isSuccessful) {
+                Log.d("FirebaseAuth", "User logged in")
+                logSetup(DFL_DOMAIN, DFL_SET_SIZE)
+            } else {
+                Log.d("FirebaseAuth", "User not logged in")
+            }
+        }
+
         realtimeDatabase = FirebaseDatabase.getInstance()
-        id = Node.getInstance().id
+
+        id = Node.getInstance()?.id ?: "Unknown"
         generalLog()
-        logSetup(DFL_DOMAIN, DFL_SET_SIZE)
     }
 
     private fun generalLog() {
