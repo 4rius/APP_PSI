@@ -43,17 +43,22 @@ class LogService: Service() {
         val auth = FirebaseAuth.getInstance()
 
         // Este archivo no se sube a git, se debe añadir manualmente en la carpeta app/src/main/assets por seguridad
-        val properties = Properties().apply { load(applicationContext.assets.open("FirebaseCredentialsAndroid.properties")) }
-        val email = properties.getProperty("FIREBASE_EMAIL")
-        val password = properties.getProperty("FIREBASE_PASSWORD")
+        try {
+            val properties = Properties().apply { load(applicationContext.assets.open("FirebaseCredentialsAndroid.properties")) }
+            val email = properties.getProperty("FIREBASE_EMAIL")
+            val password = properties.getProperty("FIREBASE_PASSWORD")
 
-        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
-            if (it.isSuccessful) {
-                Log.d("FirebaseAuth", "User logged in")
-                logSetup(DFL_DOMAIN, DFL_SET_SIZE)
-            } else {
-                Log.d("FirebaseAuth", "User not logged in")
+            auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
+                if (it.isSuccessful) {
+                    Log.d("FirebaseAuth", "User logged in")
+                    logSetup(DFL_DOMAIN, DFL_SET_SIZE)
+                } else {
+                    Log.d("FirebaseAuth", "User not logged in")
+                }
             }
+        } catch (e: Exception) {
+            Log.d("FirebaseAuth", "Error: ${e.message} - The credentials file is likely missing or corrupted.")
+            Log.d("FirebaseAuth", "Accesing the database instance but not logging in. Your logs will not be saved.")
         }
 
         realtimeDatabase = FirebaseDatabase.getInstance()
