@@ -14,7 +14,8 @@ object DbConstants {
 
     // Node
     const val VERSION = "1.2 - DEV"
-    const val DFL_BIT_LENGTH = 2048
+    const val DFL_BIT_LENGTH_PAILLIER = 2048
+    const val DFL_BIT_LENGTH_DAMGARD = 256
     const val DFL_DOMAIN = 500
     const val DFL_SET_SIZE = 50
     const val DFL_EXPANSION_FACTOR = 2

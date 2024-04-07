@@ -39,8 +39,8 @@ public class JSONHandler {
     private final ThreadPoolExecutor executor; // Executor para lanzar hilos
 
     public JSONHandler() {
-        CSHelpers.put(CryptoImplementation.PAILLIER, new PaillierHelper(DFL_BIT_LENGTH));
-        CSHelpers.put(CryptoImplementation.DAMGARD_JURIK, new DamgardJurikHelper(DFL_BIT_LENGTH, DFL_EXPANSION_FACTOR));
+        CSHelpers.put(CryptoImplementation.PAILLIER, new PaillierHelper(DFL_BIT_LENGTH_PAILLIER));
+        CSHelpers.put(CryptoImplementation.DAMGARD_JURIK, new DamgardJurikHelper(DFL_BIT_LENGTH_DAMGARD, DFL_EXPANSION_FACTOR));
         this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
     }
 
