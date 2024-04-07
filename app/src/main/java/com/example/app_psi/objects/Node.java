@@ -377,7 +377,7 @@ public final class Node {
 
     public void launchTest(@NotNull String device, @Nullable Integer tr, @Nullable String impl, @Nullable String type) {
         if (devices.containsKey(device)) {
-            new Thread(() -> jsonHandler.launchTest(devices.get(device), device, tr, impl, type)).start();
+            jsonHandler.launchTest(devices.get(device), device, tr, impl, type);
         } else {
             System.out.println("Device not found");
         }

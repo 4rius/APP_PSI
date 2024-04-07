@@ -7,6 +7,7 @@ import com.example.app_psi.helpers.PaillierHelper;
 import com.example.app_psi.implementations.CryptoSystem;
 import com.example.app_psi.objects.Device;
 import com.example.app_psi.objects.Node;
+import com.example.app_psi.objects.PriorityRunnable;
 import com.example.app_psi.proxies.ActivityLogger;
 import com.example.app_psi.proxies.LogActivityProxy;
 import com.example.app_psi.proxies.RealActivityLogger;
@@ -15,7 +16,9 @@ import com.google.gson.internal.LinkedTreeMap;
 
 import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 import static com.example.app_psi.collections.DbConstants.*;
@@ -41,11 +44,18 @@ public class JSONHandler {
     public JSONHandler() {
         CSHelpers.put(CryptoImplementation.PAILLIER, new PaillierHelper(DFL_BIT_LENGTH_PAILLIER));
         CSHelpers.put(CryptoImplementation.DAMGARD_JURIK, new DamgardJurikHelper(DFL_BIT_LENGTH_DAMGARD, DFL_EXPANSION_FACTOR));
-        this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+        PriorityBlockingQueue<Runnable> queue = new PriorityBlockingQueue<>();
+        this.executor = new ThreadPoolExecutor(
+                10,
+                10,
+                1,
+                TimeUnit.MINUTES,
+                queue
+        );
     }
 
-    private void runInBackground(Runnable task) {
-        executor.execute(task);
+    private void runInBackground(Runnable task, int priority) {
+        executor.execute(new PriorityRunnable(priority, task));
     }
 
     public String startIntersection(Device device, String peerId, @NonNull String cryptoSystem, String operationType) {
@@ -66,13 +76,13 @@ public class JSONHandler {
         if (handler != null) {
             switch (operationType) {
                 case "PSI-Domain":
-                    runInBackground(() -> domainPSIHandler.intersectionFirstStep(device, peerId, handler));
+                    runInBackground(() -> domainPSIHandler.intersectionFirstStep(device, peerId, handler), 0);
                     break;
                 case "PSI-CA":
-                    runInBackground(() -> OPECAHandler.intersectionFirstStep(device, peerId, handler));
+                    runInBackground(() -> OPECAHandler.intersectionFirstStep(device, peerId, handler), 0);
                     break;
                 case "OPE":
-                    runInBackground(() -> OPEHandler.intersectionFirstStep(device, peerId, handler));
+                    runInBackground(() -> OPEHandler.intersectionFirstStep(device, peerId, handler), 0);
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid operation type: " + operationType);
@@ -87,19 +97,34 @@ public class JSONHandler {
             assert type != null;
             CryptoImplementation cryptoImpl = CryptoImplementation.fromString(impl);
             CSHelper handler = CSHelpers.get(cryptoImpl);
-            for (int i = 0; i < tr; i++) {
-                intersectionStarter(device, peerId, impl, type, handler);
+            assert handler != null;
+            switch (type) {
+                case "PSI-Domain":
+                    for (int i = 0; i < tr; i++) {
+                        runInBackground(() -> domainPSIHandler.intersectionFirstStep(device, peerId, handler), 0);
+                    }
+                    break;
+                case "PSI-CA":
+                    for (int i = 0; i < tr; i++) {
+                        runInBackground(() -> OPECAHandler.intersectionFirstStep(device, peerId, handler), 0);
+                    }
+                    break;
+                case "OPE":
+                    for (int i = 0; i < tr; i++) {
+                        runInBackground(() -> OPEHandler.intersectionFirstStep(device, peerId, handler), 0);
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid operation type: " + type);
             }
         } else {
             for (int i = 0; i < TEST_ROUNDS; i++) {
-                runInBackground(() -> {
-                    runInBackground(() -> domainPSIHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.PAILLIER))));
-                    runInBackground(() -> domainPSIHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.DAMGARD_JURIK))));
-                    runInBackground(() -> OPECAHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.PAILLIER))));
-                    runInBackground(() -> OPECAHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.DAMGARD_JURIK))));
-                    runInBackground(() -> OPEHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.PAILLIER))));
-                    runInBackground(() -> OPEHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.DAMGARD_JURIK))));
-                });
+                runInBackground(() -> domainPSIHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.PAILLIER))), 0);
+                runInBackground(() -> domainPSIHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.DAMGARD_JURIK))), 0);
+                runInBackground(() -> OPECAHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.PAILLIER))), 0);
+                runInBackground(() -> OPECAHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.DAMGARD_JURIK))), 0);
+                runInBackground(() -> OPEHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.PAILLIER))), 0);
+                runInBackground(() -> OPEHandler.intersectionFirstStep(device, peerId, Objects.requireNonNull(CSHelpers.get(CryptoImplementation.DAMGARD_JURIK))), 0);
             }
         }
     }
@@ -113,11 +138,11 @@ public class JSONHandler {
 
         assert handler != null;
         if (implementation.contains("PSI-CA")) {
-            runInBackground(() -> OPECAHandler.intersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), handler));
+            runInBackground(() -> OPECAHandler.intersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), handler), 1);
         } else if (implementation.contains("OPE")) {
-            runInBackground(() -> OPEHandler.intersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), handler));
+            runInBackground(() -> OPEHandler.intersectionSecondStep(device, peer, peerPubKey, (ArrayList<String>) peerData.remove("data"), handler), 1);
         } else {
-            runInBackground(() -> domainPSIHandler.intersectionSecondStep(device, peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), handler));
+            runInBackground(() -> domainPSIHandler.intersectionSecondStep(device, peer, peerPubKey, (LinkedTreeMap<String, String>) peerData.remove("data"), handler), 1);
         }
     }
 
@@ -134,11 +159,11 @@ public class JSONHandler {
         assert handler != null;
 
         if (cryptoScheme.contains("PSI-CA")) {
-            runInBackground(() -> OPECAHandler.intersectionFinalStep(peerData, handler));
+            runInBackground(() -> OPECAHandler.intersectionFinalStep(peerData, handler), 2);
         } else if (cryptoScheme.contains("OPE")) {
-            runInBackground(() -> OPEHandler.intersectionFinalStep(peerData, handler));
+            runInBackground(() -> OPEHandler.intersectionFinalStep(peerData, handler), 2);
         } else {
-            runInBackground(() -> domainPSIHandler.intersectionFinalStep(peerData, handler));
+            runInBackground(() -> domainPSIHandler.intersectionFinalStep(peerData, handler), 2);
         }
     }
 

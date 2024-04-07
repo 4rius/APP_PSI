@@ -2,7 +2,7 @@ package com.example.app_psi.objects;
 
 import androidx.annotation.NonNull;
 
-class PriorityRunnable implements Runnable, Comparable<PriorityRunnable> {
+public class PriorityRunnable implements Runnable, Comparable<PriorityRunnable> {
     private final int priority;
     private final Runnable task;
 
