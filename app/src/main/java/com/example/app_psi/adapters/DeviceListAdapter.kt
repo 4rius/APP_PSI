@@ -69,8 +69,8 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
         }
 
         holder.buttonHide.setOnClickListener {
-            deletePositions.add(position)
-            notifyItemChanged(position)
+            // Hide the device from the view
+            holder.itemView.visibility = View.GONE
         }
 
         holder.buttonActions.setOnClickListener {
