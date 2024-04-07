@@ -395,8 +395,8 @@ public final class Node {
         return domain;
     }
 
-    public void keygen(@NotNull String s) {
-        jsonHandler.keygen(s);
+    public void keygen(@NotNull String s, int bitLength) {
+        jsonHandler.keygen(s, bitLength);
     }
 
     public String getPublicKey(@NotNull String cs) {

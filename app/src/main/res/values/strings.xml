@@ -105,7 +105,7 @@
     <string name="damgard_jurik">Damgard Jurik</string>
     <string name="network_settings">Network settings</string>
     <string name="new_setup_domain_size_set_size">New setup: domain size %1$s, set size %2$s</string>
-    <string name="new_keys_are_being_generated">New %1$s keys are being generated</string>
+    <string name="new_keys_are_being_generated">New %1$s keys are being generated, bit length %2$d</string>
     <string name="no_netowrk">Network is disconnected</string>
     <string name="node_started">Node started</string>
     <string name="full_network_identifier">"Full network identifier: "</string>
@@ -122,7 +122,7 @@
     <string name="cardinality_dj">Finding cardinality of the intersection with %1$s using DamgardJurik</string>
     <string name="test_launch_str">A thread is launching test with %1$s - Check logs</string>
     <string name="implementation">Implementation</string>
-    <string name="choose_implementation">Select an available implementation</string>
+    <string name="choose_implementation">Select an available cryptographic scheme</string>
     <string name="test_rounds">Test rounds</string>
     <string name="choose_type">Select the type of method to use</string>
     <string name="default_test">Launch default test</string>
@@ -134,4 +134,10 @@
     <string name="cannot_add_yourself">You can\'t add yourself</string>
     <string name="invalid_ip">Invalid IP</string>
     <string name="node_not_initialized">Node not initialized</string>
+    <string name="bit_length">Bit length</string>
+    <string name="type_bit_length">Bit length of the generated keys</string>
+    <string name="generate_keys">Generate new keys</string>
+    <string name="generate">Generate</string>
+    <string name="bit_length_must_be_a_number">THe bit length must be a number</string>
+    <string name="bit_length_too_small">Minimum bit length is 16</string>
 </resources>

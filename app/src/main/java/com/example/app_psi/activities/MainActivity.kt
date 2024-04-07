@@ -17,6 +17,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -223,19 +224,26 @@ class MainActivity : AppCompatActivity() {
             }
 
             buttonGenerateKeys.setOnClickListener {
-                // Alert box asking if Paillier or ElGamal
                 val builder = AlertDialog.Builder(this)
-                builder.setTitle(getString(R.string.choose_encryption_scheme))
-                builder.setMessage(getString(R.string.selection_scheme_str))
-                builder.setPositiveButton(getString(R.string.paillier)) { _, _ ->
+                val inflater = layoutInflater
+                builder.setTitle(getString(R.string.generate_keys))
+
+                val dialogLayout = inflater.inflate(R.layout.keygen_dialog, null)
+                val spinnerImplementation = dialogLayout.findViewById<android.widget.Spinner>(R.id.spinnerImplementation)
+                val editTextBitLength = dialogLayout.findViewById<EditText>(R.id.editTextBitLength)
+
+                builder.setView(dialogLayout)
+                builder.setPositiveButton(getString(R.string.generate)) { _, _ ->
+                    val scheme = spinnerImplementation.selectedItem.toString()
+                    val bitLength = editTextBitLength.text.toString().toInt()
+                    if (bitLength < 16) {
+                        Toast.makeText(this, getString(R.string.bit_length_too_small), Toast.LENGTH_SHORT).show()
+                        return@setPositiveButton
+                    }
+                    newKeys(scheme, bitLength)
                     bottomSheetDialog.dismiss()
-                    newKeys("Paillier")
                 }
-                builder.setNegativeButton(getString(R.string.damgard_jurik)) { _, _ ->
-                    bottomSheetDialog.dismiss()
-                    newKeys("Damgard Jurik")
-                }
-                builder.setNeutralButton(getString(R.string.cancel_str)) { dialog, _ ->
+                builder.setNegativeButton(getString(R.string.cancel_str)) { dialog, _ ->
                     dialog.cancel()
                     bottomSheetDialog.dismiss()
                 }
@@ -269,17 +277,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun newKeys(scheme: String) {
+    private fun newKeys(scheme: String, bitLength: Int) {
         when (scheme) {
             "Paillier" -> {
-                NetworkService.keygen("Paillier")
+                NetworkService.keygen("Paillier", bitLength)
             }
             "Damgard Jurik" -> {
-                NetworkService.keygen("DamgardJurik")
+                NetworkService.keygen("DamgardJurik", bitLength)
             }
         }
         Snackbar.make(binding.root,
-            getString(R.string.new_keys_are_being_generated, scheme), Snackbar.LENGTH_SHORT)
+            getString(R.string.new_keys_are_being_generated, scheme, bitLength), Snackbar.LENGTH_SHORT)
             .show()
     }
 

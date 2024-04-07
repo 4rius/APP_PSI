@@ -177,7 +177,7 @@ public class JSONHandler {
     }
 
     // Para aprovehcar el logging que tiene IntersectioHandler
-    public void keygen(@NonNull String s) {
+    public void keygen(@NonNull String s, int bitLength) {
         new Thread(() -> {
             ActivityLogger logger = new LogActivityProxy(new RealActivityLogger());
             CryptoSystem cs;
@@ -192,13 +192,13 @@ public class JSONHandler {
             long startTime = System.currentTimeMillis();
             long startCpuTime = Debug.threadCpuTimeNanos();
             Debug.startMethodTracing();
-            cs.keyGeneration(DFL_BIT_LENGTH);
+            cs.keyGeneration(bitLength);
             Debug.stopMethodTracing();
             long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
             long endTime = System.currentTimeMillis();
             long duration = endTime - startTime;
             logger.logStop();
-            logger.logActivity("KEYGEN_" + cs.getClass().getSimpleName(), duration / 1000.0, null, cpuTime);
+            logger.logActivity("KEYGEN_" + cs.getClass().getSimpleName() + "-" + bitLength, duration / 1000.0, null, cpuTime);
         }).start();
     }
 

@@ -244,12 +244,12 @@ class NetworkService: Service() {
             getNode()?.launchTest(s, tr, impl, type)
         }
 
-        fun keygen(s: String) {
+        fun keygen(s: String, bitLength: Int) {
             if (getNode() == null) {
                 Toast.makeText(instance, R.string.node_not_initialized, Toast.LENGTH_SHORT).show()
                 return
             }
-            getNode()?.keygen(s)
+            getNode()?.keygen(s, bitLength)
         }
 
     }
