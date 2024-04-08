@@ -35,6 +35,7 @@ class LogService: Service() {
 
     lateinit var id: String
     lateinit var realtimeDatabase: FirebaseDatabase
+    private var authenticated = false
 
     override fun onCreate() {
         super.onCreate()
@@ -51,6 +52,7 @@ class LogService: Service() {
             auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
                 if (it.isSuccessful) {
                     Log.d("FirebaseAuth", "User logged in")
+                    authenticated = true
                     logSetup(DFL_DOMAIN, DFL_SET_SIZE)
                 } else {
                     Log.d("FirebaseAuth", "User not logged in")
@@ -104,6 +106,7 @@ class LogService: Service() {
 
         @SuppressLint("SimpleDateFormat")
         fun logSetup(domainSize: Int, setSize: Int) {
+            if (!instance?.authenticated!!) return
             val formattedId = NetworkService.getNode()?.id?.replace(".", "-")
             val ref = instance?.realtimeDatabase?.getReference("logs/$formattedId/setup")
             val log = hashMapOf(
@@ -119,6 +122,10 @@ class LogService: Service() {
         }
         @SuppressLint("SimpleDateFormat")
         fun logActivity(acitvityCode: String, time: Any, peer: String?= null, cpuTime: Long) {
+            if (!instance?.authenticated!!) {
+                broadcaster(acitvityCode)
+                return
+            }
             val formattedId = NetworkService.getNode()?.id?.replace(".", "-")
             val timestamp = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date())
             val ref = instance?.realtimeDatabase?.getReference("logs/$formattedId/activities")
@@ -159,7 +166,6 @@ class LogService: Service() {
 
             ref?.push()?.setValue(log)
             Log.d("FirebaseRTDB", "Activity log sent to Firebase - Thread: ${Thread.currentThread().name}")
-            broadcaster(acitvityCode)
         }
 
 
@@ -181,6 +187,10 @@ class LogService: Service() {
 
         @SuppressLint("SimpleDateFormat")
         fun logResult(result: List<Int>?, size: Int, peer: String, implementation: String) {
+            if (!instance?.authenticated!!) {
+                broadcaster("INTERSECTION_STEP_F")
+                return
+            }
             val formattedId = NetworkService.getNode()?.id?.replace(".", "-")
             val timestamp = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date())
             val ref = instance?.realtimeDatabase?.getReference("logs/$formattedId/intersection_results")

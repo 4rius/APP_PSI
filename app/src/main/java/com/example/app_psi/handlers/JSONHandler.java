@@ -1,7 +1,16 @@
 package com.example.app_psi.handlers;
 
-import com.example.app_psi.helpers.CSHelper;
+import static com.example.app_psi.collections.DbConstants.DFL_BIT_LENGTH_DAMGARD;
+import static com.example.app_psi.collections.DbConstants.DFL_BIT_LENGTH_PAILLIER;
+import static com.example.app_psi.collections.DbConstants.DFL_EXPANSION_FACTOR;
+import static com.example.app_psi.collections.DbConstants.TEST_ROUNDS;
+
+import android.os.Debug;
+
+import androidx.annotation.NonNull;
+
 import com.example.app_psi.collections.CryptoImplementation;
+import com.example.app_psi.helpers.CSHelper;
 import com.example.app_psi.helpers.DamgardJurikHelper;
 import com.example.app_psi.helpers.PaillierHelper;
 import com.example.app_psi.implementations.CryptoSystem;
@@ -14,20 +23,16 @@ import com.example.app_psi.proxies.RealActivityLogger;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 
-import java.util.*;
-import java.util.concurrent.Executors;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-
-import static com.example.app_psi.collections.DbConstants.*;
-
-import android.os.Debug;
-
-import androidx.annotation.NonNull;
-
-import org.jetbrains.annotations.Nullable;
 
 public class JSONHandler {
 
