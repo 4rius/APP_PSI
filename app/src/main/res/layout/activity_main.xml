@@ -49,15 +49,6 @@
 
         </LinearLayout>
 
-            <TextView
-                android:id="@+id/textViewTasksDone"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/all_tasks_string"
-                android:textSize="18sp"
-                android:textStyle="italic"
-                android:importantForAccessibility="no" />
-
             <!-- Subtítulo con el id y el puerto -->
             <TextView
                 android:id="@+id/textViewNetworkId"
@@ -92,6 +83,19 @@
                 android:scrollbars="vertical"
                 android:scrollbarStyle="outsideOverlay"
                 android:importantForAccessibility="no" />
+
+            <TextView
+                android:id="@+id/textViewTasksDone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/all_tasks_string"
+                android:textSize="18sp"
+                android:layout_marginBottom="22dp"
+                android:layout_marginEnd="16dp"
+                android:textStyle="italic"
+                android:importantForAccessibility="no" />
+
+
         </LinearLayout>
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

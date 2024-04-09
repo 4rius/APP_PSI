@@ -34,7 +34,6 @@ import com.example.app_psi.services.NetworkService
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.FirebaseApp
-import java.util.concurrent.ThreadPoolExecutor
 
 class MainActivity : AppCompatActivity() {
 
@@ -83,13 +82,11 @@ class MainActivity : AppCompatActivity() {
                 if (executor1.activeCount > 0 || executor2.activeCount > 0) {
                     binding.imageViewExecutorsStatus.setImageResource(R.drawable.baseline_cloud_sync_36)
                     val completedTasks = executor1.completedTaskCount + executor2.completedTaskCount
-                    val pendingTasks = executor1.taskCount + executor2.taskCount
+                    val pendingTasks = executor1.taskCount + executor2.taskCount - completedTasks
                     binding.textViewTasksDone.text = getString(R.string.tasks_done, completedTasks.toString(), pendingTasks.toString())
-                    binding.textViewTasksDone.setTextColor(Color.RED)
                 } else {
                     binding.imageViewExecutorsStatus.setImageResource(R.drawable.baseline_cloud_done_36)
                     binding.textViewTasksDone.text = getString(R.string.all_tasks_string)
-                    binding.textViewTasksDone.setTextColor(Color.BLACK)
                 }
                 // Vuelve a ejecutar el Runnable después de un segundo
                 handler.postDelayed(this, 1000)
