@@ -402,4 +402,12 @@ public final class Node {
     public String getPublicKey(@NotNull String cs) {
         return jsonHandler.getPublicKey(cs);
     }
+
+    @NonNull
+    public ArrayList<ThreadPoolExecutor> getExecutors() {
+        ArrayList<ThreadPoolExecutor> executors = new ArrayList<>();
+        executors.add((ThreadPoolExecutor) executor);
+        executors.add(jsonHandler.getExecutor());
+        return executors;
+    }
 }

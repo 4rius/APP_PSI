@@ -11,8 +11,10 @@ import android.content.IntentFilter
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.os.Looper
 import android.text.InputType
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -22,18 +24,22 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.app_psi.collections.DbConstants.ACTION_SERVICE_CREATED
-import com.example.app_psi.collections.DbConstants.ACTION_STATUS_UPDATED
 import com.example.app_psi.R
 import com.example.app_psi.adapters.DeviceListAdapter
+import com.example.app_psi.collections.DbConstants.ACTION_SERVICE_CREATED
+import com.example.app_psi.collections.DbConstants.ACTION_STATUS_UPDATED
 import com.example.app_psi.databinding.ActivityMainBinding
 import com.example.app_psi.services.LogService
 import com.example.app_psi.services.NetworkService
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.FirebaseApp
+import java.util.concurrent.ThreadPoolExecutor
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var handler: Handler
+    private lateinit var runnable: Runnable
 
     private lateinit var binding: ActivityMainBinding
     private val receiver = object : BroadcastReceiver() {
@@ -63,6 +69,35 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupHandler() {
+        handler = Handler()
+        runnable = object : Runnable {
+            override fun run() {
+                val executors = NetworkService.get_executors()
+                if (executors.size < 2) {
+                    Log.d("MainActivity", "No executors found")
+                    return
+                }
+                val executor1 = executors[0]
+                val executor2 = executors[1]
+                if (executor1.activeCount > 0 || executor2.activeCount > 0) {
+                    binding.imageViewExecutorsStatus.setImageResource(R.drawable.baseline_cloud_sync_36)
+                    val completedTasks = executor1.completedTaskCount + executor2.completedTaskCount
+                    val pendingTasks = executor1.taskCount + executor2.taskCount
+                    binding.textViewTasksDone.text = getString(R.string.tasks_done, completedTasks.toString(), pendingTasks.toString())
+                    binding.textViewTasksDone.setTextColor(Color.RED)
+                } else {
+                    binding.imageViewExecutorsStatus.setImageResource(R.drawable.baseline_cloud_done_36)
+                    binding.textViewTasksDone.text = getString(R.string.all_tasks_string)
+                    binding.textViewTasksDone.setTextColor(Color.BLACK)
+                }
+                // Vuelve a ejecutar el Runnable después de un segundo
+                handler.postDelayed(this, 1000)
+            }
+        }
+        handler.post(runnable)
+    }
+
     private fun clearRV() {
         binding.recyclerView.adapter = null
         binding.textViewNoDevices.visibility = View.VISIBLE
@@ -81,6 +116,7 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(receiver, IntentFilter(ACTION_SERVICE_CREATED), RECEIVER_EXPORTED)
         registerReceiver(receiver, IntentFilter(ACTION_STATUS_UPDATED), RECEIVER_EXPORTED)
         startNetworkService()
+        setupHandler()
         setupFloatingActionButton()
 
         binding.textViewNoDevices.visibility = View.VISIBLE
@@ -346,10 +382,12 @@ class MainActivity : AppCompatActivity() {
         filter.addAction(ACTION_SERVICE_CREATED)
         filter.addAction(ACTION_STATUS_UPDATED)
         registerReceiver(receiver, filter, RECEIVER_EXPORTED)
+        handler.post(runnable)
     }
 
     override fun onPause() {
         super.onPause()
         unregisterReceiver(receiver)
+        handler.removeCallbacks(runnable)
     }
 }

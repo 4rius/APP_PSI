@@ -237,4 +237,8 @@ public class JSONHandler {
         assert handler != null;
         return handler.serializePublicKey().toString();
     }
+
+    public ThreadPoolExecutor getExecutor() {
+        return executor;
+    }
 }

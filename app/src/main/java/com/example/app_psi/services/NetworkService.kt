@@ -24,10 +24,12 @@ import com.example.app_psi.collections.DbConstants.INTERSECTION_STEP_F
 import com.example.app_psi.collections.DbConstants.KEYGEN_DONE
 import com.example.app_psi.collections.DbConstants.KEYGEN_ERROR
 import com.example.app_psi.objects.Node
+import java.io.Serializable
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.SocketException
 import java.util.Enumeration
+import java.util.concurrent.ThreadPoolExecutor
 
 
 class NetworkService: Service() {
@@ -191,6 +193,10 @@ class NetworkService: Service() {
                     }
                 }
             }
+        }
+
+        fun get_executors(): ArrayList<ThreadPoolExecutor> {
+            return Node.getInstance()?.executors ?: ArrayList()
         }
 
         fun connect() {
