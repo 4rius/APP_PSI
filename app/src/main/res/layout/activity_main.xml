@@ -22,32 +22,16 @@
             app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center">
             <!-- Contenido principal, incluyendo el RecyclerView -->
-                <TextView
-                    android:id="@+id/textViewNetworkStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/network_string"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    android:layout_marginTop="16dp"
-                    android:importantForAccessibility="no" />
-
-                <ImageView
-                    android:id="@+id/imageViewExecutorsStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/baseline_cloud_done_36"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginStart="16dp"
-                    android:contentDescription="@string/ops_runnign_in_the_background" />
-
-        </LinearLayout>
+            <TextView
+                android:id="@+id/textViewNetworkStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/network_string"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"
+                android:importantForAccessibility="no" />
 
             <!-- Subtítulo con el id y el puerto -->
             <TextView
@@ -84,14 +68,22 @@
                 android:scrollbarStyle="outsideOverlay"
                 android:importantForAccessibility="no" />
 
+            <ImageView
+                android:id="@+id/imageViewExecutorsStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_cloud_done_36"
+                android:layout_marginEnd="20dp"
+                android:contentDescription="@string/ops_runnign_in_the_background" />
+
             <TextView
                 android:id="@+id/textViewTasksDone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/all_tasks_string"
-                android:textSize="18sp"
+                android:textSize="15sp"
                 android:layout_marginBottom="22dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginEnd="20dp"
                 android:textStyle="italic"
                 android:importantForAccessibility="no" />
 
