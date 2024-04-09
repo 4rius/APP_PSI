@@ -35,7 +35,7 @@ class LogService: Service() {
 
     lateinit var id: String
     lateinit var realtimeDatabase: FirebaseDatabase
-    private var authenticated = false
+    var authenticated = false
 
     override fun onCreate() {
         super.onCreate()

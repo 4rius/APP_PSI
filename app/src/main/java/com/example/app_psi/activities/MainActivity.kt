@@ -136,6 +136,7 @@ class MainActivity : AppCompatActivity() {
 
             // Interfaz de la bottom sheet
             val textViewDetails = bottomSheetView.findViewById<TextView>(R.id.textViewDetails)
+            val textViewFirebaseStatus = bottomSheetView.findViewById<TextView>(R.id.textViewFirebaseStatus)
             val buttonConnect = bottomSheetView.findViewById<Button>(R.id.buttonConnect)
             val buttonDisconnect = bottomSheetView.findViewById<Button>(R.id.buttonDisconnect)
             val buttonMyKeys = bottomSheetView.findViewById<Button>(R.id.buttonMyKeys)
@@ -155,6 +156,13 @@ class MainActivity : AppCompatActivity() {
                 append(NetworkService.getNode()?.port)
                 append(getString(R.string.network_status_str))
                 append(NetworkService.getStatus())
+            }
+
+            // Configuración del estado de Firebase
+            if (LogService.instance?.authenticated == true) {
+                textViewFirebaseStatus.text = getString(R.string.firebase_authenticated)
+            } else {
+                textViewFirebaseStatus.text = getString(R.string.firebase_not_authenticated)
             }
 
             // Configuración de los botones
