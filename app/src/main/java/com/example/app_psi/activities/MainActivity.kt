@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -154,38 +155,49 @@ class MainActivity : AppCompatActivity() {
                 append(getString(R.string.network_status_str))
                 append(NetworkService.getStatus())
             }
+            // Modo oscuro
+            if (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
+                textViewDetails.setTextColor(Color.WHITE)
+            } else {
+                textViewDetails.setTextColor(Color.BLACK)
+            }
 
             // Configuración del estado de Firebase
             if (LogService.instance?.authenticated == true) {
                 textViewFirebaseStatus.text = getString(R.string.firebase_authenticated)
+                textViewFirebaseStatus.setTextColor(Color.GREEN)
             } else {
                 textViewFirebaseStatus.text = getString(R.string.firebase_not_authenticated)
+                textViewFirebaseStatus.setTextColor(Color.YELLOW)
             }
 
             // Configuración de los botones
             buttonConnect.setOnClickListener {
-                bottomSheetDialog.dismiss()
-
-                val progressDialog = ProgressDialog(this)
-                progressDialog.setMessage(getString(R.string.starting_node))
-                progressDialog.setCancelable(false)
-                progressDialog.show()
-
-                // No bloquear el hilo principal
-                Thread {
-                    NetworkService.connect()
-
-                    runOnUiThread {
-                        progressDialog.dismiss()
-                        Snackbar.make(binding.root,
-                            getString(R.string.finding_and_connecting_to_the_peers), Snackbar.LENGTH_SHORT).show()
-                    }
-                }.start()
+                val builder = AlertDialog.Builder(this)
+                val editText = EditText(this)
+                editText.inputType = InputType.TYPE_CLASS_NUMBER
+                builder.setView(editText)
+                builder.setTitle(getString(R.string.port_string_set))
+                builder.setPositiveButton(getString(R.string.connect)) { _, _ ->
+                    bottomSheetDialog.dismiss()
+                    val port = editText.text.toString().toInt()
+                    connectToNetwork(port)
+                }
+                builder.setNegativeButton(getString(R.string.cancel_str)) { dialog, _ ->
+                    dialog.cancel()
+                    bottomSheetDialog.dismiss()
+                }
+                builder.setNeutralButton(getString(R.string.default_port)) { _, _ ->
+                    bottomSheetDialog.dismiss()
+                    connectToNetwork()
+                }
+                builder.show()
             }
 
             buttonDisconnect.setOnClickListener {
                 NetworkService.disconnect()
                 bottomSheetDialog.dismiss()
+                binding.textViewNetworkPort.text = getString(R.string.port_string)
                 Snackbar.make(binding.root,
                     getString(R.string.node_destroyed), Snackbar.LENGTH_SHORT).show()
             }
@@ -394,5 +406,26 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         unregisterReceiver(receiver)
         handler.removeCallbacks(runnable)
+    }
+
+    private fun connectToNetwork(port: Int? = null) {
+        val progressDialog = ProgressDialog(this)
+        progressDialog.setMessage(getString(R.string.starting_node))
+        progressDialog.setCancelable(false)
+        progressDialog.show()
+
+        // No bloquear el hilo principal
+        Thread {
+            Looper.prepare()
+            NetworkService.connect(port)
+
+            runOnUiThread {
+                progressDialog.dismiss()
+                Snackbar.make(binding.root,
+                    getString(R.string.finding_and_connecting_to_the_peers), Snackbar.LENGTH_SHORT).show()
+                binding.textViewNetworkPort.text =
+                    getString(R.string.network_port, NetworkService.getNode()?.port.toString())
+            }
+        }.start()
     }
 }

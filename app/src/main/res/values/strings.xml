@@ -146,4 +146,11 @@
     <string name="tasks_done">Tasks done: %1$s | Tasks pending: %2$s</string>
     <string name="firebase_authenticated">Firebase authenticated - Logging data to the RTDB</string>
     <string name="firebase_not_authenticated">Firebase not authenticated - No logs will be sent to the RTDB</string>
+    <string name="port_string_set">Port where the node will start</string>
+    <string name="port_placeholder">Port</string>
+    <string name="connect">Start node</string>
+    <string name="default_port">Use default port</string>
+    <string name="node_already_initialized">The node is already initialized</string>
+    <string name="start_node">Start node</string>
+    <string name="destroy_node">Destroy node</string>
 </resources>

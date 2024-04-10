@@ -24,7 +24,6 @@ import com.example.app_psi.collections.DbConstants.INTERSECTION_STEP_F
 import com.example.app_psi.collections.DbConstants.KEYGEN_DONE
 import com.example.app_psi.collections.DbConstants.KEYGEN_ERROR
 import com.example.app_psi.objects.Node
-import java.io.Serializable
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.SocketException
@@ -79,12 +78,12 @@ class NetworkService: Service() {
         notificationManager.notify(notificationId, notificationBuilder.build())
     }
 
-    private fun createNode() {
+    private fun createNode(port: Int? = null) {
         id = getLocalIp()!!
         val peers = ArrayList<String>()
         peers.add("192.168.1.155:5001")
         peers.add("192.168.1.2:5001")
-        Node.createNode(id, DFL_PORT, peers)
+        Node.createNode(id, port?: DFL_PORT, peers)
         Node.getInstance()?.start()
         val intent = Intent(ACTION_STATUS_UPDATED)
         sendBroadcast(intent)
@@ -199,12 +198,12 @@ class NetworkService: Service() {
             return Node.getInstance()?.executors ?: ArrayList()
         }
 
-        fun connect() {
+        fun connect(port: Int?) {
             if (getNode() == null) {
-                instance?.createNode()
+                instance?.createNode(port)
             }
             else {
-                getNode()?.start()
+                Toast.makeText(instance, R.string.node_already_initialized, Toast.LENGTH_SHORT).show()
             }
             Log.d("Node", "Node started")
         }

@@ -207,7 +207,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
-            android:text="@string/connect_string" />
+            android:text="@string/start_node" />
 
     </LinearLayout>
 
@@ -230,7 +230,7 @@
             android:layout_height="wrap_content"
             android:backgroundTint="@color/design_default_color_error"
             android:layout_marginStart="2dp"
-            android:text="@string/disconnect_string" />
+            android:text="@string/destroy_node" />
 
     </LinearLayout>
 
