@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity() {
                     binding.imageViewExecutorsStatus.setImageResource(R.drawable.baseline_cloud_sync_36)
                     val completedTasks = executor1.completedTaskCount + executor2.completedTaskCount
                     val pendingTasks = executor1.taskCount + executor2.taskCount - completedTasks
-                    binding.textViewTasksDone.text = getString(R.string.tasks_done, completedTasks.toString(), pendingTasks.toString())
+                    binding.textViewTasksDone.text = getString(R.string.tasks_done, pendingTasks.toString())
                 } else {
                     binding.imageViewExecutorsStatus.setImageResource(R.drawable.baseline_cloud_done_36)
                     binding.textViewTasksDone.text = getString(R.string.all_tasks_string)

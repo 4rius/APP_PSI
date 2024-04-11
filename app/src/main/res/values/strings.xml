@@ -143,7 +143,7 @@
     <string name="ops_runnign_in_the_background">Ops running in the background</string>
     <string name="actions_done" tools:keep="@string/actions_done">All tasks were finished</string>
     <string name="all_tasks_string">No tasks pending</string>
-    <string name="tasks_done">Tasks done: %1$s | Tasks pending: %2$s</string>
+    <string name="tasks_done">Tasks pending: %1$s</string>
     <string name="firebase_authenticated">Firebase authenticated - Logging data to the RTDB</string>
     <string name="firebase_not_authenticated">Firebase not authenticated - No logs will be sent to the RTDB</string>
     <string name="port_string_set">Port where the node will start</string>
