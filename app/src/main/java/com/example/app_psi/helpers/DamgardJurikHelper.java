@@ -1,5 +1,6 @@
 package com.example.app_psi.helpers;
 
+import static com.example.app_psi.collections.DbConstants.DFL_EXPANSION_FACTOR;
 import static com.example.app_psi.collections.Polynomials.hornerEvalCrypt;
 
 import androidx.annotation.NonNull;
@@ -44,7 +45,7 @@ public class DamgardJurikHelper extends CSHelper {
     // Sacar el conjunto multiplicado
     public LinkedTreeMap<String, String> getMultipliedSet(@NonNull LinkedTreeMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n) {
         LinkedTreeMap<String, String> result = new LinkedTreeMap<>();
-        DamgardJurik djsender = new DamgardJurik(n, 2);
+        DamgardJurik djsender = new DamgardJurik(n, DFL_EXPANSION_FACTOR);
         for (Map.Entry<String, BigInteger> entry : encSet.entrySet()) {
             int element = Integer.parseInt(entry.getKey());
             if (!nodeSet.contains(element)) {

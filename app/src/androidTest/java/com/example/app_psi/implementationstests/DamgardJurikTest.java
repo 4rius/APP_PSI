@@ -7,10 +7,10 @@ import android.util.Log;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.example.app_psi.collections.Polynomials;
 import com.example.app_psi.helpers.CSHelper;
 import com.example.app_psi.helpers.DamgardJurikHelper;
 import com.example.app_psi.implementations.DamgardJurik;
-import com.example.app_psi.collections.Polynomials;
 import com.google.gson.internal.LinkedTreeMap;
 
 import org.junit.Before;
@@ -115,13 +115,11 @@ public class DamgardJurikTest {
         Set<Integer> bobSet = new HashSet<>(Arrays.asList(3, 4, 5, 6, 7, 8));
         LinkedTreeMap<String, String> aliceEncryptedSet = damgardJurikHandler.encryptMyData(aliceSet, 10);
 
-        Log.d("Alice", "Alice's encrypted set: " + aliceEncryptedSet);
         // Bob receives and multiplies by 0 or 1
-        LinkedTreeMap<String, String> multEncSet = damgardJurikHandler.getMultipliedSet(damgardJurikHandler.getEncryptedSet(aliceEncryptedSet), bobSet, damgardJurik.getN());
-        Log.d("Bob", "Bob's multiplied set: " + multEncSet);
+        LinkedTreeMap<String, BigInteger> encSet = damgardJurikHandler.getEncryptedSet(aliceEncryptedSet);
+        LinkedTreeMap<String, String> multEncSet = damgardJurikHandler.getMultipliedSet(encSet, bobSet, ((DamgardJurik) damgardJurikHandler.getCryptoSystem()).getN());
         // Alice decrypts the intersection, 1 if the element is in the intersection, 0 otherwise
-        LinkedTreeMap<String, BigInteger> evalMap =damgardJurikHandler.handleMultipliedSet(multEncSet, damgardJurik);
-        Log.d("Alice", "Alice's evaluation map: " + evalMap);
+        LinkedTreeMap<String, BigInteger> evalMap = damgardJurikHandler.handleMultipliedSet(multEncSet, damgardJurikHandler.getCryptoSystem());
         // Cogemos solo los valores que sean 1, que representan la intersección
         List<Integer> intersection = new ArrayList<>();
         for (Map.Entry<String, BigInteger> entry : evalMap.entrySet()) {

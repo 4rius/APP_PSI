@@ -3,10 +3,13 @@ package com.example.app_psi.implementationstests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import android.util.Log;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.example.app_psi.helpers.CSHelper;
 import com.example.app_psi.helpers.PaillierHelper;
+import com.example.app_psi.implementations.DamgardJurik;
 import com.example.app_psi.implementations.Paillier;
 import com.example.app_psi.collections.Polynomials;
 import com.google.gson.internal.LinkedTreeMap;
@@ -113,17 +116,15 @@ public class PaillierTest {
         Set<Integer> bobSet = new HashSet<>(Arrays.asList(3, 4, 5, 6, 7, 8));
         LinkedTreeMap<String, String> aliceEncryptedSet = paillierHandler.encryptMyData(aliceSet, 10);
 
-        LinkedTreeMap<String, BigInteger> desAliceSet = paillierHandler.getEncryptedSet(aliceEncryptedSet);
-
         // Bob receives and multiplies by 0 or 1
-        LinkedTreeMap<String, String> multEncSet = paillierHandler.getMultipliedSet(desAliceSet, bobSet, paillier.getN());
-
+        LinkedTreeMap<String, BigInteger> encSet = paillierHandler.getEncryptedSet(aliceEncryptedSet);
+        LinkedTreeMap<String, String> multEncSet = paillierHandler.getMultipliedSet(encSet, bobSet, ((Paillier) paillierHandler.getCryptoSystem()).getN());
         // Alice decrypts the intersection, 1 if the element is in the intersection, 0 otherwise
-        paillierHandler.handleMultipliedSet(multEncSet, paillier);
+        LinkedTreeMap<String, BigInteger> evalMap = paillierHandler.handleMultipliedSet(multEncSet, paillierHandler.getCryptoSystem());
         // Cogemos solo los valores que sean 1, que representan la intersección
         List<Integer> intersection = new ArrayList<>();
-        for (Map.Entry<String, String> entry : multEncSet.entrySet()) {
-            if (entry.getValue().equals(String.valueOf(BigInteger.ONE))) {
+        for (Map.Entry<String, BigInteger> entry : evalMap.entrySet()) {
+            if (entry.getValue().equals(BigInteger.ONE)) {
                 intersection.add(Integer.parseInt(entry.getKey()));
             }
         }
