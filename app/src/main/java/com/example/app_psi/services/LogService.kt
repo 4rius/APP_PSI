@@ -69,6 +69,10 @@ class LogService: Service() {
         generalLog()
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return START_REDELIVER_INTENT
+    }
+
     private fun generalLog() {
         val handler = Handler(Looper.getMainLooper())
         val logRunnable: Runnable = object : Runnable {

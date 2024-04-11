@@ -40,23 +40,13 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var handler: Handler
     private lateinit var runnable: Runnable
-
     private lateinit var binding: ActivityMainBinding
+
+
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == ACTION_SERVICE_CREATED) {
-                if (NetworkService.getStatus() == "Connected") {
-                    // Encendemos el LogService
-                    startService(Intent(this@MainActivity, LogService::class.java))
-                    connected()
-                } else {
-                    clearRV()
-                    notConnected()
-                }
-                binding.textViewNetworkId.text =
-                    getString(R.string.network_id, NetworkService.getNode()?.id)
-                binding.textViewNetworkPort.text =
-                    getString(R.string.network_port, NetworkService.getNode()?.port.toString())
+                handleServiceCreated()
             } else if (intent.action == ACTION_STATUS_UPDATED) {
                 if (NetworkService.getStatus() == "Connected") {
                     connected()
@@ -69,11 +59,27 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun handleServiceCreated() {
+        binding.swiperefresh.isRefreshing = false
+        if (NetworkService.getStatus() == "Connected") {
+            // Encendemos el LogService, solo si no está encendido
+            if (LogService.instance == null) startService(Intent(this@MainActivity, LogService::class.java))
+            connected()
+        } else {
+            clearRV()
+            notConnected()
+        }
+        binding.textViewNetworkId.text =
+            getString(R.string.network_id, NetworkService.getNode()?.id)
+        binding.textViewNetworkPort.text =
+            getString(R.string.network_port, NetworkService.getNode()?.port.toString())
+    }
+
     private fun setupHandler() {
         handler = Handler()
         runnable = object : Runnable {
             override fun run() {
-                val executors = NetworkService.get_executors()
+                val executors = NetworkService.getExecutors()
                 if (executors.size < 2) {
                     Log.d("MainActivity", "No executors found")
                     return
@@ -111,8 +117,10 @@ class MainActivity : AppCompatActivity() {
 
         FirebaseApp.initializeApp(this)
 
-        registerReceiver(receiver, IntentFilter(ACTION_SERVICE_CREATED), RECEIVER_EXPORTED)
-        registerReceiver(receiver, IntentFilter(ACTION_STATUS_UPDATED), RECEIVER_EXPORTED)
+        val filter = IntentFilter()
+        filter.addAction(ACTION_SERVICE_CREATED)
+        filter.addAction(ACTION_STATUS_UPDATED)
+        registerReceiver(receiver, filter, RECEIVER_EXPORTED)
         startNetworkService()
         setupHandler()
         setupFloatingActionButton()
@@ -391,23 +399,6 @@ class MainActivity : AppCompatActivity() {
         setupRecyclerView()
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    @SuppressLint("UnspecifiedRegisterReceiverFlag")
-    override fun onResume() {
-        super.onResume()
-        val filter = IntentFilter()
-        filter.addAction(ACTION_SERVICE_CREATED)
-        filter.addAction(ACTION_STATUS_UPDATED)
-        registerReceiver(receiver, filter, RECEIVER_EXPORTED)
-        handler.post(runnable)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        unregisterReceiver(receiver)
-        handler.removeCallbacks(runnable)
-    }
-
     private fun connectToNetwork(port: Int? = null) {
         val progressDialog = ProgressDialog(this)
         progressDialog.setMessage(getString(R.string.starting_node))
@@ -427,5 +418,23 @@ class MainActivity : AppCompatActivity() {
                     getString(R.string.network_port, NetworkService.getNode()?.port.toString())
             }
         }.start()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    override fun onResume() {
+        super.onResume()
+        val filter = IntentFilter()
+        filter.addAction(ACTION_SERVICE_CREATED)
+        filter.addAction(ACTION_STATUS_UPDATED)
+        registerReceiver(receiver, filter, RECEIVER_EXPORTED)
+        handler.post(runnable)
+        handleServiceCreated()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(receiver)
+        handler.removeCallbacks(runnable)
     }
 }

@@ -111,6 +111,9 @@ class NetworkService: Service() {
         registerReceiver(receiver, IntentFilter(INTERSECTION_STEP_F), RECEIVER_EXPORTED)
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return START_REDELIVER_INTENT
+    }
     private fun getLocalIp(): String? {
         try {
             val interfaces: Enumeration<NetworkInterface> = NetworkInterface.getNetworkInterfaces()
@@ -194,7 +197,7 @@ class NetworkService: Service() {
             }
         }
 
-        fun get_executors(): ArrayList<ThreadPoolExecutor> {
+        fun getExecutors(): ArrayList<ThreadPoolExecutor> {
             return Node.getInstance()?.executors ?: ArrayList()
         }
 
