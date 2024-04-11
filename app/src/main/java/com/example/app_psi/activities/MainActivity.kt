@@ -152,6 +152,8 @@ class MainActivity : AppCompatActivity() {
             val buttonDiscoverPeers = bottomSheetView.findViewById<Button>(R.id.buttonDiscoverPeers)
             val buttonGenerateKeys = bottomSheetView.findViewById<Button>(R.id.buttonGenerateKeys)
             val buttonChangeSetup = bottomSheetView.findViewById<Button>(R.id.buttonChangeSetup)
+            val buttonFirebase = bottomSheetView.findViewById<Button>(R.id.buttonFirebase)
+            updateFBButtom(buttonFirebase)
 
 
             // Configuración de los detalles
@@ -332,9 +334,24 @@ class MainActivity : AppCompatActivity() {
                 builder.show()
             }
 
+            buttonFirebase.setOnClickListener {
+                toogleFB()
+                bottomSheetDialog.dismiss()
+            }
+
 
 
             bottomSheetDialog.show()
+        }
+    }
+
+    private fun updateFBButtom(buttonFirebase: Button?) {
+        if (LogService.instance?.authenticated == true) {
+            buttonFirebase?.text = getString(R.string.firebase_stop_logging)
+            buttonFirebase?.setBackgroundColor(Color.parseColor("#B00020"))
+        } else {
+            buttonFirebase?.text = getString(R.string.firebase_start_logging)
+            buttonFirebase?.setBackgroundColor(Color.parseColor("#424bf5"))
         }
     }
 
@@ -416,6 +433,34 @@ class MainActivity : AppCompatActivity() {
                     getString(R.string.finding_and_connecting_to_the_peers), Snackbar.LENGTH_SHORT).show()
                 binding.textViewNetworkPort.text =
                     getString(R.string.network_port, NetworkService.getNode()?.port.toString())
+            }
+        }.start()
+    }
+
+    private fun toogleFB() {
+        val progressDialog = ProgressDialog(this)
+        progressDialog.setMessage(getString(R.string.firebase_authenticating))
+        progressDialog.setCancelable(false)
+        progressDialog.show()
+        Thread {
+            val prevStatus = LogService.instance?.authenticated ?: false
+            LogService.instance?.toogleFirebaseAuth()
+            Thread.sleep(2000) // Esperar a que se actualice el estado
+            runOnUiThread {
+                if (LogService.instance?.authenticated == true) {
+                    progressDialog.dismiss()
+                    Snackbar.make(binding.root,
+                        getString(R.string.firebase_authenticated), Snackbar.LENGTH_SHORT).show()
+                } else {
+                    if (prevStatus) {
+                        progressDialog.dismiss()
+                        Snackbar.make(binding.root,
+                            getString(R.string.firebase_not_authenticated), Snackbar.LENGTH_LONG).show()
+                    }
+                    progressDialog.dismiss()
+                    Snackbar.make(binding.root,
+                        getString(R.string.firebase_not_authenticated), Snackbar.LENGTH_SHORT).show()
+                }
             }
         }.start()
     }

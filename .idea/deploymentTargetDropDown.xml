@@ -8,11 +8,21 @@
       <entry key="PaillierTest">
         <State />
       </entry>
-      <entry key="Tests in 'com.example.app_psi'">
-        <State />
-      </entry>
       <entry key="app">
-        <State />
+        <State>
+          <targetSelectedWithDropDown>
+            <Target>
+              <type value="QUICK_BOOT_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="VIRTUAL_DEVICE_PATH" />
+                  <value value="$PROJECT_DIR$/../.android/avd/Pixel_7_Pro_API_34.avd" />
+                </Key>
+              </deviceKey>
+            </Target>
+          </targetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-04-11T17:30:52.938765Z" />
+        </State>
       </entry>
       <entry key="intersectionDomainReturnsCorrectIntersection()">
         <State />

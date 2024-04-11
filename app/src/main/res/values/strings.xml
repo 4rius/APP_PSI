@@ -107,7 +107,7 @@
     <string name="new_setup_domain_size_set_size">New setup: domain size %1$s, set size %2$s</string>
     <string name="new_keys_are_being_generated">New %1$s keys are being generated, bit length %2$d</string>
     <string name="no_netowrk">Network is disconnected</string>
-    <string name="node_started">Node initialized</string>
+    <string name="node_started">The node is up and running</string>
     <string name="full_network_identifier">"Full network identifier: "</string>
     <string name="network_status_str">"\nNetwork status: "</string>
     <string name="add_specific_peer">Add a specific peer</string>
@@ -146,11 +146,16 @@
     <string name="tasks_done">Tasks pending: %1$s</string>
     <string name="firebase_authenticated">Firebase authenticated - Logging data to the RTDB</string>
     <string name="firebase_not_authenticated">Firebase not authenticated - No logs will be sent to the RTDB</string>
-    <string name="port_string_set">Port where the node will start</string>
+    <string name="port_string_set">Port where the node will listen</string>
     <string name="port_placeholder" tools:keep="@string/port_placeholder">Port</string>
     <string name="connect">Start node</string>
     <string name="default_port">Use default port</string>
     <string name="node_already_initialized">The node is already initialized</string>
     <string name="start_node">Start node</string>
     <string name="destroy_node">Destroy node</string>
+    <string name="fb_unauth">Disable Firebase logging</string>
+    <string name="firebase_stop_logging">Stop logging to Firebase RTDB</string>
+    <string name="firebase_start_logging">Start logging to Firebase RTDB</string>
+    <string name="firebase_need_props">This APK either does not contain the required properties file or the RTDB is inaccesible - Not logging to Firebase RTDB</string>
+    <string name="firebase_authenticating">Firebase authentication updating</string>
 </resources>

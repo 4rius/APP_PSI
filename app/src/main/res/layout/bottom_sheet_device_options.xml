@@ -11,7 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/device_specific_actions_string"
-        android:textColor="@color/black"
         android:textAlignment="center"
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -34,6 +33,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
+            android:backgroundTint="@color/bluish"
             android:text="@string/find_intersection" />
 
     </LinearLayout>
@@ -56,6 +56,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
+            android:backgroundTint="@color/bluish"
             android:text="@string/find_intersection_DamgardJurik" />
 
     </LinearLayout>
@@ -78,6 +79,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
+            android:backgroundTint="@color/bluish"
             android:text="@string/find_intersection_ope" />
 
     </LinearLayout>
@@ -100,6 +102,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
+            android:backgroundTint="@color/bluish"
             android:text="@string/find_intersection_dj_ope" />
 
     </LinearLayout>
@@ -122,6 +125,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
+            android:backgroundTint="@color/bluish"
             android:text="@string/find_cardinality_paillier" />
 
     </LinearLayout>
@@ -144,6 +148,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
+            android:backgroundTint="@color/bluish"
             android:text="@string/find_cardinality_DamgardJurik" />
 
     </LinearLayout>
@@ -166,6 +171,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
+            android:backgroundTint="@color/bluish"
             android:text="@string/launch_test" />
 
     </LinearLayout>

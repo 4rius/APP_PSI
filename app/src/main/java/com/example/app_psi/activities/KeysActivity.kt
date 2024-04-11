@@ -1,6 +1,7 @@
 package com.example.app_psi.activities
 
 import android.os.Bundle
+import android.text.method.ScrollingMovementMethod
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -34,6 +35,7 @@ class KeysActivity : AppCompatActivity() {
         } else {
             textViewKeys.text = getString(R.string.keys_ac)
             textViewKeyValue.text = getString(R.string.public_keys, publicKeys)
+            textViewKeyValue.movementMethod = ScrollingMovementMethod()
         }
 
         buttonGoBack.setOnClickListener {

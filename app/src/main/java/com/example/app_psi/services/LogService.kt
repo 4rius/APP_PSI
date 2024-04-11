@@ -40,31 +40,8 @@ class LogService: Service() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-        // Inicializar FirebaseAuth
-        val auth = FirebaseAuth.getInstance()
-
-        // Este archivo no se sube a git, se debe añadir manualmente en la carpeta app/src/main/assets por seguridad
-        try {
-            val properties = Properties().apply { load(applicationContext.assets.open("FirebaseCredentialsAndroid.properties")) }
-            val email = properties.getProperty("FIREBASE_EMAIL")
-            val password = properties.getProperty("FIREBASE_PASSWORD")
-
-            auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
-                if (it.isSuccessful) {
-                    Log.d("FirebaseAuth", "User logged in")
-                    authenticated = true
-                    logSetup(DFL_DOMAIN, DFL_SET_SIZE)
-                } else {
-                    Log.d("FirebaseAuth", "User not logged in")
-                }
-            }
-        } catch (e: Exception) {
-            Log.d("FirebaseAuth", "Error: ${e.message} - The credentials file is likely missing or corrupted.")
-            Log.d("FirebaseAuth", "Accesing the database instance but not logging in. Your logs will not be saved.")
-        }
-
+        fbAuth()
         realtimeDatabase = FirebaseDatabase.getInstance()
-
         id = Node.getInstance()?.id ?: "Unknown"
         generalLog()
     }
@@ -97,6 +74,32 @@ class LogService: Service() {
         return null
     }
 
+    fun toogleFirebaseAuth() {
+        if (authenticated) {
+            FirebaseAuth.getInstance().signOut()
+            authenticated = false
+        } else {
+            fbAuth()
+        }
+    }
+
+    private fun fbAuth() {
+        // Este archivo no se sube a git, se debe añadir manualmente en la carpeta app/src/main/assets por seguridad
+        val properties = Properties().apply { load(applicationContext.assets.open("FirebaseCredentialsAndroid.properties")) }
+        val email = properties.getProperty("FIREBASE_EMAIL")
+        val password = properties.getProperty("FIREBASE_PASSWORD")
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).addOnCompleteListener {
+            if (it.isSuccessful) {
+                Log.d("FirebaseAuth", "User logged in - Firebase RTDB logging enabled")
+                authenticated = true
+                logSetup(DFL_DOMAIN, DFL_SET_SIZE)
+            } else {
+                Log.d("FirebaseAuth", "User not logged in - ${it.exception?.message} - Properties file may be corrupted or missing.")
+                Log.d("FirebaseAuth", "Your logs will not be saved.")
+            }
+        }
+    }
+
     class LoggingObj {
         var ramUsage = ArrayList<Int>()
         var appRamUsage = ArrayList<Int>()
@@ -117,6 +120,8 @@ class LogService: Service() {
                 "id" to instance?.id,
                 "version" to VERSION,
                 "type" to "Android " + android.os.Build.VERSION.RELEASE,
+                "manufacturer" to android.os.Build.MANUFACTURER,
+                "model" to android.os.Build.MODEL,
                 "timestamp" to SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date()),
                 "Domain" to domainSize,
                 "Set_size" to setSize
@@ -154,7 +159,7 @@ class LogService: Service() {
                 "id" to instance?.id,
                 "timestamp" to timestamp,
                 "version" to VERSION,
-                "type" to "Android " + android.os.Build.VERSION.RELEASE,
+                "Details" to "Android " + android.os.Build.VERSION.RELEASE + " - " + android.os.Build.MANUFACTURER + " - " + android.os.Build.MODEL,
                 "activity_code" to acitvityCode,
                 "time" to time,
                 "Avg_RAM" to "$avgRamUsage MB",
