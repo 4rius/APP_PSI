@@ -26,16 +26,6 @@
                 android:textStyle="bold"
                 android:layout_marginBottom="2dp" />
 
-            <ImageView
-                android:id="@+id/imageViewTypeNew"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginBottom="2dp"
-                android:src="@drawable/baseline_new_releases_24"
-                android:visibility="gone"
-                android:importantForAccessibility="no" />
-
         </LinearLayout>
 
         <TextView
@@ -65,6 +55,7 @@
                 android:id="@+id/buttonActions"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:backgroundTint="@color/bluish"
                 android:textColor="@color/white"
                 android:text="@string/actions_string"
                 android:layout_marginStart="6dp"
@@ -74,6 +65,7 @@
                 android:id="@+id/buttonPing"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:backgroundTint="@color/bluish"
                 android:textColor="@color/white"
                 android:text="@string/ping_string"
                 android:layout_marginStart="6dp"

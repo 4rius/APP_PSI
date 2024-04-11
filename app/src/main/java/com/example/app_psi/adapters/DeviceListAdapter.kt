@@ -27,7 +27,6 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
         val buttonHide: Button = view.findViewById(R.id.buttonHide)
         val buttonActions: Button = view.findViewById(R.id.buttonActions)
         val buttonPing: Button = view.findViewById(R.id.buttonPing)
-        val imageViewTypeNew: View = view.findViewById(R.id.imageViewTypeNew)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -98,10 +97,6 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
                 }
             }.start()
         }
-
-
-
-        holder.imageViewTypeNew.visibility = View.GONE // TODO: This
 
     }
 

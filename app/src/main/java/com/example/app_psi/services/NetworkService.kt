@@ -61,7 +61,7 @@ class NetworkService: Service() {
 
     private fun sendNotification(s: String, t: String) {
         val notificationId = 1
-        val channelId = "channel_id"
+        val channelId = "Activities"
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(t)
@@ -71,7 +71,8 @@ class NetworkService: Service() {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, "Channel description", NotificationManager.IMPORTANCE_DEFAULT)
+            // Da igual llamarlo las veces que quiera porque al tener el mismo id, no se crea de nuevo
+            val channel = NotificationChannel(channelId, "Info about activities", NotificationManager.IMPORTANCE_DEFAULT)
             notificationManager.createNotificationChannel(channel)
         }
 

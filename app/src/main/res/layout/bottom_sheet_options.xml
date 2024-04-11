@@ -51,6 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
             android:backgroundTint="@color/bluish"
+            android:textColor="@color/white"
             android:text="@string/my_keys" />
 
     </LinearLayout>
@@ -74,6 +75,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
             android:backgroundTint="@color/bluish"
+            android:textColor="@color/white"
             android:text="@string/results" />
 
     </LinearLayout>
@@ -97,6 +99,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
             android:backgroundTint="@color/bluish"
+            android:textColor="@color/white"
             android:text="@string/my_dataset" />
 
     </LinearLayout>
@@ -120,6 +123,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
             android:backgroundTint="@color/bluish"
+            android:textColor="@color/white"
             android:text="@string/gen_keys" />
 
     </LinearLayout>
@@ -143,6 +147,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
             android:backgroundTint="@color/bluish"
+            android:textColor="@color/white"
             android:text="@string/connect_specific_peer" />
 
     </LinearLayout>
@@ -166,6 +171,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
             android:backgroundTint="@color/bluish"
+            android:textColor="@color/white"
             android:text="@string/discover_peers" />
 
     </LinearLayout>
@@ -189,6 +195,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
             android:backgroundTint="@color/bluish"
+            android:textColor="@color/white"
             android:text="@string/change_setup" />
 
     </LinearLayout>
@@ -212,6 +219,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
             android:backgroundTint="@color/bluish"
+            android:textColor="@color/white"
             android:text="@string/start_node" />
 
     </LinearLayout>
@@ -234,6 +242,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/design_default_color_error"
+            android:textColor="@color/white"
             android:layout_marginStart="2dp"
             android:text="@string/destroy_node" />
 
@@ -258,6 +267,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
             android:backgroundTint="@color/bluish"
+            android:textColor="@color/white"
             android:text="@string/fb_unauth" />
 
     </LinearLayout>
