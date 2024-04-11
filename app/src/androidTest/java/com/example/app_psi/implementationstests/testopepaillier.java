@@ -86,10 +86,6 @@ public class testopepaillier {
     public static List<BigInteger> polyMul(List<BigInteger> coefs1, List<BigInteger> coefs2, BigInteger zero) {
         // Inicializar coefs3 con ceros, nCopies inicializa la lista más eficientemente que add
         List<BigInteger> coefs3 = new ArrayList<>(Collections.nCopies(coefs1.size() + coefs2.size() - 1, zero));
-        /*List<BigInteger> coefs3 = new ArrayList<>();
-        for (int i = 0; i < coefs1.size() + coefs2.size() - 1; i++) {
-            coefs3.add(zero);
-        }*/
         for (int i = 0; i < coefs1.size(); i++) {
             for (int j = 0; j < coefs2.size(); j++) {
                 coefs3.set(i + j, coefs3.get(i + j).add(coefs1.get(i).multiply(coefs2.get(j))));

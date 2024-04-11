@@ -99,10 +99,10 @@ public class PaillierTest {
     @Test
     public void encryptRootsReturnsCorrectlyEncryptedRoots() {
         List<BigInteger> roots = Arrays.asList(BigInteger.valueOf(1), BigInteger.valueOf(2), BigInteger.valueOf(3));
-        List<BigInteger> encryptedRoots = paillierHandler.encryptRoots(roots, paillier);
+        List<String> encryptedRoots = paillierHandler.encryptRoots(roots, paillier);
 
         for (int i = 0; i < roots.size(); i++) {
-            BigInteger decryptedRoot = paillier.Decrypt(encryptedRoots.get(i));
+            BigInteger decryptedRoot = paillier.Decrypt(new BigInteger(encryptedRoots.get(i)));
             assertEquals(roots.get(i), decryptedRoot);
         }
     }
@@ -111,20 +111,19 @@ public class PaillierTest {
     public void intersectionDomainReturnsCorrectIntersection() {
         Set<Integer> aliceSet = new HashSet<>(Arrays.asList(1, 2, 3, 4, 5, 6));
         Set<Integer> bobSet = new HashSet<>(Arrays.asList(3, 4, 5, 6, 7, 8));
-        LinkedTreeMap<String, BigInteger> aliceEncryptedSet = paillierHandler.encryptMyData(aliceSet, 10);
+        LinkedTreeMap<String, String> aliceEncryptedSet = paillierHandler.encryptMyData(aliceSet, 10);
+
+        LinkedTreeMap<String, BigInteger> desAliceSet = paillierHandler.getEncryptedSet(aliceEncryptedSet);
 
         // Bob receives and multiplies by 0 or 1
-        LinkedTreeMap<String, BigInteger> multEncSet = paillierHandler.getMultipliedSet(aliceEncryptedSet, bobSet, paillier.getN());
+        LinkedTreeMap<String, String> multEncSet = paillierHandler.getMultipliedSet(desAliceSet, bobSet, paillier.getN());
 
         // Alice decrypts the intersection, 1 if the element is in the intersection, 0 otherwise
-        for (Map.Entry<String, BigInteger> entry : multEncSet.entrySet()) {
-            BigInteger decryptedValue = paillier.Decrypt(entry.getValue());
-            entry.setValue(decryptedValue);
-        }
+        paillierHandler.handleMultipliedSet(multEncSet, paillier);
         // Cogemos solo los valores que sean 1, que representan la intersección
         List<Integer> intersection = new ArrayList<>();
-        for (Map.Entry<String, BigInteger> entry : multEncSet.entrySet()) {
-            if (entry.getValue().equals(BigInteger.ONE)) {
+        for (Map.Entry<String, String> entry : multEncSet.entrySet()) {
+            if (entry.getValue().equals(String.valueOf(BigInteger.ONE))) {
                 intersection.add(Integer.parseInt(entry.getKey()));
             }
         }
@@ -137,16 +136,20 @@ public class PaillierTest {
         List<Integer> aliceSet = Arrays.asList(1, 2, 3, 4, 5, 6);
         List<Integer> bobSet = Arrays.asList(3, 4, 5, 6, 7, 8);
         List<BigInteger> aliceRoots = Polynomials.polyFromRoots(aliceSet, BigInteger.valueOf(-1), BigInteger.ONE);
-        ArrayList<BigInteger> aliceEncRoots = paillierHandler.encryptRoots(aliceRoots, paillier);
+        ArrayList<String> aliceEncRoots = paillierHandler.encryptRoots(aliceRoots, paillier);
 
         // Bob receives and evaluates
-        ArrayList<BigInteger> bobEval;
-        bobEval = paillierHandler.handleOPESecondStep(aliceEncRoots, bobSet, paillier.getN());
+        ArrayList<BigInteger> coefs = new ArrayList<>();
+        for (String element : aliceEncRoots) {
+            coefs.add(new BigInteger(element));
+        }
+        ArrayList<String> bobEval;
+        bobEval = paillierHandler.handleOPESecondStep(coefs, bobSet, paillier.getN());
 
         // Alice decrypts and figures out the intersection
         ArrayList<BigInteger> decEval = new ArrayList<>();
-        for (BigInteger eval : bobEval) {
-            decEval.add(paillier.Decrypt(eval));
+        for (String eval : bobEval) {
+            decEval.add(paillier.Decrypt(new BigInteger(eval)));
         }
         List<Integer> intersection = new ArrayList<>();
         for (BigInteger element : decEval) {

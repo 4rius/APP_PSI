@@ -19,12 +19,12 @@ public abstract class CSHelper {
         this.cs = cs;
     }
 
-    public abstract LinkedTreeMap<String, BigInteger> encryptMyData(Set<Integer> myData, int domain);
+    public abstract LinkedTreeMap<String, String> encryptMyData(Set<Integer> myData, int domain);
 
-    public ArrayList<BigInteger> encryptRoots(@NonNull List<BigInteger> mySet, CryptoSystem cs) {
-        ArrayList<BigInteger> result = new ArrayList<>();
+    public ArrayList<String> encryptRoots(@NonNull List<BigInteger> mySet, CryptoSystem cs) {
+        ArrayList<String> result = new ArrayList<>();
         for (BigInteger element : mySet) {
-            result.add(cs.Encrypt(element));
+            result.add(String.valueOf(cs.Encrypt(element)));
         }
         return result;
     }
@@ -38,7 +38,7 @@ public abstract class CSHelper {
         }
         return encryptedSet;
     }
-    public abstract LinkedTreeMap<String, BigInteger> getMultipliedSet(LinkedTreeMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n);
+    public abstract LinkedTreeMap<String, String> getMultipliedSet(LinkedTreeMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n);
     public LinkedTreeMap<String, BigInteger> handleMultipliedSet(LinkedTreeMap<String, String> serializedMultipliedSet, CryptoSystem cs) {
         LinkedTreeMap<String, BigInteger> evalMap = getEncryptedSet(serializedMultipliedSet);
         for (Map.Entry<String, BigInteger> entry : evalMap.entrySet()) {
@@ -49,9 +49,9 @@ public abstract class CSHelper {
     }
 
     public abstract LinkedTreeMap<String, BigInteger> reconstructPublicKey(LinkedTreeMap<String, String> peerPubKey);
-    public abstract ArrayList<BigInteger> handleOPESecondStep(ArrayList<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n);
+    public abstract ArrayList<String> handleOPESecondStep(ArrayList<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n);
 
-    public abstract ArrayList<BigInteger> getEvaluationSet(List<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n);
+    public abstract ArrayList<String> getEvaluationSet(List<BigInteger> encryptedCoeff, List<Integer> mySet, BigInteger n);
 
     public ArrayList<BigInteger> decryptEval(@NonNull ArrayList<BigInteger> encryptedEval, CryptoSystem cs) {
         ArrayList<BigInteger> result = new ArrayList<>();

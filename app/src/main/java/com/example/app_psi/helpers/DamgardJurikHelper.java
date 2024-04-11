@@ -42,23 +42,23 @@ public class DamgardJurikHelper extends CSHelper {
     }
 
     // Sacar el conjunto multiplicado
-    public LinkedTreeMap<String, BigInteger> getMultipliedSet(@NonNull LinkedTreeMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n) {
-        LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();
+    public LinkedTreeMap<String, String> getMultipliedSet(@NonNull LinkedTreeMap<String, BigInteger> encSet, Set<Integer> nodeSet, BigInteger n) {
+        LinkedTreeMap<String, String> result = new LinkedTreeMap<>();
         DamgardJurik djsender = new DamgardJurik(n, 2);
         for (Map.Entry<String, BigInteger> entry : encSet.entrySet()) {
             int element = Integer.parseInt(entry.getKey());
             if (!nodeSet.contains(element)) {
                 BigInteger encryptedZero = djsender.Encrypt(BigInteger.ZERO);
-                result.put(entry.getKey(), encryptedZero);
+                result.put(entry.getKey(), String.valueOf(encryptedZero));
             } else {
-                result.put(entry.getKey(), djsender.multiplyEncryptedByScalar(entry.getValue(), BigInteger.ONE));
+                result.put(entry.getKey(), String.valueOf(djsender.multiplyEncryptedByScalar(entry.getValue(), BigInteger.ONE)));
             }
         }
         return result;
     }
 
-    public ArrayList<BigInteger> handleOPESecondStep(ArrayList<BigInteger> encryptedCoeff, @NonNull List<Integer> mySet, BigInteger n) {
-        ArrayList<BigInteger> encryptedResult = new ArrayList<>();
+    public ArrayList<String> handleOPESecondStep(ArrayList<BigInteger> encryptedCoeff, @NonNull List<Integer> mySet, BigInteger n) {
+        ArrayList<String> encryptedResult = new ArrayList<>();
         SecureRandom rand = new SecureRandom();
         DamgardJurik PeerPubKey = new DamgardJurik(n, 2);
         for (Integer element : mySet) {
@@ -67,13 +67,13 @@ public class DamgardJurikHelper extends CSHelper {
             BigInteger result = PeerPubKey.Encrypt(BigInteger.valueOf(element));
             BigInteger mult = PeerPubKey.multiplyEncryptedByScalar(Epbj, rb);
             result = PeerPubKey.addEncryptedNumbers(result, mult);
-            encryptedResult.add(result);
+            encryptedResult.add(result.toString());
         }
         return encryptedResult;
     }
 
-    public ArrayList<BigInteger> getEvaluationSet(List<BigInteger> encryptedCoeff, @NonNull List<Integer> mySet, BigInteger n) {
-        ArrayList<BigInteger> evaluations = new ArrayList<>();
+    public ArrayList<String> getEvaluationSet(List<BigInteger> encryptedCoeff, @NonNull List<Integer> mySet, BigInteger n) {
+        ArrayList<String> evaluations = new ArrayList<>();
         DamgardJurik PeerPubKey = new DamgardJurik(n, 2);
         SecureRandom rand = new SecureRandom();
         for (Integer element : mySet) {
@@ -81,20 +81,20 @@ public class DamgardJurikHelper extends CSHelper {
             BigInteger Epbj = hornerEvalCrypt(encryptedCoeff, BigInteger.valueOf(element), PeerPubKey);
             BigInteger mult = PeerPubKey.multiplyEncryptedByScalar(Epbj, rb);
             BigInteger result = PeerPubKey.addEncryptedNumbers(PeerPubKey.Encrypt(BigInteger.valueOf(0)), mult);
-            evaluations.add(result);
+            evaluations.add(result.toString());
         }
         // Shuffle the evaluations
         Collections.shuffle(evaluations, new SecureRandom());
         return evaluations;
     }
 
-    public LinkedTreeMap<String, BigInteger> encryptMyData(Set<Integer> myData, int domain) {
-        LinkedTreeMap<String, BigInteger> result = new LinkedTreeMap<>();
+    public LinkedTreeMap<String, String> encryptMyData(Set<Integer> myData, int domain) {
+        LinkedTreeMap<String, String> result = new LinkedTreeMap<>();
         for (int element = 0; element < domain; element++) {
             if (!myData.contains(element)) {
-                result.put(Integer.toString(element), super.getCryptoSystem().Encrypt(BigInteger.ZERO));
+                result.put(Integer.toString(element), String.valueOf(super.getCryptoSystem().Encrypt(BigInteger.ZERO)));
             } else {
-                result.put(Integer.toString(element), super.getCryptoSystem().Encrypt(BigInteger.ONE));
+                result.put(Integer.toString(element), String.valueOf(super.getCryptoSystem().Encrypt(BigInteger.ONE)));
             }
         }
         return result;

@@ -335,7 +335,7 @@ class MainActivity : AppCompatActivity() {
             "Paillier" -> {
                 NetworkService.keygen("Paillier", bitLength)
             }
-            "Damgard Jurik" -> {
+            "DamgardJurik" -> {
                 NetworkService.keygen("DamgardJurik", bitLength)
             }
         }

@@ -1,13 +1,13 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">PSI-Suite</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
+    <string name="first_fragment_label" tools:keep="@string/first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label" tools:keep="@string/second_fragment_label">Second Fragment</string>
+    <string name="next" tools:keep="@string/next">Next</string>
+    <string name="previous" tools:keep="@string/previous">Previous</string>
 
-    <string name="lorem_ipsum">
+    <string name="lorem_ipsum" tools:keep="@string/lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
         volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus
         dui nec risus. Maecenas non sodales nisi, vel dictum dolor. Class aptent taciti sociosqu ad
@@ -44,10 +44,10 @@
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
     <string name="actions_string">Actions</string>
-    <string name="large_msg_string">Send large message (10MB)</string>
-    <string name="small_msg_string"><![CDATA[Send small file (<1MB)]]></string>
-    <string name="connect_string">Connect to the network</string>
-    <string name="disconnect_string">Disconnect from the network</string>
+    <string name="large_msg_string" tools:keep="@string/large_msg_string">Send large message (10MB)</string>
+    <string name="small_msg_string" tools:keep="@string/small_msg_string"><![CDATA[Send small file (<1MB)]]></string>
+    <string name="connect_string" tools:keep="@string/connect_string">Connect to the network</string>
+    <string name="disconnect_string" tools:keep="@string/disconnect_string">Disconnect from the network</string>
     <string name="network_string">Not connected to the network\n</string>
     <string name="details_string">Details</string>
     <string name="hide_device_string">Hide</string>
@@ -58,27 +58,27 @@
     <string name="ping_string">Ping</string>
     <string name="no_devices_string">No devices were found or the node is not running</string>
     <string name="find_intersection">Find intersection - Paillier</string>
-    <string name="find_intersection_ElGamal">Find intersection - ElGamal</string>
-    <string name="intersect_everyone_paillier">Find every intersection - Paillier</string>
-    <string name="intersect_everyone_ElGamal">Find every intersection - ElGamal</string>
+    <string name="find_intersection_ElGamal" tools:keep="@string/find_intersection_ElGamal">Find intersection - ElGamal</string>
+    <string name="intersect_everyone_paillier" tools:keep="@string/intersect_everyone_paillier">Find every intersection - Paillier</string>
+    <string name="intersect_everyone_ElGamal" tools:keep="@string/intersect_everyone_ElGamal">Find every intersection - ElGamal</string>
     <string name="my_keys">My keys</string>
     <string name="results">Results</string>
     <string name="my_dataset">My dataset</string>
     <string name="keys">Numeric value of the keys</string>
     <string name="go_back">Return</string>
     <string name="connect_specific_peer">Connect to a peer</string>
-    <string name="no_peers_string">No peers were found on this network</string>
+    <string name="no_peers_string" tools:keep="@string/no_peers_string">No peers were found on this network</string>
     <string name="discover_peers">Discover peers</string>
     <string name="gen_keys">Generate new keys</string>
     <string name="actions_for_device">Actions for device %1$s</string>
-    <string name="intersect_everyone_DamgardJurik">Find every intersection - Damgard Jurik</string>
+    <string name="intersect_everyone_DamgardJurik" tools:keep="@string/intersect_everyone_DamgardJurik">Find every intersection - Damgard Jurik</string>
     <string name="find_intersection_DamgardJurik">Find intersection - Damgard Jurik</string>
     <string name="find_cardinality_paillier">Cardinality - Paillier</string>
     <string name="find_cardinality_DamgardJurik">Cardinality - Damgard Jurik</string>
     <string name="find_intersection_ope">Find intersection - Paillier OPE</string>
     <string name="find_intersection_dj_ope">Find intersection - Damgard Jurik OPE</string>
-    <string name="intersect_everyone_paillier_ope">Find every intersection - Paillier OPE</string>
-    <string name="intersect_everyone_dj_ope">Find every intersection - Damgard Jurik OPE</string>
+    <string name="intersect_everyone_paillier_ope" tools:keep="@string/intersect_everyone_paillier_ope">Find every intersection - Paillier OPE</string>
+    <string name="intersect_everyone_dj_ope" tools:keep="@string/intersect_everyone_dj_ope">Find every intersection - Damgard Jurik OPE</string>
     <string name="network_id">Network ID: %1$s</string>
     <string name="network_port">Network port: %1$s</string>
     <string name="network_status">Network status: %1$s</string>
@@ -94,15 +94,15 @@
     <string name="results_ac_res">Results: %1$s</string>
     <string name="keys_ac">Public Keys</string>
     <string name="finding_and_connecting_to_the_peers">Finding and connecting to the peers</string>
-    <string name="disconnecting_from_the_peers">Disconnecting from the peers</string>
+    <string name="disconnecting_from_the_peers" tools:keep="@string/disconnecting_from_the_peers">Disconnecting from the peers</string>
     <string name="added_peer">Trying to send a discover message to peer %1$s</string>
     <string name="cancel_str">Cancel</string>
     <string name="discovering_peers">Discovering peers...</string>
     <string name="peer_list_updated">Peer list updated</string>
-    <string name="choose_encryption_scheme">Choose encryption scheme</string>
-    <string name="selection_scheme_str">Choose the encryption scheme you need new keys for</string>
-    <string name="paillier">Paillier</string>
-    <string name="damgard_jurik">Damgard Jurik</string>
+    <string name="choose_encryption_scheme" tools:keep="@string/choose_encryption_scheme">Choose encryption scheme</string>
+    <string name="selection_scheme_str" tools:keep="@string/selection_scheme_str">Choose the encryption scheme you need new keys for</string>
+    <string name="paillier" tools:keep="@string/paillier">Paillier</string>
+    <string name="damgard_jurik" tools:keep="@string/damgard_jurik">Damgard Jurik</string>
     <string name="network_settings">Network settings</string>
     <string name="new_setup_domain_size_set_size">New setup: domain size %1$s, set size %2$s</string>
     <string name="new_keys_are_being_generated">New %1$s keys are being generated, bit length %2$d</string>
@@ -125,7 +125,7 @@
     <string name="choose_implementation">Select an available cryptographic scheme</string>
     <string name="test_rounds">Test rounds</string>
     <string name="choose_type">Select the type of method to use</string>
-    <string name="default_test">Launch default test</string>
+    <string name="default_test" tools:keep="@string/default_test">Launch default test</string>
     <string name="select_implementation_and_test_rounds">Select implementation and test rounds</string>
     <string name="node_destroyed">Node destroyed</string>
     <string name="starting_node">Starting node</string>
@@ -138,16 +138,16 @@
     <string name="type_bit_length">Bit length of the generated keys</string>
     <string name="generate_keys">Generate new keys</string>
     <string name="generate">Generate</string>
-    <string name="bit_length_must_be_a_number">THe bit length must be a number</string>
+    <string name="bit_length_must_be_a_number" tools:keep="@string/bit_length_must_be_a_number">THe bit length must be a number</string>
     <string name="bit_length_too_small">Minimum bit length is 16</string>
     <string name="ops_runnign_in_the_background">Ops running in the background</string>
-    <string name="actions_done">All tasks were finished</string>
+    <string name="actions_done" tools:keep="@string/actions_done">All tasks were finished</string>
     <string name="all_tasks_string">No tasks pending</string>
     <string name="tasks_done">Tasks done: %1$s | Tasks pending: %2$s</string>
     <string name="firebase_authenticated">Firebase authenticated - Logging data to the RTDB</string>
     <string name="firebase_not_authenticated">Firebase not authenticated - No logs will be sent to the RTDB</string>
     <string name="port_string_set">Port where the node will start</string>
-    <string name="port_placeholder">Port</string>
+    <string name="port_placeholder" tools:keep="@string/port_placeholder">Port</string>
     <string name="connect">Start node</string>
     <string name="default_port">Use default port</string>
     <string name="node_already_initialized">The node is already initialized</string>

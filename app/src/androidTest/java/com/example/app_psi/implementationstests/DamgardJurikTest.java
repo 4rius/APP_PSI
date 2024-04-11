@@ -3,6 +3,8 @@ package com.example.app_psi.implementationstests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import android.util.Log;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.example.app_psi.helpers.CSHelper;
@@ -99,10 +101,10 @@ public class DamgardJurikTest {
     @Test
     public void encryptRootsReturnsCorrectlyEncryptedRoots() {
         List<BigInteger> roots = Arrays.asList(BigInteger.valueOf(1), BigInteger.valueOf(2), BigInteger.valueOf(3));
-        List<BigInteger> encryptedRoots = damgardJurikHandler.encryptRoots(roots, damgardJurik);
+        List<String> encryptedRoots = damgardJurikHandler.encryptRoots(roots, damgardJurik);
 
         for (int i = 0; i < roots.size(); i++) {
-            BigInteger decryptedRoot = damgardJurik.Decrypt(encryptedRoots.get(i));
+            BigInteger decryptedRoot = damgardJurik.Decrypt(new BigInteger(encryptedRoots.get(i)));
             assertEquals(roots.get(i), decryptedRoot);
         }
     }
@@ -111,19 +113,18 @@ public class DamgardJurikTest {
     public void intersectionDomainReturnsCorrectIntersection() {
         Set<Integer> aliceSet = new HashSet<>(Arrays.asList(1, 2, 3, 4, 5, 6));
         Set<Integer> bobSet = new HashSet<>(Arrays.asList(3, 4, 5, 6, 7, 8));
-        LinkedTreeMap<String, BigInteger> aliceEncryptedSet = damgardJurikHandler.encryptMyData(aliceSet, 10);
+        LinkedTreeMap<String, String> aliceEncryptedSet = damgardJurikHandler.encryptMyData(aliceSet, 10);
 
+        Log.d("Alice", "Alice's encrypted set: " + aliceEncryptedSet);
         // Bob receives and multiplies by 0 or 1
-        LinkedTreeMap<String, BigInteger> multEncSet = damgardJurikHandler.getMultipliedSet(aliceEncryptedSet, bobSet, damgardJurik.getN());
-
+        LinkedTreeMap<String, String> multEncSet = damgardJurikHandler.getMultipliedSet(damgardJurikHandler.getEncryptedSet(aliceEncryptedSet), bobSet, damgardJurik.getN());
+        Log.d("Bob", "Bob's multiplied set: " + multEncSet);
         // Alice decrypts the intersection, 1 if the element is in the intersection, 0 otherwise
-        for (Map.Entry<String, BigInteger> entry : multEncSet.entrySet()) {
-            BigInteger decryptedValue = damgardJurik.Decrypt(entry.getValue());
-            entry.setValue(decryptedValue);
-        }
+        LinkedTreeMap<String, BigInteger> evalMap =damgardJurikHandler.handleMultipliedSet(multEncSet, damgardJurik);
+        Log.d("Alice", "Alice's evaluation map: " + evalMap);
         // Cogemos solo los valores que sean 1, que representan la intersección
         List<Integer> intersection = new ArrayList<>();
-        for (Map.Entry<String, BigInteger> entry : multEncSet.entrySet()) {
+        for (Map.Entry<String, BigInteger> entry : evalMap.entrySet()) {
             if (entry.getValue().equals(BigInteger.ONE)) {
                 intersection.add(Integer.parseInt(entry.getKey()));
             }
@@ -137,16 +138,20 @@ public class DamgardJurikTest {
         List<Integer> aliceSet = Arrays.asList(1, 2, 3, 4, 5, 6);
         List<Integer> bobSet = Arrays.asList(3, 4, 5, 6, 7, 8);
         List<BigInteger> aliceRoots = Polynomials.polyFromRoots(aliceSet, BigInteger.valueOf(-1), BigInteger.ONE);
-        ArrayList<BigInteger> aliceEncRoots = damgardJurikHandler.encryptRoots(aliceRoots, damgardJurik);
+        ArrayList<String> aliceEncRoots = damgardJurikHandler.encryptRoots(aliceRoots, damgardJurik);
 
         // Bob receives and evaluates
-        ArrayList<BigInteger> bobEval;
-        bobEval = damgardJurikHandler.handleOPESecondStep(aliceEncRoots, bobSet, damgardJurik.getN());
+        ArrayList<BigInteger> coefs = new ArrayList<>();
+        for (String element : aliceEncRoots) {
+            coefs.add(new BigInteger(element));
+        }
+        ArrayList<String> bobEval;
+        bobEval = damgardJurikHandler.handleOPESecondStep(coefs, bobSet, damgardJurik.getN());
 
         // Alice decrypts and figures out the intersection
         ArrayList<BigInteger> decEval = new ArrayList<>();
-        for (BigInteger eval : bobEval) {
-            decEval.add(damgardJurik.Decrypt(eval));
+        for (String eval : bobEval) {
+            decEval.add(damgardJurik.Decrypt(new BigInteger(eval)));
         }
         List<Integer> intersection = new ArrayList<>();
         for (BigInteger element : decEval) {

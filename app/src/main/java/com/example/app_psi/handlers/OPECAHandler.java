@@ -30,7 +30,7 @@ public class OPECAHandler extends IntersectionHandler {
         logIntersectionStart(Node.getInstance().getId(), peerId, impName, "PSI-CA");
         List<Integer> myDataList = new ArrayList<>(Node.getInstance().getMyData());
         List<BigInteger> roots = Polynomials.polyFromRoots(myDataList, BigInteger.valueOf(-1), BigInteger.ONE);
-        ArrayList<BigInteger> encryptedRoots = handler.encryptRoots(roots, handler.getCryptoSystem());
+        ArrayList<String> encryptedRoots = handler.encryptRoots(roots, handler.getCryptoSystem());
         LinkedTreeMap<String, String> publicKeyDict = handler.serializePublicKey();
         sendJsonMessage(device, encryptedRoots, impName + " PSI-CA OPE", "2", publicKeyDict);
         long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime; // Tiempo de CPU utilizado por la operación
@@ -53,7 +53,7 @@ public class OPECAHandler extends IntersectionHandler {
         // Evaluamos el polinomio con las raíces del peer
         assert Node.getInstance() != null;
         List<Integer> myDataList = new ArrayList<>(Node.getInstance().getMyData());
-        ArrayList<BigInteger> encryptedEval = handler.getEvaluationSet(coefs, myDataList, peerPubKeyReconstructed.get("n"));
+        ArrayList<String> encryptedEval = handler.getEvaluationSet(coefs, myDataList, peerPubKeyReconstructed.get("n"));
         System.out.println("Node " + Node.getInstance().getId() + " (You) - PSI-CA with " + peer + " - Encrypted evalutaion: " + encryptedEval);
         // Shuffle the encrypted evaluation to not reveal positional information
         Collections.shuffle(encryptedEval);

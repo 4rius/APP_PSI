@@ -31,6 +31,7 @@ public abstract class IntersectionHandler {
         message.put("data", resSet);
         if (publicKeyDict != null) message.put("pubkey", publicKeyDict);
         message.put("implementation", impName);
+        assert Node.getInstance() != null;
         message.put("peer", Node.getInstance().getId());
         message.put("step", step);
         Gson gson = new Gson();

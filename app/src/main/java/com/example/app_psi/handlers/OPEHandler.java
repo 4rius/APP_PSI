@@ -31,7 +31,7 @@ public class OPEHandler extends IntersectionHandler {
         logIntersectionStart(Node.getInstance().getId(), peerId, impName, null);
         List<Integer> myDataList = new ArrayList<>(Node.getInstance().getMyData());
         List<BigInteger> roots = Polynomials.polyFromRoots(myDataList, BigInteger.valueOf(-1), BigInteger.ONE);
-        ArrayList<BigInteger> encryptedRoots = handler.encryptRoots(roots, handler.getCryptoSystem());
+        ArrayList<String> encryptedRoots = handler.encryptRoots(roots, handler.getCryptoSystem());
         LinkedTreeMap<String, String> publicKeyDict = handler.serializePublicKey();
         sendJsonMessage(device, encryptedRoots, impName + " OPE", "2", publicKeyDict);
         long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime; // Tiempo de CPU utilizado por la operación
@@ -51,7 +51,7 @@ public class OPEHandler extends IntersectionHandler {
         }
         assert Node.getInstance() != null;
         List<Integer> myDataList = new ArrayList<>(Node.getInstance().getMyData());
-        ArrayList<BigInteger> encryptedEval = handler.handleOPESecondStep(coefs, myDataList, peerPubKeyReconstructed.get("n"));
+        ArrayList<String> encryptedEval = handler.handleOPESecondStep(coefs, myDataList, peerPubKeyReconstructed.get("n"));
         Log.d("Node", Node.getInstance().getId() + " (You) - Intersection with " + peer + " - Encrypted evaluation: " + encryptedEval);
         sendJsonMessage(device, encryptedEval, impName + " OPE", "F", null);
         long cpuTime = Debug.threadCpuTimeNanos();
