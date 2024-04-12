@@ -93,7 +93,6 @@
     <string name="results_ac">Results</string>
     <string name="results_ac_res">Results: %1$s</string>
     <string name="keys_ac">Public Keys</string>
-    <string name="finding_and_connecting_to_the_peers">Finding and connecting to the peers</string>
     <string name="disconnecting_from_the_peers" tools:keep="@string/disconnecting_from_the_peers">Disconnecting from the peers</string>
     <string name="added_peer">Trying to send a discover message to peer %1$s</string>
     <string name="cancel_str">Cancel</string>
@@ -158,4 +157,6 @@
     <string name="firebase_start_logging">Start logging to Firebase RTDB</string>
     <string name="firebase_need_props">This APK either does not contain the required properties file or the RTDB is inaccesible - Not logging to Firebase RTDB</string>
     <string name="firebase_authenticating">Firebase authentication updating</string>
+    <string name="firebase_could_not_authenticate">Firebase could not authenticate - Check Logcat - Properties file is likely missing</string>
+    <string name="firebase_not_enabled">Firebase RTDB is not enabled on this distribution</string>
 </resources>

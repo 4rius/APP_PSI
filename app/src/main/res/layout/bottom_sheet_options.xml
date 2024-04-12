@@ -89,7 +89,7 @@
             android:id="@+id/logo8"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/baseline_data_object_24"
+            android:src="@drawable/baseline_data_object_48"
             android:layout_gravity="center"
             android:importantForAccessibility="no" />
 
@@ -161,7 +161,7 @@
             android:id="@+id/logo11"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/baseline_connect_without_contact_24"
+            android:src="@drawable/baseline_connect_without_contact_48"
             android:layout_gravity="center"
             android:importantForAccessibility="no" />
 
@@ -257,7 +257,7 @@
             android:id="@+id/logo16"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/baseline_send_48"
+            android:src="@drawable/baseline_privacy_48"
             android:layout_gravity="center"
             android:importantForAccessibility="no" />
 

@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import com.example.app_psi.collections.DbConstants.DFL_DOMAIN
 import com.example.app_psi.collections.DbConstants.DFL_SET_SIZE
 import com.example.app_psi.collections.DbConstants.INTERSECTION_STEP_1
@@ -36,6 +37,7 @@ class LogService: Service() {
     lateinit var id: String
     lateinit var realtimeDatabase: FirebaseDatabase
     var authenticated = false
+    var propsFile = false
 
     override fun onCreate() {
         super.onCreate()
@@ -85,18 +87,24 @@ class LogService: Service() {
 
     private fun fbAuth() {
         // Este archivo no se sube a git, se debe añadir manualmente en la carpeta app/src/main/assets por seguridad
-        val properties = Properties().apply { load(applicationContext.assets.open("FirebaseCredentialsAndroid.properties")) }
-        val email = properties.getProperty("FIREBASE_EMAIL")
-        val password = properties.getProperty("FIREBASE_PASSWORD")
-        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).addOnCompleteListener {
-            if (it.isSuccessful) {
-                Log.d("FirebaseAuth", "User logged in - Firebase RTDB logging enabled")
-                authenticated = true
-                logSetup(DFL_DOMAIN, DFL_SET_SIZE)
-            } else {
-                Log.d("FirebaseAuth", "User not logged in - ${it.exception?.message} - Properties file may be corrupted or missing.")
-                Log.d("FirebaseAuth", "Your logs will not be saved.")
+        try {
+            val properties = Properties().apply { load(applicationContext.assets.open("FirebaseCredentialsAndroid.properties")) }
+            val email = properties.getProperty("FIREBASE_EMAIL")
+            val password = properties.getProperty("FIREBASE_PASSWORD")
+            FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).addOnCompleteListener {
+                if (it.isSuccessful) {
+                    Log.d("FirebaseAuth", "User logged in - Firebase RTDB logging enabled")
+                    authenticated = true
+                    logSetup(DFL_DOMAIN, DFL_SET_SIZE)
+                } else {
+                    Log.d("FirebaseAuth", "User not logged in - ${it.exception?.message} - Properties file may be corrupted or not contain a valid login.")
+                    Log.d("FirebaseAuth", "Your logs will not be saved.")
+                }
             }
+            propsFile = true
+        } catch (e: Exception) {
+            Log.d("FirebaseAuth", "Properties file not found - Your logs will not be saved.")
+            propsFile = false
         }
     }
 

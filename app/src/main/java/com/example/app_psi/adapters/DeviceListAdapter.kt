@@ -3,6 +3,7 @@ package com.example.app_psi.adapters
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -80,6 +81,7 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
             holder.buttonPing.isClickable = false
             holder.buttonPing.isEnabled = false
             holder.buttonPing.text = "Pinging..."
+            holder.buttonPing.setBackgroundColor(Color.parseColor("#B0B0B0"))
 
             Thread {
                 val pingSuccessful = NetworkService.pingDevice(devices[position])
