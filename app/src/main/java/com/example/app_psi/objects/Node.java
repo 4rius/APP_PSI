@@ -109,7 +109,7 @@ public final class Node {
         for (String peer : peers) {
             System.out.println("Node " + id + " (You) connecting to Node " + peer);
             ZMQ.Socket dealerSocket = context.createSocket(SocketType.DEALER);
-            dealerSocket.connect("tcp://" + peer);
+            dealerSocket.connect("tcp://" + peer + ":" + port);
             if (!devices.containsKey(peer)) {
                 dealerSocket.send("DISCOVER: Node " + id + " is looking for peers");
             }

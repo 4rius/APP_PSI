@@ -95,6 +95,7 @@ class DeviceListAdapter(private val context: Context, private val devices: List<
                     }
                     holder.buttonPing.isClickable = true
                     holder.buttonPing.isEnabled = true
+                    holder.buttonPing.setBackgroundColor(Color.parseColor("#424bf5"))
                     holder.buttonPing.text = "Ping"
                 }
             }.start()
