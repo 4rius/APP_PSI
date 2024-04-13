@@ -8,7 +8,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
-import android.widget.Toast
+import com.example.app_psi.BuildConfig.VERSION_NAME
 import com.example.app_psi.collections.DbConstants.DFL_DOMAIN
 import com.example.app_psi.collections.DbConstants.DFL_SET_SIZE
 import com.example.app_psi.collections.DbConstants.INTERSECTION_STEP_1
@@ -16,7 +16,6 @@ import com.example.app_psi.collections.DbConstants.INTERSECTION_STEP_2
 import com.example.app_psi.collections.DbConstants.INTERSECTION_STEP_F
 import com.example.app_psi.collections.DbConstants.KEYGEN_DONE
 import com.example.app_psi.collections.DbConstants.LOG_INTERVAL
-import com.example.app_psi.collections.DbConstants.VERSION
 import com.example.app_psi.objects.Node
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
@@ -126,7 +125,7 @@ class LogService: Service() {
             val ref = instance?.realtimeDatabase?.getReference("logs/$formattedId/setup")
             val log = hashMapOf(
                 "id" to instance?.id,
-                "version" to VERSION,
+                "version" to VERSION_NAME,
                 "type" to "Android " + android.os.Build.VERSION.RELEASE,
                 "manufacturer" to android.os.Build.MANUFACTURER,
                 "model" to android.os.Build.MODEL,
@@ -166,7 +165,7 @@ class LogService: Service() {
             val log = hashMapOf(
                 "id" to instance?.id,
                 "timestamp" to timestamp,
-                "version" to VERSION,
+                "version" to VERSION_NAME,
                 "Details" to "Android " + android.os.Build.VERSION.RELEASE + " - " + android.os.Build.MANUFACTURER + " - " + android.os.Build.MODEL,
                 "activity_code" to acitvityCode,
                 "time" to time,
@@ -214,7 +213,7 @@ class LogService: Service() {
             val log: HashMap<String, Any?> = hashMapOf(
                 "id" to instance?.id,
                 "timestamp" to timestamp,
-                "version" to VERSION,
+                "version" to VERSION_NAME,
                 "type" to "Android " + android.os.Build.VERSION.RELEASE,
                 "peer" to peer,
                 "implementation" to implementation,

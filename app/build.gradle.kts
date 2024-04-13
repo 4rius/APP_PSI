@@ -13,8 +13,8 @@ android {
         applicationId = "uk.arias.app_psi"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.2 - DEV"
+        versionCode = 2
+        versionName = "2.0 - DEV"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -65,7 +65,7 @@ dependencies {
     implementation ("org.zeromq:jeromq:0.6.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01")
     implementation("com.google.code.gson:gson:2.10.1")
-    implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
+    implementation(platform("com.google.firebase:firebase-bom:32.8.1"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-messaging-ktx:23.4.1")
     implementation("com.google.firebase:firebase-database-ktx:20.3.1")
