@@ -340,7 +340,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             buttonFirebase.setOnClickListener {
-                toogleFB()
+                toggleFB()
                 bottomSheetDialog.dismiss()
             }
 
@@ -448,13 +448,13 @@ class MainActivity : AppCompatActivity() {
         }.start()
     }
 
-    private fun toogleFB() {
+    private fun toggleFB() {
         val progressDialog = ProgressDialog(this)
         progressDialog.setMessage(getString(R.string.firebase_authenticating))
         progressDialog.setCancelable(false)
         progressDialog.show()
         Thread {
-            LogService.instance?.toogleFirebaseAuth()
+            LogService.instance?.toggleFirebaseAuth()
             Thread.sleep(2000) // Esperar a que se actualice el estado
             runOnUiThread {
                 if (LogService.instance?.authenticated == true) {

@@ -75,7 +75,7 @@ class LogService: Service() {
         return null
     }
 
-    fun toogleFirebaseAuth() {
+    fun toggleFirebaseAuth() {
         if (authenticated) {
             FirebaseAuth.getInstance().signOut()
             authenticated = false
