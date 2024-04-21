@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.app_psi"
+    namespace = "uk.arias.app_psi"
     compileSdk = 34
 
     defaultConfig {
