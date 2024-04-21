@@ -30,10 +30,10 @@ public class OPEHandler extends IntersectionHandler {
         assert Node.getInstance() != null;
         logIntersectionStart(Node.getInstance().getId(), peerId, impName, null);
         List<Integer> myDataList = new ArrayList<>(Node.getInstance().getMyData());
-        List<BigInteger> roots = Polynomials.polyFromRoots(myDataList, BigInteger.valueOf(-1), BigInteger.ONE);
-        ArrayList<String> encryptedRoots = handler.encryptRoots(roots, handler.getCryptoSystem());
+        List<BigInteger> coefs = Polynomials.polyFromRoots(myDataList, BigInteger.valueOf(-1), BigInteger.ONE);
+        ArrayList<String> encryptedCoeffs = handler.encryptRoots(coefs, handler.getCryptoSystem());
         LinkedTreeMap<String, String> publicKeyDict = handler.serializePublicKey();
-        sendJsonMessage(device, encryptedRoots, impName + " OPE", "2", publicKeyDict);
+        sendJsonMessage(device, encryptedCoeffs, impName + " OPE", "2", publicKeyDict);
         long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime; // Tiempo de CPU utilizado por la operación
         long endTime = System.currentTimeMillis();
         getLogger().logStop();
