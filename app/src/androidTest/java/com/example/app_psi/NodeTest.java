@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.example.app_psi.objects.Node;
+import com.example.app_psi.network.Node;
 
 @RunWith(AndroidJUnit4.class)
 public class NodeTest {

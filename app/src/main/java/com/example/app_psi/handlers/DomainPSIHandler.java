@@ -6,8 +6,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.example.app_psi.helpers.CSHelper;
-import com.example.app_psi.objects.Device;
-import com.example.app_psi.objects.Node;
+import com.example.app_psi.network.Device;
+import com.example.app_psi.network.Node;
 import com.google.gson.internal.LinkedTreeMap;
 
 import java.math.BigInteger;

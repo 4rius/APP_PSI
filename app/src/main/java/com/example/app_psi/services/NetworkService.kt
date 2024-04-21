@@ -23,7 +23,7 @@ import com.example.app_psi.collections.DbConstants.INTERSECTION_STEP_2
 import com.example.app_psi.collections.DbConstants.INTERSECTION_STEP_F
 import com.example.app_psi.collections.DbConstants.KEYGEN_DONE
 import com.example.app_psi.collections.DbConstants.KEYGEN_ERROR
-import com.example.app_psi.objects.Node
+import com.example.app_psi.network.Node
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.SocketException

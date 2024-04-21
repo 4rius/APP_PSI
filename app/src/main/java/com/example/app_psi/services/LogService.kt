@@ -16,7 +16,7 @@ import com.example.app_psi.collections.DbConstants.INTERSECTION_STEP_2
 import com.example.app_psi.collections.DbConstants.INTERSECTION_STEP_F
 import com.example.app_psi.collections.DbConstants.KEYGEN_DONE
 import com.example.app_psi.collections.DbConstants.LOG_INTERVAL
-import com.example.app_psi.objects.Node
+import com.example.app_psi.network.Node
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.CoroutineScope

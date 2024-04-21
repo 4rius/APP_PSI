@@ -1,4 +1,4 @@
-package com.example.app_psi.objects;
+package com.example.app_psi.network;
 
 
 import static com.example.app_psi.collections.DbConstants.DFL_DOMAIN;

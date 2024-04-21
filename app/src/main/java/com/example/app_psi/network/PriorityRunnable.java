@@ -1,4 +1,4 @@
-package com.example.app_psi.objects;
+package com.example.app_psi.network;
 
 import androidx.annotation.NonNull;
 
