@@ -82,8 +82,9 @@ class NetworkService: Service() {
     private fun createNode(port: Int? = null) {
         id = getLocalIp()!!
         val peers = ArrayList<String>()
-        peers.add("192.168.1.155")
-        peers.add("192.168.1.2")
+        // Peers can be added while creating the node, this can be useful when deploying on a large number of devices
+        //peers.add("192.168.1.155")
+        //peers.add("192.168.1.2")
         Node.createNode(id, port?: DFL_PORT, peers)
         Node.getInstance()?.start()
         val intent = Intent(ACTION_STATUS_UPDATED)
