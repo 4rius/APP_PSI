@@ -137,7 +137,7 @@ class LogService: Service() {
             Log.d("FirebaseRTDB", "Setup log sent to Firebase")
         }
         @SuppressLint("SimpleDateFormat")
-        fun logActivity(acitvityCode: String, time: Any, peer: String?= null, cpuTime: Long) {
+        fun logActivity(acitvityCode: String, time: Any, peer: String?= null, cpuTime: Long, size: Int? = null, encSize: Int? = null) {
             if (!instance?.authenticated!!) {
                 broadcaster(acitvityCode)
                 return
@@ -178,6 +178,14 @@ class LogService: Service() {
 
             if (peer != null) {
                 log["peer"] = peer
+            }
+
+            if (size != null) {
+                log["Cleartext_size"] = "$size bytes"
+            }
+
+            if (encSize != null) {
+                log["Ciphertext_size"] = "$encSize bytes"
             }
 
             ref?.push()?.setValue(log)

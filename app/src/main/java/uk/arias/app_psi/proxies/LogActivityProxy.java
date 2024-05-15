@@ -22,8 +22,8 @@ public class LogActivityProxy implements ActivityLogger {
     }
 
     @Override
-    public void logActivity(String tag, double duration, String peerId, long cpuTime) {
-        target.logActivity(tag, duration, peerId, cpuTime);
+    public void logActivity(String tag, double duration, String peerId, long cpuTime, Integer size, Integer encSize) {
+        target.logActivity(tag, duration, peerId, cpuTime, size, encSize);
         Log.d("LogActivityProxy",  tag + " - " + duration + " s");
     }
 

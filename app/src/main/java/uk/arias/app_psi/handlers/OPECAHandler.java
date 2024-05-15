@@ -4,6 +4,7 @@ import android.os.Debug;
 
 import androidx.annotation.NonNull;
 
+import uk.arias.app_psi.collections.Size;
 import uk.arias.app_psi.helpers.CSHelper;
 import uk.arias.app_psi.collections.Polynomials;
 import uk.arias.app_psi.network.Device;
@@ -14,6 +15,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 
 public class OPECAHandler extends IntersectionHandler {
 
@@ -35,8 +37,10 @@ public class OPECAHandler extends IntersectionHandler {
         sendJsonMessage(device, encryptedCoeffs, impName + " PSI-CA OPE", "2", publicKeyDict);
         long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime; // Tiempo de CPU utilizado por la operación
         long endTime = System.currentTimeMillis();
+        int myDataSize = Size.getListSizeInBytes(myDataList);
+        int encryptedCoeffsSize = Size.getListSizeInBytes(encryptedCoeffs);
         getLogger().logStop();
-        getLogger().logActivity("CARDINALITY_" + impName + "_OPE_1", (endTime - startTime) / 1000.0, peerId, cpuTime);
+        getLogger().logActivity("CARDINALITY_" + impName + "_OPE_1", (endTime - startTime) / 1000.0, peerId, cpuTime, myDataSize, encryptedCoeffsSize);
     }
 
     public void intersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, @NonNull ArrayList<String> data, @NonNull CSHelper handler) {
@@ -60,8 +64,9 @@ public class OPECAHandler extends IntersectionHandler {
         sendJsonMessage(device, encryptedEval, impName + " PSI-CA OPE", "F", null);
         long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
         long end_time = System.currentTimeMillis();
+        int encEvalSize = Size.getListSizeInBytes(encryptedEval);
         getLogger().logStop();
-        getLogger().logActivity("CARDINALITY_" + impName + "_OPE_2", (end_time - start_time) / 1000.0, peer, cpuTime);
+        getLogger().logActivity("CARDINALITY_" + impName + "_OPE_2", (end_time - start_time) / 1000.0, peer, cpuTime, null, encEvalSize);
     }
 
     @Override
@@ -97,7 +102,7 @@ public class OPECAHandler extends IntersectionHandler {
         long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
         long end_time = System.currentTimeMillis();
         getLogger().logStop();
-        getLogger().logActivity("CARDINALITY_" + impName + "_OPE_F", (end_time - start_time) / 1000.0, id, cpuTime);
+        getLogger().logActivity("CARDINALITY_" + impName + "_OPE_F", (end_time - start_time) / 1000.0, id, cpuTime, null, null);
         getLogger().logResult(null, result, id, impName + "_PSI-CA_OPE");
         System.out.println("Node " + id + " (You) - " + impName + " PSI-CA with " + id + " - Result: " + result);
     }

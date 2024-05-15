@@ -16,8 +16,8 @@ public class RealActivityLogger implements ActivityLogger {
     }
 
     @Override
-    public void logActivity(String tag, double duration, String peerId, long cpuTime) {
-        LogService.Companion.logActivity(tag, duration, peerId, cpuTime);
+    public void logActivity(String tag, double duration, String peerId, long cpuTime, Integer size, Integer encSize) {
+        LogService.Companion.logActivity(tag, duration, peerId, cpuTime, size, encSize);
     }
 
     @Override

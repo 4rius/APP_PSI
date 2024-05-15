@@ -228,7 +228,7 @@ public class JSONHandler {
             long endTime = System.currentTimeMillis();
             long duration = endTime - startTime;
             logger.logStop();
-            logger.logActivity("KEYGEN_" + cs.getClass().getSimpleName() + "-" + bitLength, duration / 1000.0, null, cpuTime);
+            logger.logActivity("KEYGEN_" + cs.getClass().getSimpleName() + "-" + bitLength, duration / 1000.0, null, cpuTime, null, null);
         }).start();
     }
 

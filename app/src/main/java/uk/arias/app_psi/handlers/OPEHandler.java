@@ -1,12 +1,14 @@
 package uk.arias.app_psi.handlers;
 
 import android.os.Debug;
+import android.os.Parcel;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import uk.arias.app_psi.helpers.CSHelper;
 import uk.arias.app_psi.collections.Polynomials;
+import uk.arias.app_psi.collections.Size;
 import uk.arias.app_psi.network.Device;
 import uk.arias.app_psi.network.Node;
 import com.google.gson.internal.LinkedTreeMap;
@@ -15,6 +17,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
 
 public class OPEHandler extends IntersectionHandler {
 
@@ -36,8 +39,10 @@ public class OPEHandler extends IntersectionHandler {
         sendJsonMessage(device, encryptedCoeffs, impName + " OPE", "2", publicKeyDict);
         long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime; // Tiempo de CPU utilizado por la operación
         long endTime = System.currentTimeMillis();
+        Integer myDataSize = Size.getListSizeInBytes(myDataList);
+        Integer encryptedCoeffsSize = Size.getListSizeInBytes(encryptedCoeffs);
         getLogger().logStop();
-        getLogger().logActivity("INTERSECTION_" + impName + "_OPE_1", (endTime - startTime) / 1000.0, peerId, cpuTime);
+        getLogger().logActivity("INTERSECTION_" + impName + "_OPE_1", (endTime - startTime) / 1000.0, peerId, cpuTime, myDataSize, encryptedCoeffsSize);
     }
 
     public void intersectionSecondStep(Device device, String peer, LinkedTreeMap<String, String> peerPubKey, @NonNull ArrayList<String> data, @NonNull CSHelper handler) {
@@ -56,8 +61,9 @@ public class OPEHandler extends IntersectionHandler {
         sendJsonMessage(device, encryptedEval, impName + " OPE", "F", null);
         long cpuTime = Debug.threadCpuTimeNanos();
         long endTime = System.currentTimeMillis();
+        int encEvalSize = Size.getListSizeInBytes(encryptedEval);
         getLogger().logStop();
-        getLogger().logActivity("INTERSECTION_" + impName + "_OPE_2", (endTime - startTime) / 1000.0, peer, cpuTime);
+        getLogger().logActivity("INTERSECTION_" + impName + "_OPE_2", (endTime - startTime) / 1000.0, peer, cpuTime, null, encEvalSize);
     }
 
     @Override
@@ -93,7 +99,7 @@ public class OPEHandler extends IntersectionHandler {
         long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
         long end_time = System.currentTimeMillis();
         getLogger().logStop();
-        getLogger().logActivity("INTERSECTION_" + impName + "_OPE_F", (end_time - start_time) / 1000.0, peer, cpuTime);
+        getLogger().logActivity("INTERSECTION_" + impName + "_OPE_F", (end_time - start_time) / 1000.0, peer, cpuTime, null, null);
         int size = intersection.size();
         assert peer != null;
         getLogger().logResult(intersection, size, peer, impName + " OPE");

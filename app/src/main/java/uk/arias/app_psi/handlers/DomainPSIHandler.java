@@ -5,6 +5,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import uk.arias.app_psi.collections.Size;
 import uk.arias.app_psi.helpers.CSHelper;
 import uk.arias.app_psi.network.Device;
 import uk.arias.app_psi.network.Node;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
 
 public class DomainPSIHandler extends IntersectionHandler {
 
@@ -34,8 +36,10 @@ public class DomainPSIHandler extends IntersectionHandler {
         sendJsonMessage(device, encryptedSet, impName, "2", publicKeyDict);
         long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
         long endTime = System.currentTimeMillis();
+        int myDataSize = Size.getSizeInBytes(Node.getInstance().getMyData());
+        int encDataSize = Size.getMapSizeInBytes(encryptedSet);
         getLogger().logStop();
-        getLogger().logActivity("INTERSECTION_" + impName + "_1", (endTime - startTime) / 1000.0, peerId, cpuTime);
+        getLogger().logActivity("INTERSECTION_" + impName + "_1", (endTime - startTime) / 1000.0, peerId, cpuTime, myDataSize, encDataSize);
     }
 
     @Override
@@ -57,8 +61,14 @@ public class DomainPSIHandler extends IntersectionHandler {
         sendJsonMessage(device, multipliedSet, impName, "F", null);
         long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
         long end_time = System.currentTimeMillis();
+        Integer encMulSize = null;
+        try {
+            encMulSize = Size.getSizeInBytes(multipliedSet);
+        } catch (Exception e) {
+            Node.getInstance().getLogger().log(Level.WARNING, "Error calculating sizes", e);
+        }
         getLogger().logStop();
-        getLogger().logActivity("INTERSECTION_" + impName + "_2", (end_time - start_time) / 1000.0, peer, cpuTime);
+        getLogger().logActivity("INTERSECTION_" + impName + "_2", (end_time - start_time) / 1000.0, peer, cpuTime, null, encMulSize);
     }
 
 
@@ -86,7 +96,7 @@ public class DomainPSIHandler extends IntersectionHandler {
         long cpuTime = Debug.threadCpuTimeNanos() - startCpuTime;
         long end_time = System.currentTimeMillis();
         getLogger().logStop();
-        getLogger().logActivity("INTERSECTION_" + impName + "_F", (end_time - start_time) / 1000.0, peer, cpuTime);
+        getLogger().logActivity("INTERSECTION_" + impName + "_F", (end_time - start_time) / 1000.0, peer, cpuTime, null, null);
         int size = intersection.size();
         assert peer != null;
         getLogger().logResult(intersection, size, peer, impName);
