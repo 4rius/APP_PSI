@@ -35,6 +35,7 @@ import uk.arias.app_psi.services.NetworkService
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.FirebaseApp
+import uk.arias.app_psi.BuildConfig
 
 class MainActivity : AppCompatActivity() {
 
@@ -153,6 +154,7 @@ class MainActivity : AppCompatActivity() {
             val buttonGenerateKeys = bottomSheetView.findViewById<Button>(R.id.buttonGenerateKeys)
             val buttonChangeSetup = bottomSheetView.findViewById<Button>(R.id.buttonChangeSetup)
             val buttonFirebase = bottomSheetView.findViewById<Button>(R.id.buttonFirebase)
+            val textViewVersion = bottomSheetView.findViewById<TextView>(R.id.textViewVersion)
             updateFBButtom(buttonFirebase)
 
 
@@ -165,6 +167,7 @@ class MainActivity : AppCompatActivity() {
                 append(getString(R.string.network_status_str))
                 append(NetworkService.getStatus())
             }
+            textViewVersion.text = getString(R.string.version_string, BuildConfig.VERSION_NAME)
             // Modo oscuro
             if (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
                 textViewDetails.setTextColor(Color.WHITE)

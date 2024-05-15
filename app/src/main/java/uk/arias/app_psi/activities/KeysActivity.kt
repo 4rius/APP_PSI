@@ -29,9 +29,11 @@ class KeysActivity : AppCompatActivity() {
         if (dataset != null) {
             textViewKeys.text = getString(R.string.dataset)
             textViewKeyValue.text = getString(R.string.dataset_res, dataset)
+            textViewKeyValue.movementMethod = ScrollingMovementMethod()
         } else if (results != null) {
             textViewKeys.text = getString(R.string.results_ac)
             textViewKeyValue.text = getString(R.string.results_ac_res, results)
+            textViewKeyValue.movementMethod = ScrollingMovementMethod()
         } else {
             textViewKeys.text = getString(R.string.keys_ac)
             textViewKeyValue.text = getString(R.string.public_keys, publicKeys)

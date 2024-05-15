@@ -56,7 +56,7 @@
     <string name="ip_port_string"><b><i>Network ID: Couldn\'t fetch your ID</i></b></string>
     <string name="port_string">Network port: -</string>
     <string name="ping_string">Ping</string>
-    <string name="no_devices_string">No devices were found or the node is not running</string>
+    <string name="no_devices_string">No devices were added or the node is not running</string>
     <string name="find_intersection">Find intersection - Paillier</string>
     <string name="find_intersection_ElGamal" tools:keep="@string/find_intersection_ElGamal">Find intersection - ElGamal</string>
     <string name="intersect_everyone_paillier" tools:keep="@string/intersect_everyone_paillier">Find every intersection - Paillier</string>
@@ -159,4 +159,5 @@
     <string name="firebase_authenticating">Firebase authentication updating</string>
     <string name="firebase_could_not_authenticate">Firebase could not authenticate - Check Logcat - Properties file is likely missing</string>
     <string name="firebase_not_enabled">Firebase RTDB is not enabled on this distribution</string>
+    <string name="version_string">PSI Suite %1$s (Android)</string>
 </resources>
