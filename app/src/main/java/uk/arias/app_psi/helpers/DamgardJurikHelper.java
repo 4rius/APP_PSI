@@ -52,8 +52,7 @@ public class DamgardJurikHelper extends CSHelper {
                 BigInteger encryptedZero = djsender.Encrypt(BigInteger.ZERO);
                 result.put(entry.getKey(), String.valueOf(encryptedZero));
             } else {
-                BigInteger encryptedOne = djsender.Encrypt(BigInteger.ONE);
-                result.put(entry.getKey(), String.valueOf(encryptedOne));
+                result.put(entry.getKey(), djsender.multiplyEncryptedByScalar(entry.getValue(), BigInteger.valueOf(2)).toString());
             }
         }
         return result;

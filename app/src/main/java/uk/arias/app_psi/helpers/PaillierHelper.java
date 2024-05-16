@@ -46,8 +46,7 @@ public class PaillierHelper extends CSHelper {
                 BigInteger encryptedZero = paillierSender.Encrypt(BigInteger.ZERO);
                 result.put(entry.getKey(), String.valueOf(encryptedZero));
             } else {
-                BigInteger encryptedOne = paillierSender.Encrypt(BigInteger.ONE);
-                result.put(entry.getKey(), String.valueOf(encryptedOne));
+                result.put(entry.getKey(), paillierSender.multiplyEncryptedByScalar(entry.getValue(), BigInteger.valueOf(2)).toString());
             }
         }
         return result;

@@ -85,7 +85,7 @@ public class DomainPSIHandler extends IntersectionHandler {
         // Cogemos solo los valores que sean 1, que representan la intersección
         List<Integer> intersection = new ArrayList<>();
         for (Map.Entry<String, BigInteger> entry : evalMap.entrySet()) {
-            if (entry.getValue().equals(BigInteger.ONE)) {
+            if (entry.getValue().equals(BigInteger.valueOf(2))) {
                 intersection.add(Integer.parseInt(entry.getKey()));
             }
         }

@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "uk.arias.app_psi"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 3
         versionName = "2.1 - DEV"

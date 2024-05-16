@@ -65,7 +65,7 @@ public final class Node {
         this.peers = peers;
         this.context = new ZContext();
         this.routerSocket = context.createSocket(SocketType.ROUTER);
-        if (id.startsWith("[")) this.routerSocket.setIPv6(true);
+        this.routerSocket.setIPv6(true);
         this.routerSocket.bind("tcp://" + id + ":" + port);
         PriorityBlockingQueue<Runnable> queue = new PriorityBlockingQueue<>();
         this.executor = new ThreadPoolExecutor(
@@ -204,10 +204,16 @@ public final class Node {
     }
 
 
-    private void addNewDevice(String peer, String dayTime) {
+    private void addNewDevice(@NonNull String peer, String dayTime) {
         System.out.println("Added " + peer + " to my network");
         ZMQ.Socket dealerSocket = context.createSocket(SocketType.DEALER);
-        dealerSocket.connect("tcp://" + peer + ":" + port);
+        // format possible IPv6 addresses
+        if (peer.startsWith("[")) {
+            dealerSocket.setIPv6(true);
+            dealerSocket.connect("tcp://" + peer + ":" + port);
+        } else {
+            dealerSocket.connect("tcp://" + peer + ":" + port);
+        }
         devices.put(peer, new Device(dealerSocket, dayTime));
         peers.add(peer);
     }

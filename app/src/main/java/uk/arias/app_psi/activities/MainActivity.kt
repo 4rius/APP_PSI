@@ -402,9 +402,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
         binding.textViewNoDevices.visibility = View.GONE
-        for (i in deviceList.indices) {
-            deviceList[i] = deviceList[i].substringBeforeLast(":")
-        }
         val adapter = DeviceListAdapter(this, deviceList, binding.root)
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = LinearLayoutManager(this)

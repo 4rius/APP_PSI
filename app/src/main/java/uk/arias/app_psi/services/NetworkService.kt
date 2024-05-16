@@ -80,6 +80,10 @@ class NetworkService: Service() {
     }
 
     private fun createNode(port: Int? = null) {
+        if (getLocalIp() == null) {
+            Toast.makeText(this, R.string.no_local_ip, Toast.LENGTH_LONG).show()
+            return
+        }
         id = getLocalIp()!!
         val peers = ArrayList<String>()
         // Peers can be added while creating the node, this can be useful when deploying on a large number of devices
