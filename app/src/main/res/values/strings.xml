@@ -161,4 +161,5 @@
     <string name="firebase_not_enabled">Firebase RTDB is not enabled on this distribution</string>
     <string name="version_string">PSI Suite %1$s (Android)</string>
     <string name="no_local_ip">You need an internet connection to use this app</string>
+    <string name="connected">Connected</string>
 </resources>

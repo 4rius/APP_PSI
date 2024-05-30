@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleServiceCreated() {
         binding.swiperefresh.isRefreshing = false
-        if (NetworkService.getStatus() == "Connected") {
+        if (NetworkService.getStatus() == getString(R.string.connected)) {
             // Encendemos el LogService, solo si no está encendido
             if (LogService.instance == null) startService(Intent(this@MainActivity, LogService::class.java))
             connected()

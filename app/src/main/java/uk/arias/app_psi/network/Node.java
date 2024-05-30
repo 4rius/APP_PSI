@@ -9,7 +9,6 @@ import android.annotation.SuppressLint;
 
 import androidx.annotation.NonNull;
 
-import uk.arias.app_psi.handlers.JSONHandler;
 import uk.arias.app_psi.services.LogService;
 
 import org.jetbrains.annotations.Contract;

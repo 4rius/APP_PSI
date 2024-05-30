@@ -1,4 +1,4 @@
-package uk.arias.app_psi.handlers;
+package uk.arias.app_psi.network;
 
 import static uk.arias.app_psi.collections.DbConstants.DFL_BIT_LENGTH_DAMGARD;
 import static uk.arias.app_psi.collections.DbConstants.DFL_BIT_LENGTH_PAILLIER;
@@ -9,17 +9,6 @@ import android.os.Debug;
 
 import androidx.annotation.NonNull;
 
-import uk.arias.app_psi.collections.CryptoImplementation;
-import uk.arias.app_psi.helpers.CSHelper;
-import uk.arias.app_psi.helpers.DamgardJurikHelper;
-import uk.arias.app_psi.helpers.PaillierHelper;
-import uk.arias.app_psi.implementations.CryptoSystem;
-import uk.arias.app_psi.network.Device;
-import uk.arias.app_psi.network.Node;
-import uk.arias.app_psi.network.PriorityRunnable;
-import uk.arias.app_psi.proxies.ActivityLogger;
-import uk.arias.app_psi.proxies.LogActivityProxy;
-import uk.arias.app_psi.proxies.RealActivityLogger;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 
@@ -34,15 +23,27 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
+import uk.arias.app_psi.collections.CryptoImplementation;
+import uk.arias.app_psi.handlers.DomainPSIHandler;
+import uk.arias.app_psi.handlers.OPECAHandler;
+import uk.arias.app_psi.handlers.OPEHandler;
+import uk.arias.app_psi.helpers.CSHelper;
+import uk.arias.app_psi.helpers.DamgardJurikHelper;
+import uk.arias.app_psi.helpers.PaillierHelper;
+import uk.arias.app_psi.implementations.CryptoSystem;
+import uk.arias.app_psi.proxies.ActivityLogger;
+import uk.arias.app_psi.proxies.LogActivityProxy;
+import uk.arias.app_psi.proxies.RealActivityLogger;
+
 public class JSONHandler {
 
     private final Map<CryptoImplementation, CSHelper> CSHelpers = new HashMap<>();
 
-    private final OPEHandler OPEHandler = new OPEHandler();
+    private final uk.arias.app_psi.handlers.OPEHandler OPEHandler = new OPEHandler();
 
     private final DomainPSIHandler domainPSIHandler = new DomainPSIHandler();
 
-    private final OPECAHandler OPECAHandler = new OPECAHandler();
+    private final uk.arias.app_psi.handlers.OPECAHandler OPECAHandler = new OPECAHandler();
 
     private final ThreadPoolExecutor executor; // Executor para lanzar hilos
 
