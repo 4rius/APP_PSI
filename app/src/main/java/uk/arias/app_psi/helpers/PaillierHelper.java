@@ -50,10 +50,6 @@ public class PaillierHelper extends CSHelper {
             }
         }
         return result;
-    /*En el sistema criptográfico de Paillier, la multiplicación de un número cifrado por un número
-    sin cifrar se realiza mediante la exponenciación, no mediante la multiplicación ordinaria.
-    Esto es lo que permite que el sistema mantenga su propiedad de homomorfismo. Esto lo tengo que probar
-    porque en la phe venía directamente sobrecargado, aquí hay que lidiar con ello.*/
     }
 
     public ArrayList<String> getOPEEvalList(ArrayList<BigInteger> encryptedCoeff, @NonNull List<Integer> mySet, BigInteger n) {
