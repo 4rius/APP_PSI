@@ -12,6 +12,7 @@ public class Paillier implements CryptoSystem {
     private BigInteger n; // Clave pública
     private BigInteger nsquare; // n al cuadrado, se usa en el cifrado y descifrado
     private BigInteger g; // Número que se usa en el cifrado y descifrado
+    private BigInteger mu; // Mu es lambda invertido, se usa en el descifrado
 
     // Constructor que genera las claves
     public Paillier(int bitLengthVal) {
@@ -44,16 +45,12 @@ public class Paillier implements CryptoSystem {
         g = n.add(BigInteger.ONE);
         lambda = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE)).divide(
                 p.subtract(BigInteger.ONE).gcd(q.subtract(BigInteger.ONE))); // Calcula lambda
-
-        // n tiene que poder dividir el orden de g
-        while (isValidGenerator(g)) {
-            Log.d("Paillier", "g is not good enough. Trying again...");
-            g = g.add(BigInteger.ONE);
+        BigInteger a = g.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n); // Se calcula mu como L(g^lambda mod n^2)^-1 mod n
+        if (!a.gcd(n).equals(BigInteger.ONE)) {
+            throw new ArithmeticException("BigInteger not invertible. COMPROBAR n y lambda!!");
+        } else {
+            mu = a.modInverse(n);
         }
-    }
-
-    private boolean isValidGenerator(BigInteger g) {
-        return !g.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).gcd(n).equals(BigInteger.ONE);
     }
 
     // Cifrado de un número
@@ -69,13 +66,7 @@ public class Paillier implements CryptoSystem {
 
     // Descifrado de un número
     public BigInteger Decrypt(BigInteger c) {
-        BigInteger a = g.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n);
-        if (!a.gcd(n).equals(BigInteger.ONE)) {
-            throw new ArithmeticException("BigInteger not invertible. COMPROBAR n y lambda!!");
-        } else {
-            BigInteger u = a.modInverse(n);
-            return c.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).multiply(u).mod(n);
-        }
+        return c.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).multiply(mu).mod(n);
     }
 
     // Suma 2 números cifrados

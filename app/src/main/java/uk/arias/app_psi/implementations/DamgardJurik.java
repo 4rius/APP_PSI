@@ -14,6 +14,7 @@ public class DamgardJurik implements CryptoSystem {
     private BigInteger ns;  // n^s
     private BigInteger g;  // Generador, clave pública, puede ser n+1
     private BigInteger lambda;  // Lambda, clave privada
+    private BigInteger mu;  // Mu, clave privada
     private final int s;  // Factor de expansión
 
     // Constructor
@@ -47,17 +48,13 @@ public class DamgardJurik implements CryptoSystem {
         lambda = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE)).divide(p.subtract(BigInteger.ONE).gcd(q.subtract(BigInteger.ONE)));
 
         g = n.add(BigInteger.ONE);
-        while (isValidGenerator(g)) {
-            Log.d("DamgardJurik", "g is not good enough. Trying again...");
-            g = g.add(BigInteger.ONE);
+
+        BigInteger a = g.modPow(lambda, nPowSPlusOne).subtract(BigInteger.ONE).divide(n);
+        if (!a.gcd(n).equals(BigInteger.ONE)) {
+            throw new ArithmeticException("BigInteger not invertible. COMPROBAR n y lambda!!");
+        } else {
+            mu = a.modInverse(n);
         }
-    }
-
-
-    // Comprueba si g es válido, si g es coprimo con n y si n divide el orden de g
-    private boolean isValidGenerator(BigInteger g) {
-        BigInteger exp = n.pow(s + 1);
-        return !g.modPow(lambda, exp).subtract(BigInteger.ONE).divide(n).gcd(n).equals(BigInteger.ONE);
     }
 
     // Cifrado
@@ -71,8 +68,7 @@ public class DamgardJurik implements CryptoSystem {
 
     // Descifrado
     public BigInteger Decrypt(BigInteger ciphertext) {
-        BigInteger u = g.modPow(lambda, nPowSPlusOne).subtract(BigInteger.ONE).divide(n).modInverse(n);
-        return ciphertext.modPow(lambda, nPowSPlusOne).subtract(BigInteger.ONE).divide(n).multiply(u).mod(n);
+        return ciphertext.modPow(lambda, nPowSPlusOne).subtract(BigInteger.ONE).divide(n).multiply(mu).mod(n);
     }
 
 
