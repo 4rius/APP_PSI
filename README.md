@@ -31,10 +31,10 @@ Se puede instalar en emuladores.
 <details><summary>Vía Android Studio (Mejor para continuar el desarrollo del proyecto) </summary>
 
 1. Clonar el repositorio en Android Studio. (`https://github.com/4rius/APP_PSI.git`)
-2. El proyecto se abrirá y se debería compilar automáticamente. Si no es así, se pueden seguir estos pasos:
+2. Al abrir el proyecto se debería compilar automáticamente. Si no es así, se pueden seguir estos pasos:
    1. Sincronizar el proyecto con Gradle. (`File -> Sync Project with Gradle Files`)\
    ![GradleSync.png](docs/GradleSync.png)
-   2. Compilar el proyecto. (`Build -> Make Project`). Si hubiera algún error, se puede revisar el log de Gradle en la pestaña `Gradle Console` o volver a compilar utilizando la opción `Build -> Rebuild Project`.\
+   2. Compilar el proyecto. (`Build -> Make Project`). Si hubiera algún error, se puede revisar el log o volver a compilar utilizando la opción `Build -> Rebuild Project`.\
    ![RebuildProject-AndroidStudio.png](docs/RebuildProject-AndroidStudio.png)
 3. Ahora es necesario tener un dispositivo Android conectado al ordenador o arrancar un emulador previamente configurado.\
    ![CreateVDAndroid.png](docs/CreateVDAndroid.png) \
@@ -71,7 +71,7 @@ En la aplicación se puede comprobar que no se ha autenticado correctamente. Una
 
 ## Configuración de la Realtime Database de Firebase
 
-1. Configurar la Realtime Database de Firebase para que se puedan almacenar los datos de los usuarios. Consiste en inicializarla y configurar las reglas de acceso. Tal y como están en este proyecto, permiten lectura y escritura en el nodo `logs` a cualquier usuario autenticado. \
+1. Configurar la Realtime Database de Firebase para que se puedan almacenar los datos de los usuarios. Consiste en inicializarla y configurar las reglas de acceso. Tal y como están en este proyecto, permiten lectura y escritura en el nodo `logs` a cualquier usuario autenticado.
     ```
     {
       "rules": {
@@ -91,7 +91,7 @@ En la aplicación se puede comprobar que no se ha autenticado correctamente. Una
 ![UserAddedFB.png](docs/UserAddedFB.png)
    - Se recomienda deshabilitar el registro de más usuarios por motivos de seguridad. \
    ![FurtherProtection-DisableUserCreationFB.png](docs/FurtherProtection-DisableUserCreationFB.png)
-5. Crear un archivo `FirebaseCredentialsAndroid.properties` con el siguiente contenido: \
+5. Crear un archivo `FirebaseCredentialsAndroid.properties` con el siguiente contenido:
     ```
     FIREBASE_EMAIL=correo@correo.com
     FIREBASE_PASSWORD=contraseña
