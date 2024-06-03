@@ -63,7 +63,8 @@ class MainActivity : AppCompatActivity() {
     private fun handleServiceCreated() {
         binding.swiperefresh.isRefreshing = false
         if (NetworkService.getStatus() == getString(R.string.connected)) {
-            // Encendemos el LogService, solo si no está encendido
+            // Encendemos el LogService, solo si no está encendido, se espera a que se inicie el NetworkService
+            Thread.sleep(2000)
             if (LogService.instance == null) startService(Intent(this@MainActivity, LogService::class.java))
             connected()
         } else {
@@ -176,16 +177,21 @@ class MainActivity : AppCompatActivity() {
             }
 
             // Configuración del estado de Firebase
-            if (!LogService.instance?.propsFile!!) {
-                textViewFirebaseStatus.text = getString(R.string.firebase_not_enabled)
+            if (LogService.instance == null) {
+                textViewFirebaseStatus.text = getString(R.string.log_service_not_running)
                 textViewFirebaseStatus.setTextColor(Color.RED)
             } else {
-                if (LogService.instance?.authenticated == true) {
-                    textViewFirebaseStatus.text = getString(R.string.firebase_authenticated)
-                    textViewFirebaseStatus.setTextColor(Color.GREEN)
+                if (!LogService.instance?.propsFile!!) {
+                    textViewFirebaseStatus.text = getString(R.string.firebase_not_enabled)
+                    textViewFirebaseStatus.setTextColor(Color.RED)
                 } else {
-                    textViewFirebaseStatus.text = getString(R.string.firebase_not_authenticated)
-                    textViewFirebaseStatus.setTextColor(Color.YELLOW)
+                    if (LogService.instance?.authenticated == true) {
+                        textViewFirebaseStatus.text = getString(R.string.firebase_authenticated)
+                        textViewFirebaseStatus.setTextColor(Color.GREEN)
+                    } else {
+                        textViewFirebaseStatus.text = getString(R.string.firebase_not_authenticated)
+                        textViewFirebaseStatus.setTextColor(Color.YELLOW)
+                    }
                 }
             }
 
@@ -306,6 +312,10 @@ class MainActivity : AppCompatActivity() {
                 builder.setView(dialogLayout)
                 builder.setPositiveButton(getString(R.string.generate)) { _, _ ->
                     val scheme = spinnerImplementation.selectedItem.toString()
+                    if (editTextBitLength.text.toString().isEmpty()) {
+                        Toast.makeText(this, getString(R.string.bit_length_empty), Toast.LENGTH_SHORT).show()
+                        return@setPositiveButton
+                    }
                     val bitLength = editTextBitLength.text.toString().toInt()
                     if (bitLength < 16) {
                         Toast.makeText(this, getString(R.string.bit_length_too_small), Toast.LENGTH_SHORT).show()
@@ -354,6 +364,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateFBButtom(buttonFirebase: Button?) {
+        if (LogService.instance == null) {
+            buttonFirebase?.text = getString(R.string.firebase_not_enabled)
+            buttonFirebase?.isClickable = false
+            buttonFirebase?.isEnabled = false
+            buttonFirebase?.setBackgroundColor(Color.parseColor("#B0B0B0"))
+            buttonFirebase?.setTextColor(Color.parseColor("#FFFFFF"))
+            return
+        }
         if (!LogService.instance?.propsFile!!) {
             buttonFirebase?.text = getString(R.string.firebase_not_enabled)
             buttonFirebase?.isClickable = false

@@ -162,4 +162,6 @@
     <string name="version_string">PSI Suite %1$s (Android)</string>
     <string name="no_local_ip">You need an internet connection to use this app</string>
     <string name="connected">Connected</string>
+    <string name="bit_length_empty">No puede ser un valor nulo</string>
+    <string name="log_service_not_running">The Log Service is starting</string>
 </resources>
