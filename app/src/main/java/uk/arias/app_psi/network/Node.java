@@ -63,8 +63,6 @@ public final class Node {
         this.port = port;
         this.peers = peers;
         this.context = new ZContext();
-        context.setRcvHWM(0);
-        context.setSndHWM(0);
         this.routerSocket = context.createSocket(SocketType.ROUTER);
         this.routerSocket.setIPv6(true);
         this.routerSocket.bind("tcp://" + id + ":" + port);
