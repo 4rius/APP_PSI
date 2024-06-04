@@ -14,9 +14,11 @@ import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 
 import org.jetbrains.annotations.Nullable;
+import org.zeromq.ZMQ;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
 
 public abstract class IntersectionHandler {
 
@@ -35,7 +37,8 @@ public abstract class IntersectionHandler {
         message.put("peer", Node.getInstance().getId());
         message.put("step", step);
         Gson gson = new Gson();
-        device.socket.send(gson.toJson(message));
+        String json = gson.toJson(message);
+        Node.getInstance().sendMessage(device, json);
     }
 
     protected void logIntersectionStart(String id, String peerId, String schemeName, @Nullable String type) {

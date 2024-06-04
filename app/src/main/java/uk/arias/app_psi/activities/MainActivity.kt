@@ -64,8 +64,10 @@ class MainActivity : AppCompatActivity() {
         binding.swiperefresh.isRefreshing = false
         if (NetworkService.getStatus() == getString(R.string.connected)) {
             // Encendemos el LogService, solo si no está encendido, se espera a que se inicie el NetworkService
-            Thread.sleep(2000)
-            if (LogService.instance == null) startService(Intent(this@MainActivity, LogService::class.java))
+            if (LogService.instance == null) {
+                Thread.sleep(2000)
+                startService(Intent(this@MainActivity, LogService::class.java))
+            }
             connected()
         } else {
             clearRV()

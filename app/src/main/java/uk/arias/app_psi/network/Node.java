@@ -6,6 +6,7 @@ import static uk.arias.app_psi.collections.DbConstants.DFL_SET_SIZE;
 import static uk.arias.app_psi.collections.DbConstants.NODE_INIT;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -63,6 +64,8 @@ public final class Node {
         this.port = port;
         this.peers = peers;
         this.context = new ZContext();
+        context.setRcvHWM(2000);
+        context.setSndHWM(2000);
         this.routerSocket = context.createSocket(SocketType.ROUTER);
         this.routerSocket.setIPv6(true);
         this.routerSocket.bind("tcp://" + id + ":" + port);
@@ -122,6 +125,7 @@ public final class Node {
     private void startRouterSocket() {
         while (running) {
             try {
+                // Recibir mensajes solo cuando haya algo que recibir
                 String sender = routerSocket.recvStr();
                 String message = routerSocket.recvStr();
                 if (message == null) continue;
@@ -415,4 +419,13 @@ public final class Node {
         executors.add(jsonHandler.getExecutor());
         return executors;
     }
+
+    public void sendMessage(@NonNull Device device, String message) {
+        boolean sent = device.socket.send(message);
+
+        if (!sent) {
+            Log.w("Node", "HWM full - Message not sent to " + device.socket.getLastEndpoint() + " - Device is not consuming messages - Discarding it for the memory's sake");
+        }
+    }
+
 }

@@ -43,7 +43,7 @@ class LogService: Service() {
         instance = this
         fbAuth()
         realtimeDatabase = FirebaseDatabase.getInstance()
-        id = Node.getInstance()?.id ?: "Unknown"
+        id = NetworkService.getNode()?.id ?: "Unknown"
         generalLog()
     }
 
