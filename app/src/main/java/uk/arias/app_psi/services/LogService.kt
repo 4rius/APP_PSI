@@ -8,15 +8,6 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
-import uk.arias.app_psi.BuildConfig.VERSION_NAME
-import uk.arias.app_psi.collections.DbConstants.DFL_DOMAIN
-import uk.arias.app_psi.collections.DbConstants.DFL_SET_SIZE
-import uk.arias.app_psi.collections.DbConstants.INTERSECTION_STEP_1
-import uk.arias.app_psi.collections.DbConstants.INTERSECTION_STEP_2
-import uk.arias.app_psi.collections.DbConstants.INTERSECTION_STEP_F
-import uk.arias.app_psi.collections.DbConstants.KEYGEN_DONE
-import uk.arias.app_psi.collections.DbConstants.LOG_INTERVAL
-import uk.arias.app_psi.network.Node
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.CoroutineScope
@@ -26,6 +17,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import uk.arias.app_psi.BuildConfig.VERSION_NAME
+import uk.arias.app_psi.collections.DbConstants.DFL_DOMAIN
+import uk.arias.app_psi.collections.DbConstants.DFL_SET_SIZE
+import uk.arias.app_psi.collections.DbConstants.INTERSECTION_STEP_1
+import uk.arias.app_psi.collections.DbConstants.INTERSECTION_STEP_2
+import uk.arias.app_psi.collections.DbConstants.INTERSECTION_STEP_F
+import uk.arias.app_psi.collections.DbConstants.KEYGEN_DONE
+import uk.arias.app_psi.collections.DbConstants.LOG_INTERVAL
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Properties
@@ -190,6 +189,7 @@ class LogService: Service() {
 
             ref?.push()?.setValue(log)
             Log.d("FirebaseRTDB", "Activity log sent to Firebase - Thread: ${Thread.currentThread().name}")
+            broadcaster(acitvityCode)
         }
 
 
