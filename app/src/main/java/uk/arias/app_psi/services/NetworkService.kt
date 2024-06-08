@@ -50,10 +50,10 @@ class NetworkService: Service() {
                     sendNotification("Intersection step 2 done", "INTERSECTION STEP 2")
                 }
                 INTERSECTION_STEP_F -> {
-                    sendNotification("Find details on the results option", "INTERSECTION FOUND")
+                    sendNotification("Find details on the results section", "INTERSECTION FOUND")
                 }
                 CARDINALITY_DONE -> {
-                    sendNotification("Find details on the results option", "CARDINALITY FOUND")
+                    sendNotification("Find details on the results section", "CARDINALITY FOUND")
                 }
             }
         }
@@ -64,7 +64,7 @@ class NetworkService: Service() {
         val notificationId = 1
         val channelId = "Activities"
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(t)
             .setContentText(s)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
