@@ -1,7 +1,5 @@
 package uk.arias.app_psi.implementations;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import java.math.BigInteger;
@@ -47,7 +45,7 @@ public class Paillier implements CryptoSystem {
                 p.subtract(BigInteger.ONE).gcd(q.subtract(BigInteger.ONE))); // Calcula lambda
         BigInteger a = g.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n); // Se calcula mu como L(g^lambda mod n^2)^-1 mod n
         if (!a.gcd(n).equals(BigInteger.ONE)) {
-            throw new ArithmeticException("BigInteger not invertible. COMPROBAR n y lambda!!");
+            throw new ArithmeticException("No se ha podido calcular mu, comprobar n y lambda.");
         } else {
             mu = a.modInverse(n);
         }

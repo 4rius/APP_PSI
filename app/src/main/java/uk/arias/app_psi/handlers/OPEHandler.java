@@ -1,7 +1,6 @@
 package uk.arias.app_psi.handlers;
 
 import android.os.Debug;
-import android.os.Parcel;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -17,7 +16,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Level;
 
 public class OPEHandler extends IntersectionHandler {
 

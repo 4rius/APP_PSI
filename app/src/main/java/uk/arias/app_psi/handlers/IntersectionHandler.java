@@ -14,11 +14,9 @@ import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 
 import org.jetbrains.annotations.Nullable;
-import org.zeromq.ZMQ;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Level;
 
 public abstract class IntersectionHandler {
 
